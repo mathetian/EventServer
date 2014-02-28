@@ -7,10 +7,10 @@
 #include <vector>
 using namespace std;
 
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <stdint.h>
+// #include <stdio.h>
+// #include <unistd.h>
+// #include <fcntl.h>
+// #include <stdint.h>
 #include <sys/un.h>
 #include <assert.h>
 
@@ -33,7 +33,7 @@ public:
     }
 
 public:
-    Socket(int fd = -1 ) : m_fd(fd), m_stat(true) { }
+    Socket(int fd = -1) : m_fd(fd), m_stat(true) { }
 
     Socket(int family, int type) : m_fd(sys_socket(family, type, 0)), m_stat(true) {}
 
@@ -49,7 +49,7 @@ public:
             {
                 int optval = 1;
                 setsockopt(get_fd(), SOL_SOCKET, SO_REUSEADDR,
-                       &optval, sizeof optval);
+                       &optval, sizeof(optval));
 
                 bind(addr);
                 listen();
@@ -67,19 +67,80 @@ public:
         return m_fd;
     }
 
+private:
+    void set_status(const Status& s) 
+    { 
+        m_stat = s;
+    }
+
+    Status bind(const Address& a) 
+    {
+        if (::bind(get_fd(), a.data(), a.length()) != 0) 
+        {
+            set_status(Status::syserr("bind"));
+        }
+        return stat();
+    }
+
+    Status listen(int backlog = 5) 
+    {
+        if (::listen(get_fd(), backlog) != 0) 
+        {
+            set_status(Status::syserr("listen"));
+        }
+        return stat();
+    }
+
+    /**confused with this function**/
+    Socket accept(Address& a) 
+    {
+        sockaddr addr;
+        socklen_t addrlen = sizeof addr;
+
+        int new_fd = ::accept(get_fd(), &addr, &addrlen);
+        if (new_fd < 0) 
+        {
+            set_status(Status::syserr("accept"));
+            a = Address();
+            return Socket();
+        }
+        a = Address(&addr, addrlen);
+
+        return Socket(new_fd);
+    }
+
+    Status connect(const Address& a) 
+    {
+        if (::connect(get_fd(), a.data(), a.length()) != 0) 
+        {
+            if (errno != EINPROGRESS)
+                set_status(Status::syserr("connect"));
+        }
+
+        return stat();
+    }
+
+    bool set_blocking(bool block) 
+    {
+        int flags = fcntl(get_fd(), F_GETFL);
+        assert(flags >= 0);
+        flags = block ? flags & ~O_NONBLOCK : flags | O_NONBLOCK;
+        assert(fcntl(get_fd(), F_SETFL, flags) >= 0);
+        
+        return true;
+    }
+
 public:
     Address getpeername() 
     {
-        typedef union { sockaddr_in a; sockaddr_un b; } sockaddr_max;
-
-        char buf[sizeof(sockaddr_max) + 1];
-        socklen_t len = sizeof buf;
+        char buf[sizeof(sockaddr_in) + 1];
+        socklen_t len = sizeof(buf);
 
         int ret = ::getpeername(get_fd(), (sockaddr*)&buf, &len);
 
-        if (ret < 0)
+        if (ret < 0) 
             return Address();
-        if (len == sizeof buf) // possible overflow
+        else if (len == sizeof(buf)) // possible overflow
             return Address();
 
         return Address(buf, len);
@@ -87,16 +148,15 @@ public:
 
     Address getsockname() 
     {
-        typedef union { sockaddr_in a; sockaddr_un b; } sockaddr_max;
 
-        char buf[sizeof(sockaddr_max) + 1];
-        socklen_t len = sizeof buf;
+        char buf[sizeof(sockaddr_in) + 1];
+        socklen_t len = sizeof(buf);
 
         int ret = ::getsockname(get_fd(), (sockaddr*)&buf, &len);
 
         if (ret < 0)
             return Address();
-        if (len == sizeof buf) // possible overflow
+        else if (len == sizeof(buf)) // possible overflow
             return Address();
 
         return Address(buf, len);
@@ -111,7 +171,7 @@ public:
         { //log warn 
         }
         else if (count < 0)
-            set_status(Status::syserr("Socket1::read"));
+            set_status(Status::syserr("Socket::read"));
 
 		return count;
     }
@@ -145,7 +205,6 @@ public:
 		return orig_count;
     }
 
-public:
     int write(const void *buf, int count) 
     {
 		count = ::write(get_fd(), buf, count);
@@ -186,15 +245,6 @@ public:
     }
 
 public:
-    bool set_blocking(bool block) 
-    {
-		int flags = fcntl(get_fd(), F_GETFL);
-        assert(flags >= 0);
-		flags = block ? flags & ~O_NONBLOCK : flags | O_NONBLOCK;
-		assert(fcntl(get_fd(), F_SETFL, flags) >= 0);
-		
-        return true;
-    }
 
     Status stat() const 
     {
@@ -202,6 +252,7 @@ public:
         return m_stat;
     }
 
+    /**pipe for local**/
     static pair<Socket, Socket> pipe() 
     {
         int fds[2]; ::pipe(fds);
@@ -212,58 +263,6 @@ public:
     {
         return m_fd >= 0 ? true : false;
     }
-public:
-    void set_status(const Status& s) 
-    { 
-        if(m_fd >= 0)
-            m_stat = s;
-    }
-
-    Status bind(const Address& a) 
-    {
-        if (::bind(get_fd(), a.data(), a.length()) != 0) 
-        {
-            set_status(Status::syserr("bind"));
-        }
-        return stat();
-    }
-
-    Status connect(const Address& a) 
-    {
-        if (::connect(get_fd(), a.data(), a.length()) != 0) 
-        {
-            if (errno != EINPROGRESS)
-                set_status(Status::syserr("connect"));
-        }
-
-        return stat();
-    }
-
-    Status listen(int backlog = 5) 
-    {
-        if (::listen(get_fd(), backlog) != 0) 
-        {
-            set_status(Status::syserr("listen"));
-        }
-        return stat();
-    }
-
-    Socket accept(Address& a) 
-    {
-        sockaddr addr;
-        socklen_t addrlen = sizeof addr;
-
-        int new_fd = ::accept(get_fd(), &addr, &addrlen);
-        if (new_fd < 0) 
-        {
-            set_status(Status::syserr("accept"));
-            a = Address();
-            return Socket();
-        }
-        a = Address(&addr, addrlen);
-
-        return Socket(new_fd);
-    }
 };
 
 class TCPSocket : public Socket 
@@ -271,7 +270,7 @@ class TCPSocket : public Socket
   public:
     TCPSocket() : Socket() {}
     TCPSocket(Address addr, Flags f = none) : Socket(AF_INET, SOCK_STREAM, addr, f) {}
-    TCPSocket(const Socket& ioh) : Socket(ioh) {}
+    TCPSocket(const Socket& sock) : Socket(sock) {}
 };
 
 #endif

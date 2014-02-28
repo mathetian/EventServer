@@ -1,160 +1,169 @@
 #ifndef _EVENT_LOOP_H
 #define _EVENT_LOOP_H
 
-#include "EventHandler.h"
+#include <map>
+using namespace std;
+
+#include "SocketHandler.h"
 
 class EventLoop 
 {
+    /**Prevent copy-construct and equal construct**/
     EventLoop(const EventLoop &);
     EventLoop& operator = (const EventLoop &);
 
-    class WakeHandler : public SocketHandler 
-    {
-        Socket wake_wsck;
-    public:
-        WakeHandler(EventLoop& loop) : SocketHandler(loop) 
-        {
-            pair<Socket, Socket> ios = Socket::pipe();
+    map<int, SocketHandler*> m_map;
 
-            setSock(ios.first);
-            wake_wsck = ios.second;
-
-            ios.first.set_blocking(false);
-            ios.second.set_blocking(false);
-
-            want_read(true);
-        }
-
-        void wake() 
-        {
-            assert(wake_wsck);
-            wake_wsck.write("A", 1);
-        }
-
-        void drain() 
-        {
-            static char garbage[128];
-            while (getSock().read(garbage, sizeof garbage) == sizeof garbage) ;
-        }
-
-        void ravail() 
-        {
-            drain();
-        }
-    };
-
-    vector<SocketHandler*> handlers;
-
-    fd_set readfds;
-    fd_set writefds;
-    int maxfd;
-
-    bool quit_flag;
-    WakeHandler *waker;
+    fd_set m_readfds;
+    fd_set m_writefds;
+    int    m_maxfd;
+    bool   m_quitFlag;
 
 public:
-    EventLoop() : quit_flag(false)//, event_loop_id(0) 
+    EventLoop() : m_quitFlag(false)
     {
-        FD_ZERO(&readfds);
-        FD_ZERO(&writefds);
-        maxfd = -1;
-
-        waker = new WakeHandler(*this);
+        FD_ZERO(&m_readfds);
+        FD_ZERO(&m_writefds);
+        m_maxfd = -1;
     }
 
     ~EventLoop() 
     {
-    	delete waker;
-    	waker = NULL;
+        map<int, SocketHandler*>::iterator iter = m_map.begin();
+        for(;iter != m_map.end();iter++)
+        {
+            SocketHandler *tmpHandler = iter->second;
+            delete tmpHandler;
+            tmpHandler = NULL;
+        }
+        m_map.clear();
     }
     
-    void run() 
+    void runforever() 
     {
-        while (!quit_flag) 
+        while (!m_quitFlag) 
         	run_once();
     }
 
     void run_once()
     {
-        if (quit_flag) return;
+        if (m_quitFlag) return;
 
         fd_set rr, ww;
 
-        rr = readfds;
-        ww = writefds;
+        rr = m_readfds;
+        ww = m_writefds;  
 
-       ::select(maxfd+1, &rr, &ww, 0, 0);
+        //don't support OOB
+       ::select(m_maxfd+1, &rr, &ww, 0, 0);
 
-        for (int i = 0; i <= maxfd; ++i) 
+        for (int i = 0; i <= m_maxfd; ++i) 
         {
-            if (handlers[i] && FD_ISSET(i, &rr)) 
+            if (m_map.find(i) != m_map.end() && FD_ISSET(i, &rr)) 
             {
-                handlers[i]->readAvail();
+                m_map[i]->readAvail();
             }
-            if (handlers[i] && FD_ISSET(i, &ww)) 
+            if (m_map.find(i) != m_map.end() && FD_ISSET(i, &ww)) 
             {
-                handlers[i]->writeAvail();
+                m_map[i]->writeAvail();
             }
         }
     }
 
-    void terminate() 
+    void attachHandler(int fd, SocketHandler *p) 
     {
-        quit_flag = true;
-        wake();
+        assert(fd >= 0 && fd < FD_SETSIZE);
+        assert(m_map.find(fd) == m_map.end());
+        assert(p);
+
+        m_map[fd] = p;
+
+        m_maxfd = max(m_maxfd, fd);
+
+        bool r = p->m_waitRead;
+        bool w = p->m_waitWrite;
+
+        if (r) FD_SET(fd, &m_readfds); 
+        else   FD_CLR(fd, &m_readfds);
+        
+        if (w) FD_SET(fd, &m_writefds); 
+        else   FD_CLR(fd, &m_writefds);
+
     }
 
-    void wake() 
+    void detachHandler(int fd, SocketHandler *p)
     {
+        assert(fd >= 0 && fd < FD_SETSIZE);
+        assert(m_map.find(fd) != m_map.end());
+        assert(p);
+        assert(m_map[fd] == p);
+
+        assert(m_map.erase(fd) == 1);
+
+        if(m_maxfd == fd) m_maxfd--;
+
+        FD_CLR(fd, &m_readfds);
+        FD_CLR(fd, &m_writefds);
     }
 
 private:
-    void want_read(int fd, bool act) 
+    void waitRead(int fd, bool act) 
     {
         assert(fd >= 0 && fd < FD_SETSIZE);
 
         if (act)
-            FD_SET(fd, &readfds);
+        {
+            m_maxfd = max(m_maxfd, fd);
+            FD_SET(fd, &m_readfds);
+        }
         else
-            FD_CLR(fd, &readfds);
-
-        wake();
+        {
+            assert(fd <= m_maxfd);
+            FD_CLR(fd, &m_readfds);
+        }
     }
 
-    void want_write(int fd, bool act) 
+    void waitWrite(int fd, bool act) 
     {
         assert(fd >= 0 && fd < FD_SETSIZE);
 
         if (act)
-            FD_SET(fd, &writefds);
+        {
+            FD_SET(fd, &m_writefds);
+            m_maxfd = max(m_maxfd, fd);
+        }
         else
-            FD_CLR(fd, &writefds);
-
-        wake();
+        {
+            assert(fd <= m_maxfd);
+            FD_CLR(fd, &m_writefds);
+        }
     }
 
-    void set_handler(int fd, SocketHandler *p) 
-    {
-        assert(fd >= 0 && fd < FD_SETSIZE);
-
-        if (handlers.size() <= unsigned(fd))
-            handlers.resize(fd + 1);
-        handlers[fd] = p;
-        if (fd > maxfd)
-            maxfd = fd;
-
-        bool r = p && p->cur_want_read;
-        bool w = p && p->cur_want_write;
-
-
-        if (r) FD_SET(fd, &readfds); else FD_CLR(fd, &readfds);
-        if (w) FD_SET(fd, &writefds); else FD_CLR(fd, &writefds);
-
-    }
-    
-private:
-    friend class Socket_Handler;
-    friend class timer;
+    friend class SocketHandler;
 };
+
+inline void SocketHandler::attach()
+{
+    assert(m_loop && m_sock.stat());
+    m_loop->attachHandler(m_sock.get_fd(), this);
+}
+
+inline void SocketHandler::detach()
+{
+    assert(m_loop && m_sock.stat());
+    m_loop->detachHandler(m_sock.get_fd(), this);
+}
+
+inline void SocketHandler::waitRead(bool act)
+{
+    assert(m_loop && m_sock.stat());
+    m_loop->waitRead(m_sock.get_fd(), act);
+}
+
+inline void SocketHandler::waitWrite(bool act)
+{
+    assert(m_loop && m_sock.stat());
+    m_loop->waitWrite(m_sock.get_fd(), act);
+}
 
 #endif

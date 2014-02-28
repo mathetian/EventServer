@@ -11,6 +11,7 @@ class Status
 {
     bool ok;
     string err;
+  
   public:
     Status(bool ok, string err = string()) : ok(ok), err(err)
     { }

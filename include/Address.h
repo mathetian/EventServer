@@ -12,22 +12,25 @@
 
 class Address {
 protected:
-    string addr;
+    string m_addr;
 
 public:
     Address() {}
 
-    Address(const void *addr, socklen_t len) : addr(static_cast<const char *>(addr), len)
-    {
+    Address(const void *addr, socklen_t len) : m_addr(static_cast<const char *>(addr), len)
+    { }
+
+    const sockaddr *data() const 
+    { 
+        return static_cast<const sockaddr *>(static_cast<const void *>(m_addr.data())); 
     }
 
-    const sockaddr *data() const { return static_cast<const sockaddr *>(static_cast<const void *>(addr.data())); }
+    socklen_t length() const { return m_addr.length(); }
 
-    socklen_t length() const { return addr.length(); }
+    const string& data_as_string() const { return m_addr; }
 
-    const string& data_as_string() const { return addr; }
-
-    operator const void *() const { return addr.length() ? this : 0; }
+    /**As can be expressed with operator bool**/
+    operator const void *() const { return m_addr.length() ? this : 0; }
 
     string as_string() const;
 };
@@ -37,12 +40,9 @@ class NetAddress : public Address
 public:
     typedef uint32_t port;
 
-protected:
-    const sockaddr_in *inetAddr() const 
-    { 
-    	return static_cast<const sockaddr_in *>\
-    		(static_cast<const void *>(data())); 
-    }
+private:
+    NetAddress(const Address& other);
+    NetAddress& operator = (const NetAddress &); 
 
 private:
     void init(string ip, port pt) 
@@ -56,8 +56,14 @@ private:
         if ((ent = gethostbyname(ip.c_str())) != NULL) 
         {
             memcpy(&a.sin_addr.s_addr, ent->h_addr, ent->h_length);
-            addr = string(static_cast<const char *>(static_cast<const void *>(&a)), sizeof a);
+            m_addr = string(static_cast<const char *>(static_cast<const void *>(&a)), sizeof a);
         }
+    }
+
+    const sockaddr_in *inetAddr() const 
+    { 
+        return static_cast<const sockaddr_in *>\
+            (static_cast<const void *>(data())); 
     }
 
 public:
@@ -67,9 +73,10 @@ public:
     {
         sockaddr_in a;
         a.sin_family = AF_INET;
-        a.sin_port = htons(pt);
+        a.sin_port   = htons(pt);
         a.sin_addr.s_addr = INADDR_ANY;
-        addr = string(static_cast<const char *>(static_cast<const void *>(&a)), sizeof a);
+
+        m_addr = string(static_cast<const char *>(static_cast<const void *>(&a)), sizeof a);
     }
 
     NetAddress(string ip, port pt = 0) 
@@ -82,22 +89,13 @@ public:
         init(ip, atoi(pt.c_str()));
     }
 
-    NetAddress(const Address& other) 
+    string getIP() const 
     {
-    if (other && other.data()->sa_family == AF_INET)
-        addr = other.data_as_string();
-    }
-
-    string get_host() const 
-    {
-        if (!*this) return string();
         return inet_ntoa(inetAddr()->sin_addr);
     }
 
     string get_hostname() const 
     {
-        if (!*this) return string();
-
         struct hostent* ent =
             gethostbyaddr(static_cast<const char *>(static_cast<const void *>\
             		(&inetAddr()->sin_addr.s_addr)), sizeof(in_addr_t), AF_INET);
@@ -105,34 +103,28 @@ public:
         if (ent)
             return string(ent->h_name);
 
-        return get_host();
+        return getIP();
     }
 
-    port get_port() const 
+    port getPort() const 
     {
-        if (!*this) 
-        	return 0;
-
         return ntohs(inetAddr()->sin_port);
     }
 
     string as_string() const 
     {
-        string out = get_host();
-
-        if (get_port()) 
-        {
-            out += ":";
-            out += toString(get_port());
-        }
+        string out = getIP();
         
+        out += ":" + toString(getPort());
+
         return out;
     }
 
     static string local_hostname() 
     {
         char name[128];
-        if (gethostname(name, sizeof name)) 
+
+        if (gethostname(name, sizeof(name))) 
         	return "";
         
         return name;
