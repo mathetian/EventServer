@@ -7,11 +7,19 @@ using namespace std;
 
 #include <stdint.h>
 
-inline string toString(uint32_t value)
+inline string to_string(uint32_t value)
 {
 	ostringstream o; o << value; 
 	return o.str();
 }
+
+// inline string to_string(bool flag)
+// {
+//     if(flag == true)
+//         return "True";
+//     else 
+//         return "False";
+// }
 
 inline string to_escaped_string(const void *data, int length) 
 {

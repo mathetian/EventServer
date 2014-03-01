@@ -3,41 +3,46 @@
 
 #include "SocketHandler.h"
 
+#include "../utils/Log.h"
+
 template<class T>
-class TCPAcceptor : private SocketHandler 
+class TCPAcceptor : public SocketHandler 
 {
     TCPSocket m_sock;
 
 public:
     TCPAcceptor(EventLoop& _loop, int localport) :
-        SocketHandler(_loop), m_sock(NetAddress(localport), Socket::acceptor)
+        m_sock(NetAddress(localport), Socket::acceptor)
     {
-        setSock(m_sock);
-        m_sock.set_blocking(false);
-        waitRead(true);waitWrite(true);
+        SocketHandler::SocketHandler(_loop, m_sock, true);
+        DEBUG << "Socket status: ";
+        assert(m_sock.stat());
+        DEBUG << "TCPAcceptor Initialiaztion Successfully";
     }
 
     TCPAcceptor(EventLoop& _loop, string ip, int localport) :
         SocketHandler(_loop), m_sock(NetAddress(ip, localport), Socket::acceptor)
     {
-        setSock(m_sock);
-        m_sock.set_blocking(false);
-        waitRead(true);waitWrite(true);
+        assert(m_sock.stat());
+        waitRead(true);
     }
 
     virtual ~TCPAcceptor() {}
  
 private:
-    void readAvail() 
+    void onReceiveMsg() 
     {
         NetAddress a;
         TCPSocket sock = m_sock.accept(a);
         
         if (sock) 
         {
-            T* t = new T(*getLoop(), sock);
+           T* t = new T(*getLoop(), sock);
         }
     }
+    /**without any implementation**/
+    void onSendMsg() { }
+    virtual void onCloseSocket() { }
 };
 
 #endif

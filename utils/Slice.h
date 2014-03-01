@@ -22,7 +22,7 @@ class Slice
     uint32_t length() const { return len; }
 
     /// Equal to if(buf) { }
-    operator const void *() const { return dat; }
+    operator void *() const { return dat; }
 
     operator string() const 
     { 

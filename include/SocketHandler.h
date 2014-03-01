@@ -3,23 +3,28 @@
 
 #include "Socket.h"
 
+#include "../utils/Log.h"
+
 class EventLoop;
 
 class SocketHandler 
 {
-private:
+protected:
 	EventLoop*  m_loop;
     Socket      m_sock;
     bool        m_waitRead;
     bool        m_waitWrite;
 
 public:
-    SocketHandler(Socket sock = Socket()) : m_loop(0), m_sock(sock), m_waitRead(false), m_waitWrite(false) {}
+    SocketHandler(Socket sock = Socket()) : m_loop(0), m_sock(sock), m_waitRead(false), m_waitWrite(false) { }
 
-    SocketHandler(EventLoop& loop, Socket sock = Socket()) :
-    	 m_loop(&loop), m_sock(sock), m_waitRead(false), m_waitWrite(false)
+    SocketHandler(EventLoop& loop, Socket sock = Socket(), bool r=true, bool w=true) :
+    	 m_loop(&loop), m_sock(sock), m_waitRead(r), m_waitWrite(w)
     {
         attach();
+        DEBUG << "ATTACH SUCCESSFULLY";
+        waitRead(m_waitRead);
+        waitWrite(m_waitWrite);
     }
 
     virtual ~SocketHandler() 
@@ -29,10 +34,9 @@ public:
 
 public:
     //Todo List
-    virtual void readAvail()  { }
-
-    virtual void writeAvail() { }
-
+    virtual void onReceiveMsg() = 0;
+    virtual void onSendMsg() = 0;
+    virtual void onCloseSocket() = 0;
     void waitRead(bool);
 
     void waitWrite(bool);
@@ -42,7 +46,7 @@ public:
         m_sock = sock;
     }
 
-    Socket getSock() 
+    Socket getSocket() 
     { 
     	return m_sock; 
     }
@@ -52,7 +56,7 @@ public:
         return m_loop;
     }
     
-private:
+protected:
     void attach();
     void detach();
     

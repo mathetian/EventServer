@@ -6,10 +6,9 @@
 #include <iostream>
 using namespace std;
 
-#include <assert.h>
-
 #define PORT 10000
 #define CLIENT_NUM 100
+#define MSGLEN 256
 
 EventLoop loop;
 
@@ -18,25 +17,54 @@ class EchoClient : public MSGHandler
  public:
     EchoClient(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
-		cout << "Accepted connected from " << getSock().getpeername() <<
-	    	" on " << getSock().getsockname() << endl;
+		cout << "Accepted connected from " << getSocket().getpeername() <<
+	    	" on " << getSocket().getsockname() << endl;
+	    waitRead(true);
     }
 
     ~EchoClient()
-    {
-    }
+    { }
 
   protected:
-  	void OnReceiveMsg()
+  	void onReceiveMsg()
   	{
+  	  char buf[MSGLEN];
+      memset(buf, 0, MSGLEN);
+      int len = read(buf, MSGLEN);
+  	  if(len == MSGLEN)
+      {
+        cout<<"Exceed the buf length"<<endl;
+      }
+      else if(len < 0)
+      {
+        if(getSocket().stat() == false)
+        {
+          cout<<"Socket error"<<endl;
+          deleteMe();
+        }
+        else
+        {
+          //Errno, Need again. No further process
+        }
+      }
+      else
+      {
+        cout<<"Received from:"<<getSocket().getsockname().as_string()<<endl;
+        cout<<buf<<endl;
+      }
+      waitRead(false);waitWrite(true);
   	}
 
   	void onSendMsg()
   	{
+  	  Slice slice("hello, server");
+      write(slice);
+      deleteMe();
   	}
 
   	void onCloseSocket()
   	{
+  		//Todo List
   	}
 };
 
@@ -71,7 +99,7 @@ private:
 		for(int i = 0; i < size; i++)
 		{
 			Socket sock(AF_INET, SOCK_STREAM, svrAddr);
-			assert(sock.stat() == true);
+      DEBUG << sock.stat().to_string();
 			EchoClient *client = new EchoClient(loop, sock);
 		} 
 	}

@@ -7,6 +7,9 @@ using std::string;
 #include <errno.h>
 #include <string.h>
 
+#include <iostream>
+using namespace std;
+
 class Status 
 {
     bool ok;
@@ -39,6 +42,19 @@ class Status
     static Status syserr(string err = string()) 
     {
         return syserr(errno, err);
+    }
+
+    string to_string()
+    {
+        string rs;
+        if(ok == true)
+            rs += "true";
+        else
+        {
+            rs += "false:";
+            rs += err;
+        }
+        return rs;
     }
 };
 

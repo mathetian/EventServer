@@ -7,12 +7,13 @@
 #include <vector>
 using namespace std;
 
-// #include <stdio.h>
-// #include <unistd.h>
-// #include <fcntl.h>
-// #include <stdint.h>
 #include <sys/un.h>
 #include <assert.h>
+
+#include <iostream>
+using namespace std;
+
+#include "../utils/Log.h"
 
 class Socket 
 {
@@ -40,9 +41,8 @@ public:
     Socket(int family, int type, Address addr, Flags f = nonblocking) :
         m_fd(sys_socket(family, type, 0)), m_stat(true)
     {
-        if (f & nonblocking)
-            set_blocking(false);
-
+        // if (f & nonblocking)
+        //     set_blocking(false);
         if (addr) 
         {
             if (f & acceptor) 
@@ -53,6 +53,10 @@ public:
 
                 bind(addr);
                 listen();
+                if(stat() == false)
+                    ERROR << "SOCKET LISTEN ERROR";
+                else
+                    DEBUG << "LISTEN SUCCESSFULLY";
             } 
             else 
             {
@@ -90,7 +94,7 @@ private:
         }
         return stat();
     }
-
+public:
     /**confused with this function**/
     Socket accept(Address& a) 
     {
@@ -108,9 +112,9 @@ private:
 
         return Socket(new_fd);
     }
-
+private:
     Status connect(const Address& a) 
-    {
+    {             
         if (::connect(get_fd(), a.data(), a.length()) != 0) 
         {
             if (errno != EINPROGRESS)
@@ -131,7 +135,7 @@ private:
     }
 
 public:
-    Address getpeername() 
+    NetAddress getpeername() 
     {
         char buf[sizeof(sockaddr_in) + 1];
         socklen_t len = sizeof(buf);
@@ -139,33 +143,32 @@ public:
         int ret = ::getpeername(get_fd(), (sockaddr*)&buf, &len);
 
         if (ret < 0) 
-            return Address();
+            return NetAddress();
         else if (len == sizeof(buf)) // possible overflow
-            return Address();
+            return NetAddress();
 
-        return Address(buf, len);
+        return NetAddress(buf, len);
     }
 
-    Address getsockname() 
+    NetAddress getsockname() 
     {
 
         char buf[sizeof(sockaddr_in) + 1];
         socklen_t len = sizeof(buf);
-
         int ret = ::getsockname(get_fd(), (sockaddr*)&buf, &len);
 
         if (ret < 0)
-            return Address();
+            return NetAddress();
         else if (len == sizeof(buf)) // possible overflow
-            return Address();
+            return NetAddress();
 
-        return Address(buf, len);
+        return NetAddress(buf, len);
     }
 
 public:
     int read(void *buf, uint32_t count) 
-    {
-		count = ::read(get_fd(), buf, count);
+    {            
+        count = ::read(get_fd(), buf, count);
 
         if(count < 0 && errno == EAGAIN)
         { //log warn 
@@ -263,13 +266,14 @@ public:
     {
         return m_fd >= 0 ? true : false;
     }
+
 };
 
 class TCPSocket : public Socket 
 {
   public:
     TCPSocket() : Socket() {}
-    TCPSocket(Address addr, Flags f = none) : Socket(AF_INET, SOCK_STREAM, addr, f) {}
+    TCPSocket(Address addr, Flags f = none) : Socket(AF_INET, SOCK_STREAM, addr, f) { }
     TCPSocket(const Socket& sock) : Socket(sock) {}
 };
 

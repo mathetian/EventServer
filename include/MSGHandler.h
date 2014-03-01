@@ -15,55 +15,61 @@ protected:
 
     virtual ~MSGHandler() {}
 
-private:
-    bool write(const Slice& buf) 
+protected:
+    /**Don't support write less than requirement**/
+    int write(const Slice& buf) 
     {
         const void *data = buf;
         uint32_t length  = buf.length();
 
-        if (length > 0 && wbuf.empty()) 
-        {
-            Socket sock = getSock();
-            int written = sock.write(data, length);
-
-            if (written > 0) 
-            {
-                data = static_cast<const char *>(data) + written;
-                length -= written;
-            }
-            //zero ?
-
-            if (written < 0 && errno != EAGAIN)
-                return false;
-        }
-
-        if (length > 0) 
-        {
-            wbuf.append(static_cast<const char *>(data), length);
-            waitWrite(true);
-        }
-
-        return true;
+        if(length > 0)
+            return getSocket().write(data, length);
+        else
+            return 0;
     }
 
-    bool write(string s) 
+    int write(string s) 
     {
     	return write(s.c_str());
     }
 
-    //Todo List
+    int read(Slice& buf)
+    {   
+        void *data = buf;
+        uint32_t length = buf.length();
+        if(length > 0)
+            return getSocket().read(data, length);
+        else
+            return 0;
+    }
+
+    int read(void *data, uint32_t length)
+    {
+        if(length > 0)
+            return getSocket().read(data, length);
+        else
+            return 0;
+    }
+
+    void closeSocket()
+    {
+        //Todo List
+    }
+
+    void deleteMe()
+    {
+        closeSocket();
+        detach();
+        delete this;
+    }
 public:
     bool is_connected() 
     { 
-      return getSock().getpeername(); 
+      return getSocket().getpeername(); 
     }
-
-    virtual void OnReceiveMsg()  = 0;
-    virtual void onSendMsg()     = 0;
+    
     virtual void onCloseSocket() = 0;
 
-private:
-    string rbuf, wbuf;
 };
 
 #endif

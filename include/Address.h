@@ -10,6 +10,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <iostream>
+using namespace std;
+
 class Address {
 protected:
     string m_addr;
@@ -115,7 +118,7 @@ public:
     {
         string out = getIP();
         
-        out += ":" + toString(getPort());
+        out += ":" + to_string(getPort());
 
         return out;
     }

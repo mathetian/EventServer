@@ -61,11 +61,11 @@ public:
         {
             if (m_map.find(i) != m_map.end() && FD_ISSET(i, &rr)) 
             {
-                m_map[i]->readAvail();
+                m_map[i]->onReceiveMsg();
             }
             if (m_map.find(i) != m_map.end() && FD_ISSET(i, &ww)) 
             {
-                m_map[i]->writeAvail();
+                m_map[i]->onSendMsg();
             }
         }
     }
@@ -157,12 +157,14 @@ inline void SocketHandler::detach()
 inline void SocketHandler::waitRead(bool act)
 {
     assert(m_loop && m_sock.stat());
+    m_waitRead = act;   
     m_loop->waitRead(m_sock.get_fd(), act);
 }
 
 inline void SocketHandler::waitWrite(bool act)
 {
     assert(m_loop && m_sock.stat());
+    m_waitWrite = act;
     m_loop->waitWrite(m_sock.get_fd(), act);
 }
 
