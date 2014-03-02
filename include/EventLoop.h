@@ -6,6 +6,8 @@ using namespace std;
 
 #include "SocketHandler.h"
 
+#include "../utils/Log.h"
+
 class EventLoop 
 {
     /**Prevent copy-construct and equal construct**/
@@ -18,13 +20,15 @@ class EventLoop
     fd_set m_writefds;
     int    m_maxfd;
     bool   m_quitFlag;
+    int    m_totalSelect;
 
 public:
     EventLoop() : m_quitFlag(false)
     {
         FD_ZERO(&m_readfds);
         FD_ZERO(&m_writefds);
-        m_maxfd = -1;
+        m_maxfd       = -1;
+        m_totalSelect =  0;
     }
 
     ~EventLoop() 
@@ -54,17 +58,22 @@ public:
         rr = m_readfds;
         ww = m_writefds;  
 
-        //don't support OOB
-       ::select(m_maxfd+1, &rr, &ww, 0, 0);
+       DEBUG << "Begin Select, maxfd: " << m_maxfd << "(total: " << m_totalSelect << ")";
 
-        for (int i = 0; i <= m_maxfd; ++i) 
+       //don't support OOB
+       int num = ::select(m_maxfd+1, &rr, &ww, 0, 0);
+       INFO << "Need SELECTED: "<< num;
+       int curnum = 0;
+       for (int i = 0; i <= m_maxfd && curnum < num; ++i) 
         {
             if (m_map.find(i) != m_map.end() && FD_ISSET(i, &rr)) 
             {
+                curnum++;
                 m_map[i]->onReceiveMsg();
             }
             if (m_map.find(i) != m_map.end() && FD_ISSET(i, &ww)) 
             {
+                curnum++;
                 m_map[i]->onSendMsg();
             }
         }
@@ -74,7 +83,6 @@ public:
     {
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) == m_map.end());
-        assert(p);
 
         m_map[fd] = p;
 
@@ -88,14 +96,13 @@ public:
         
         if (w) FD_SET(fd, &m_writefds); 
         else   FD_CLR(fd, &m_writefds);
-
+        m_totalSelect++;
     }
 
     void detachHandler(int fd, SocketHandler *p)
     {
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
-        assert(p);
         assert(m_map[fd] == p);
 
         assert(m_map.erase(fd) == 1);
@@ -104,17 +111,19 @@ public:
 
         FD_CLR(fd, &m_readfds);
         FD_CLR(fd, &m_writefds);
+        m_totalSelect--;
     }
 
 private:
     void waitRead(int fd, bool act) 
     {
         assert(fd >= 0 && fd < FD_SETSIZE);
+        assert(m_map.find(fd) != m_map.end());
 
         if (act)
         {
-            m_maxfd = max(m_maxfd, fd);
             FD_SET(fd, &m_readfds);
+            m_maxfd = max(m_maxfd, fd);
         }
         else
         {
@@ -126,6 +135,7 @@ private:
     void waitWrite(int fd, bool act) 
     {
         assert(fd >= 0 && fd < FD_SETSIZE);
+        assert(m_map.find(fd) != m_map.end());
 
         if (act)
         {
@@ -145,18 +155,21 @@ private:
 inline void SocketHandler::attach()
 {
     assert(m_loop && m_sock.stat());
+    DEBUG << "Attach Handler for socket: " << m_sock;
     m_loop->attachHandler(m_sock.get_fd(), this);
 }
 
 inline void SocketHandler::detach()
 {
     assert(m_loop && m_sock.stat());
+    DEBUG << "Detach Handler for socket: " << m_sock;
     m_loop->detachHandler(m_sock.get_fd(), this);
 }
 
 inline void SocketHandler::waitRead(bool act)
 {
     assert(m_loop && m_sock.stat());
+    DEBUG << "Register Event " << "Read for: " << act;
     m_waitRead = act;   
     m_loop->waitRead(m_sock.get_fd(), act);
 }
@@ -164,6 +177,7 @@ inline void SocketHandler::waitRead(bool act)
 inline void SocketHandler::waitWrite(bool act)
 {
     assert(m_loop && m_sock.stat());
+    DEBUG << "Register Event " << "Write for: " << act;
     m_waitWrite = act;
     m_loop->waitWrite(m_sock.get_fd(), act);
 }

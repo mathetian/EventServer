@@ -16,11 +16,7 @@ class EchoServer : public MSGHandler
  public:
     EchoServer(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
-		  cout << "Accepted connected from " << getSocket().getpeername() <<
-	    	  " on " << getSocket().getsockname() << endl;
-        
-        /**Flags must be setted here, or add timer here**/
-        waitWrite(true);
+       waitWrite(true);
     }
 
     ~EchoServer()
@@ -34,13 +30,13 @@ class EchoServer : public MSGHandler
       int len = read(buf, MSGLEN);
   	  if(len == MSGLEN)
       {
-        cout<<"Exceed the buf length"<<endl;
+        WARN << "Exceed the buf length";
       }
       else if(len < 0)
       {
         if(getSocket().stat() == false)
         {
-          cout<<"Socket error"<<endl;
+          WARN << "Socket error";
           deleteMe();
         }
         else
@@ -50,8 +46,8 @@ class EchoServer : public MSGHandler
       }
       else
       {
-        cout<<"Received from:"<<getSocket().getsockname().as_string()<<endl;
-        cout<<buf<<endl;
+        INFO << "Received from :" << getSocket().getpeername();
+        INFO << buf;
       }
 
       deleteMe();

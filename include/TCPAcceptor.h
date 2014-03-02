@@ -8,22 +8,30 @@
 template<class T>
 class TCPAcceptor : public SocketHandler 
 {
-    TCPSocket m_sock;
-
 public:
-    TCPAcceptor(EventLoop& _loop, int localport) :
-        m_sock(NetAddress(localport), Socket::acceptor)
+    TCPAcceptor(EventLoop& _loop, int localport) : SocketHandler(_loop)
     {
-        SocketHandler::SocketHandler(_loop, m_sock, true);
-        DEBUG << "Socket status: ";
+        NetAddress addr = NetAddress(localport);
+        setSock(TCPSocket(&addr, Socket::acceptor));
+        DEBUG << "Acceptor Socket STATUS: " << m_sock.stat();
         assert(m_sock.stat());
         DEBUG << "TCPAcceptor Initialiaztion Successfully";
+        
+        INFO << "Server Information: " << m_sock.getsockname();
+        attach();
+        waitRead(true);
     }
 
-    TCPAcceptor(EventLoop& _loop, string ip, int localport) :
-        SocketHandler(_loop), m_sock(NetAddress(ip, localport), Socket::acceptor)
+    TCPAcceptor(EventLoop& _loop, string ip, int localport) : SocketHandler(_loop)
     {
+        NetAddress addr = NetAddress(ip,localport);
+        setSock(TCPSocket(&addr, Socket::acceptor));
+        DEBUG << "Acceptor Socket STATUS: " << m_sock.stat();
         assert(m_sock.stat());
+        DEBUG << "TCPAcceptor Initialiaztion Successfully";
+
+        INFO << "Server Information: " << m_sock.getsockname();
+        attach();
         waitRead(true);
     }
 
@@ -33,8 +41,7 @@ private:
     void onReceiveMsg() 
     {
         NetAddress a;
-        TCPSocket sock = m_sock.accept(a);
-        
+        TCPSocket sock = m_sock.accept(&a);
         if (sock) 
         {
            T* t = new T(*getLoop(), sock);

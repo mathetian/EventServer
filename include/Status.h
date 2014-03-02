@@ -10,6 +10,8 @@ using std::string;
 #include <iostream>
 using namespace std;
 
+#include "../utils/Utils.h"
+
 class Status 
 {
     bool ok;
@@ -25,6 +27,9 @@ class Status
     Status(const char *err) : ok(false), err(err)
     { }
 
+    Status(Status const& status) : ok(status.ok),
+        err(status.err) { }
+        
     operator bool() { return ok; }
 
     static Status good() { return true; }
@@ -44,18 +49,15 @@ class Status
         return syserr(errno, err);
     }
 
-    string to_string()
+    string as_string() const
     {
-        string rs;
         if(ok == true)
-            rs += "true";
+            return "True";
         else
-        {
-            rs += "false:";
-            rs += err;
-        }
-        return rs;
+            return "False";
     }
 };
+
+TO_STRING(Status);
 
 #endif

@@ -6,20 +6,56 @@
 using namespace std;
 
 #include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
-inline string to_string(uint32_t value)
-{
-	ostringstream o; o << value; 
-	return o.str();
+template<class T>
+inline string to_string(const T* t) {
+    char buf[64];
+    sprintf(buf, "&(%p)", t);
+    return buf;
 }
 
-// inline string to_string(bool flag)
-// {
-//     if(flag == true)
-//         return "True";
-//     else 
-//         return "False";
-// }
+inline string to_string(const char* ch) {
+    return string(ch);
+}
+
+inline string to_string(const string& s) {
+    return s;
+}
+
+inline string to_string(const void* t) {
+    char buf[64];
+    sprintf(buf, "&%p", t);
+    return buf;
+}
+
+inline string to_string(const bool& i) {
+    static string t = "true";
+    static string f = "false";
+    return i ? t : f;
+}
+
+#define SCALAR_STRING(T) \
+inline string to_string(const T& t) { ostringstream o; o << t; return o.str(); }
+
+SCALAR_STRING(char);
+SCALAR_STRING(int);
+SCALAR_STRING(uint32_t);
+SCALAR_STRING(uint64_t);
+
+#define TO_STRING(T) \
+    inline string to_string(const T& t) { return t.as_string(); }
+    
+inline string to_string(const float& t) 
+{ 
+    ostringstream o; o << t; return o.str(); 
+}
+
+inline string to_string(const double& t) 
+{ 
+    ostringstream o; o << t; return o.str(); 
+}
 
 inline string to_escaped_string(const void *data, int length) 
 {

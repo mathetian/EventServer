@@ -38,12 +38,11 @@ public:
 
     Socket(int family, int type) : m_fd(sys_socket(family, type, 0)), m_stat(true) {}
 
-    Socket(int family, int type, Address addr, Flags f = nonblocking) :
+    Socket(int family, int type, Address *paddr, Flags f = nonblocking) :
         m_fd(sys_socket(family, type, 0)), m_stat(true)
     {
-        // if (f & nonblocking)
-        //     set_blocking(false);
-        if (addr) 
+        DEBUG << "LISTEN or Accept in Socket FD: " << m_fd;
+        if (paddr) 
         {
             if (f & acceptor) 
             {
@@ -51,18 +50,23 @@ public:
                 setsockopt(get_fd(), SOL_SOCKET, SO_REUSEADDR,
                        &optval, sizeof(optval));
 
-                bind(addr);
+                bind(paddr);
                 listen();
                 if(stat() == false)
                     ERROR << "SOCKET LISTEN ERROR";
                 else
-                    DEBUG << "LISTEN SUCCESSFULLY";
+                    DEBUG << "LISTEN Successfully";
             } 
             else 
             {
-                connect(addr);
+                connect(paddr);
             }
         }
+    }
+
+    Socket(Socket const& sock) : m_fd(sock.m_fd), m_stat(sock.m_stat)
+    {
+
     }
 
     int get_fd() const 
@@ -77,9 +81,10 @@ private:
         m_stat = s;
     }
 
-    Status bind(const Address& a) 
+    Status bind(const Address *paddr) 
     {
-        if (::bind(get_fd(), a.data(), a.length()) != 0) 
+        DEBUG << "Bind Address: " << (*(NetAddress*)paddr);
+        if (::bind(get_fd(), paddr->data(), paddr->length()) != 0) 
         {
             set_status(Status::syserr("bind"));
         }
@@ -96,7 +101,7 @@ private:
     }
 public:
     /**confused with this function**/
-    Socket accept(Address& a) 
+    Socket accept(Address *pa) 
     {
         sockaddr addr;
         socklen_t addrlen = sizeof addr;
@@ -105,17 +110,16 @@ public:
         if (new_fd < 0) 
         {
             set_status(Status::syserr("accept"));
-            a = Address();
             return Socket();
         }
-        a = Address(&addr, addrlen);
+        pa->setAddr(&addr, addrlen);
 
         return Socket(new_fd);
     }
 private:
-    Status connect(const Address& a) 
+    Status connect(const Address *paddr) 
     {             
-        if (::connect(get_fd(), a.data(), a.length()) != 0) 
+        if (::connect(get_fd(), paddr->data(), paddr->length()) != 0) 
         {
             if (errno != EINPROGRESS)
                 set_status(Status::syserr("connect"));
@@ -138,30 +142,27 @@ public:
     NetAddress getpeername() 
     {
         char buf[sizeof(sockaddr_in) + 1];
+        memset(buf, 0, sizeof(buf));
+
         socklen_t len = sizeof(buf);
 
         int ret = ::getpeername(get_fd(), (sockaddr*)&buf, &len);
 
-        if (ret < 0) 
-            return NetAddress();
-        else if (len == sizeof(buf)) // possible overflow
-            return NetAddress();
+        assert(ret == 0 && len != sizeof(buf));
 
         return NetAddress(buf, len);
     }
 
     NetAddress getsockname() 
     {
-
         char buf[sizeof(sockaddr_in) + 1];
+        memset(buf, 0, sizeof(buf));
         socklen_t len = sizeof(buf);
-        int ret = ::getsockname(get_fd(), (sockaddr*)&buf, &len);
 
-        if (ret < 0)
-            return NetAddress();
-        else if (len == sizeof(buf)) // possible overflow
-            return NetAddress();
-
+        int ret = ::getsockname(get_fd(), (sockaddr*)buf, &len);
+        
+        assert(ret == 0 && len != sizeof(buf));
+        
         return NetAddress(buf, len);
     }
 
@@ -267,13 +268,19 @@ public:
         return m_fd >= 0 ? true : false;
     }
 
+    string as_string() const
+    {
+        return to_string(m_fd);
+    }
 };
+
+TO_STRING(Socket);
 
 class TCPSocket : public Socket 
 {
   public:
     TCPSocket() : Socket() {}
-    TCPSocket(Address addr, Flags f = none) : Socket(AF_INET, SOCK_STREAM, addr, f) { }
+    TCPSocket(Address *paddr, Flags f = none) : Socket(AF_INET, SOCK_STREAM, paddr, f) {  }
     TCPSocket(const Socket& sock) : Socket(sock) {}
 };
 

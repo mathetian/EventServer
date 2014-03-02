@@ -16,15 +16,9 @@ protected:
     bool        m_waitWrite;
 
 public:
-    SocketHandler(Socket sock = Socket()) : m_loop(0), m_sock(sock), m_waitRead(false), m_waitWrite(false) { }
-
-    SocketHandler(EventLoop& loop, Socket sock = Socket(), bool r=true, bool w=true) :
-    	 m_loop(&loop), m_sock(sock), m_waitRead(r), m_waitWrite(w)
+    SocketHandler(EventLoop& loop):
+    	 m_loop(&loop), m_waitRead(false), m_waitWrite(false)
     {
-        attach();
-        DEBUG << "ATTACH SUCCESSFULLY";
-        waitRead(m_waitRead);
-        waitWrite(m_waitWrite);
     }
 
     virtual ~SocketHandler() 
@@ -38,7 +32,6 @@ public:
     virtual void onSendMsg() = 0;
     virtual void onCloseSocket() = 0;
     void waitRead(bool);
-
     void waitWrite(bool);
 
     void   setSock(Socket sock)

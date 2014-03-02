@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PORT 10000
-#define CLIENT_NUM 100
+#define CLIENT_NUM 3
 #define MSGLEN 256
 
 EventLoop loop;
@@ -17,9 +17,7 @@ class EchoClient : public MSGHandler
  public:
     EchoClient(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
-		cout << "Accepted connected from " << getSocket().getpeername() <<
-	    	" on " << getSocket().getsockname() << endl;
-	    waitRead(true);
+      waitRead(true);
     }
 
     ~EchoClient()
@@ -39,7 +37,7 @@ class EchoClient : public MSGHandler
       {
         if(getSocket().stat() == false)
         {
-          cout<<"Socket error"<<endl;
+          ERROR << "Socket error";
           deleteMe();
         }
         else
@@ -49,8 +47,8 @@ class EchoClient : public MSGHandler
       }
       else
       {
-        cout<<"Received from:"<<getSocket().getsockname().as_string()<<endl;
-        cout<<buf<<endl;
+        INFO << "Received from: " << getSocket().getsockname();
+        INFO << buf;
       }
       waitRead(false);waitWrite(true);
   	}
@@ -84,22 +82,22 @@ public:
 	void Initialize(int port)
 	{			
 		NetAddress svrAddr(port);
-		createClients(svrAddr, CLIENT_NUM);
+		createClients(&svrAddr, CLIENT_NUM);
 	}
 
 	void Initialize(string ip, int port)
 	{
 		NetAddress svrAddr(ip, port);
-		createClients(svrAddr, CLIENT_NUM);
+		createClients(&svrAddr, CLIENT_NUM);
 	}
 
 private:
-	void createClients(Address &svrAddr, int size)
+	void createClients(Address *psvrAddr, int size)
 	{
 		for(int i = 0; i < size; i++)
 		{
-			Socket sock(AF_INET, SOCK_STREAM, svrAddr);
-      DEBUG << sock.stat().to_string();
+			Socket sock(AF_INET, SOCK_STREAM, psvrAddr);
+      DEBUG << sock.stat().as_string();
 			EchoClient *client = new EchoClient(loop, sock);
 		} 
 	}

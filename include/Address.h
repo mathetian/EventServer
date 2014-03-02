@@ -30,12 +30,16 @@ public:
 
     socklen_t length() const { return m_addr.length(); }
 
-    const string& data_as_string() const { return m_addr; }
 
     /**As can be expressed with operator bool**/
     operator const void *() const { return m_addr.length() ? this : 0; }
 
-    string as_string() const;
+    virtual string as_string() const = 0;
+    
+    void   setAddr(const void *addr, socklen_t len)
+    {
+        m_addr = string(static_cast<const char *>(addr), len);
+    }
 };
 
 class NetAddress : public Address 
@@ -54,7 +58,7 @@ private:
         hostent *ent;
 
         a.sin_family = AF_INET;
-        a.sin_port = htons(pt);
+        a.sin_port   = htons(pt);
 
         if ((ent = gethostbyname(ip.c_str())) != NULL) 
         {
@@ -86,10 +90,15 @@ public:
     {
         init(ip, pt);
     }
-
+    
     NetAddress(string ip, string pt) 
     {
         init(ip, atoi(pt.c_str()));
+    }
+
+    NetAddress(const void *addr, socklen_t len) : Address(addr, len)
+    { 
+
     }
 
     string getIP() const 
@@ -114,7 +123,7 @@ public:
         return ntohs(inetAddr()->sin_port);
     }
 
-    string as_string() const 
+    virtual string as_string() const 
     {
         string out = getIP();
         
@@ -132,6 +141,8 @@ public:
         
         return name;
     }
-    
 };
+
+TO_STRING(NetAddress);
+
 #endif

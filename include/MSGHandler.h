@@ -7,11 +7,15 @@
 class MSGHandler : public SocketHandler 
 {
 protected:
-    MSGHandler(EventLoop& loop, Socket sock) : SocketHandler(loop, sock)
-    { }
-
-    MSGHandler(EventLoop& loop) : SocketHandler(loop)
-    { }
+    MSGHandler(EventLoop& loop, Socket sock) : SocketHandler(loop)
+    { 
+        setSock(sock);
+        DEBUG << "MSGHandler Socket STATUS: " << m_sock.stat();
+        assert(m_sock.stat());
+        DEBUG << "MSGHandler Initialiaztion Successfully";    
+        DEBUG << "Peer Information: " << m_sock.getpeername();    
+        attach();
+    }
 
     virtual ~MSGHandler() {}
 
@@ -59,9 +63,9 @@ protected:
     void deleteMe()
     {
         closeSocket();
-        detach();
         delete this;
     }
+    
 public:
     bool is_connected() 
     { 
