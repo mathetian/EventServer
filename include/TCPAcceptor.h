@@ -49,7 +49,8 @@ private:
     }
     /**without any implementation**/
     void onSendMsg() { }
-    virtual void onCloseSocket() { }
+    void onCloseSocket() { }
+    void onTimer() { }
 };
 
 #endif

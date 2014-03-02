@@ -64,6 +64,11 @@ class EchoClient : public MSGHandler
   	{
   		//Todo List
   	}
+
+    void onTimer()
+    {
+      
+    }
 };
 
 class ClientSimulator

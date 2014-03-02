@@ -4,6 +4,7 @@
 #include "Socket.h"
 
 #include "../utils/Log.h"
+#include "../utils/TimeStamp.h"
 
 class EventLoop;
 
@@ -31,9 +32,12 @@ public:
     virtual void onReceiveMsg() = 0;
     virtual void onSendMsg() = 0;
     virtual void onCloseSocket() = 0;
+    virtual void onTimer() = 0;
+    
     void waitRead(bool);
     void waitWrite(bool);
-
+    void waitTimer(int);
+    void waitTimer(const TimeStamp &tms);
     void   setSock(Socket sock)
     {
         m_sock = sock;

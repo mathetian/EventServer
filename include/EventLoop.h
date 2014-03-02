@@ -5,6 +5,7 @@
 using namespace std;
 
 #include "SocketHandler.h"
+#include "TimeEventSet.h"
 
 #include "../utils/Log.h"
 
@@ -21,6 +22,8 @@ class EventLoop
     int    m_maxfd;
     bool   m_quitFlag;
     int    m_totalSelect;
+
+    TimeEventSet timeSets;
 
 public:
     EventLoop() : m_quitFlag(false)
@@ -58,10 +61,24 @@ public:
         rr = m_readfds;
         ww = m_writefds;  
 
-       DEBUG << "Begin Select, maxfd: " << m_maxfd << "(total: " << m_totalSelect << ")";
+        DEBUG << "Begin TimeStamp";
+        TimeStamp next = fireTimer();
 
-       //don't support OOB
-       int num = ::select(m_maxfd+1, &rr, &ww, 0, 0);
+        DEBUG << "Begin Select, maxfd: " << m_maxfd << "(total: " << m_totalSelect << ")";
+
+        int num;
+        if (next) 
+        {
+            struct timeval tv = next.to_timeval();
+            DEBUG << "Calling ::select(); waiting " << next.to_msecs() << "ms";
+            num = ::select(m_maxfd+1, &rr, &ww, 0, &tv);
+        } 
+        else 
+        {
+            DEBUG << "Calling ::select() (no timers)";
+            num = ::select(m_maxfd+1, &rr, &ww, 0, 0);
+        }  
+
        INFO << "Need SELECTED: "<< num;
        int curnum = 0;
        for (int i = 0; i <= m_maxfd && curnum < num; ++i) 
@@ -149,6 +166,57 @@ private:
         }
     }
 
+    void waitTimer(int fd, uint64_t second)
+    {
+        TimeStamp tms(second*1000000);
+        waitTimer(fd, tms);
+    }
+
+    void waitTimer(int fd, const TimeStamp &tms)
+    {
+        assert(fd >= 0 && fd < FD_SETSIZE);
+        assert(m_map.find(fd) != m_map.end());
+        SocketHandler *handler = m_map[fd];
+        timeSets.insert(TimeEventItem(handler, TimeStamp::now() + tms));
+    }
+
+    TimeStamp fireTimer() 
+    {
+        TimeStamp start = TimeStamp::now();
+        TimeEventSet::Iterator iter(&timeSets);
+
+        int count = 0;
+        vector<const TimeEventItem*> fires;
+        for(const TimeEventItem *node = iter.first();node != iter.end();node = iter.next())
+        {
+            if(node->timer <= start)
+             {
+                fires.push_back(node);
+                ++count;
+             }
+            else break;
+        }
+
+        if(count != 0) timeSets.removen(count);
+        for(int i=0;i<count;i++)
+            fires[i]->ptr->onTimer();
+
+        if (timeSets.empty()) 
+        {
+            return TimeStamp::none();
+        } 
+        else 
+        {
+            TimeStamp tms = iter.first()->timer;
+
+            TimeStamp tms2 = tms - TimeStamp::now();
+
+            if (tms2 > TimeStamp::usecs(0LL)) 
+                return tms2;
+            else
+                return TimeStamp::usecs(0LL);
+        }
+    }
     friend class SocketHandler;
 };
 
@@ -180,6 +248,20 @@ inline void SocketHandler::waitWrite(bool act)
     DEBUG << "Register Event " << "Write for: " << act;
     m_waitWrite = act;
     m_loop->waitWrite(m_sock.get_fd(), act);
+}
+
+inline void SocketHandler::waitTimer(int second)
+{
+    assert(m_loop && m_sock.stat());
+    DEBUG << "Register Event " << "Timer for: " << m_sock;
+    m_loop->waitTimer(m_sock.get_fd(), second);
+}
+
+inline void SocketHandler::waitTimer(const TimeStamp &tms)
+{
+    assert(m_loop && m_sock.stat());
+    DEBUG << "Register Event " << "Timer for: " << m_sock;
+    m_loop->waitTimer(m_sock.get_fd(), tms);
 }
 
 #endif

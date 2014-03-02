@@ -64,6 +64,11 @@ class EchoServer : public MSGHandler
   	{
       /**Todo List**/
   	}
+
+    void onTimer() 
+    {
+      
+    }
 };
 
 int main()
