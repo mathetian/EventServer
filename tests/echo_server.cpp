@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PORT 10000
-#define MSGLEN 256
+#define MSGLEN 512
 
 EventLoop loop;
 
