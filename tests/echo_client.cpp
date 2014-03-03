@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PORT 10000
-#define CLIENT_NUM 3
+#define CLIENT_NUM 5
 #define MSGLEN 256
 
 EventLoop loop;
@@ -18,6 +18,7 @@ class EchoClient : public MSGHandler
     EchoClient(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
       waitRead(true);
+      waitTimer(1);
     }
 
     ~EchoClient()
@@ -67,7 +68,7 @@ class EchoClient : public MSGHandler
 
     void onTimer()
     {
-      
+      INFO << "Timer Event";
     }
 };
 

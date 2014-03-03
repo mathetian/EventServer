@@ -42,15 +42,19 @@ class EchoServer : public MSGHandler
         else
         {
           //Errno, Need again. No further process
+          WARN << "Need Receive Again";
         }
+      }
+      else if(len == 0)
+      {
+        WARN << "Socket has been closed";
+        deleteMe();
       }
       else
       {
         INFO << "Received from :" << getSocket().getpeername();
         INFO << buf;
       }
-
-      deleteMe();
     }
 
   	void onSendMsg()

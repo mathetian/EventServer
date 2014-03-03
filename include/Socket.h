@@ -116,6 +116,13 @@ public:
 
         return Socket(new_fd);
     }
+
+    void close()
+    {
+        assert(get_fd() >= 0);
+        ::close(get_fd());
+    }
+
 private:
     Status connect(const Address *paddr) 
     {             

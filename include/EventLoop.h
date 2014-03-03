@@ -63,7 +63,7 @@ public:
 
         DEBUG << "Begin TimeStamp";
         TimeStamp next = fireTimer();
-
+        
         DEBUG << "Begin Select, maxfd: " << m_maxfd << "(total: " << m_totalSelect << ")";
 
         int num;
@@ -189,7 +189,7 @@ private:
         vector<const TimeEventItem*> fires;
         for(const TimeEventItem *node = iter.first();node != iter.end();node = iter.next())
         {
-            if(node->timer <= start)
+            if((node->timer).returnv() <= start.returnv())
              {
                 fires.push_back(node);
                 ++count;
@@ -197,7 +197,9 @@ private:
             else break;
         }
 
-        if(count != 0) timeSets.removen(count);
+        DEBUG << count << " Timer Event would be fired";
+        if(count != 0) 
+            timeSets.removen(count);
         for(int i=0;i<count;i++)
             fires[i]->ptr->onTimer();
 
@@ -217,6 +219,21 @@ private:
                 return TimeStamp::usecs(0LL);
         }
     }
+
+    bool existTimer(int fd)
+    {
+        assert(fd >= 0 && fd < FD_SETSIZE);
+        assert(m_map.find(fd) != m_map.end());
+        return timeSets.exist(m_map[fd]);
+    }
+
+    void deleteTimer(int fd)
+    {
+        assert(fd >= 0 && fd < FD_SETSIZE);
+        assert(m_map.find(fd) != m_map.end());
+        timeSets.remove(m_map[fd]);
+    }
+
     friend class SocketHandler;
 };
 
@@ -230,6 +247,11 @@ inline void SocketHandler::attach()
 inline void SocketHandler::detach()
 {
     assert(m_loop && m_sock.stat());
+    if(m_loop->existTimer(m_sock.get_fd()))
+    {
+        DEBUG << "Exist Timer for socket: " << m_sock;
+        m_loop->deleteTimer(m_sock.get_fd());
+    }
     DEBUG << "Detach Handler for socket: " << m_sock;
     m_loop->detachHandler(m_sock.get_fd(), this);
 }

@@ -25,6 +25,7 @@ public:
     virtual ~SocketHandler() 
     {
         detach();
+        m_sock.close();
     }
 
 public:

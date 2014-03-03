@@ -62,6 +62,31 @@ public:
         return true;
     }
 
+    bool exist(SocketHandler *phandler)
+    {
+        list<TimeEventItem>::iterator iter = lists.begin();
+        for(;iter != lists.end();iter++)
+        {
+            if(phandler == (*iter).ptr)
+                return true;
+        }
+        return false;
+    }
+
+    bool remove(SocketHandler *phandler)
+    {
+        list<TimeEventItem>::iterator iter = lists.begin();
+        for(;iter != lists.end();iter++)
+        {
+            if(phandler == (*iter).ptr)
+            {
+                lists.erase(iter);
+                return true;                
+            }
+        }
+        return false;
+    }
+
     bool empty()
     {
         return lists.begin() == lists.end();

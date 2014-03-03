@@ -2,6 +2,7 @@
 #define _TIME_STAMP_H
 
 #include "Utils.h"
+#include "Log.h"
 
 #include <sys/time.h>
 
@@ -21,7 +22,6 @@ class TimeStamp {
     	gettimeofday(&tv, 0);
     	return TimeStamp(tv.tv_sec * 1000000LL + tv.tv_usec);
     }
-
 
     uint64_t to_secs() const 
     { 
@@ -54,9 +54,10 @@ class TimeStamp {
     	return ret;
     }
 
-    operator const void *() const 
+    operator bool() const 
     {
-	   return *this != none() ? this : 0;
+        if(m_val == 0) return false;
+        return true;
     }
 
     TimeStamp operator + (TimeStamp other) const 
@@ -88,10 +89,10 @@ class TimeStamp {
 
     string as_string() const 
     { 
-        return to_string(to_usecs() / 1000000.0); 
+        return to_string(to_usecs()); 
     }
 
-    bool operator()(const TimeStamp &tmp)
+    bool operator()(const TimeStamp &tmp) const
     {
         return m_val > tmp.m_val ? false : true;
     }
@@ -99,6 +100,11 @@ class TimeStamp {
     static TimeStamp usecs(int val)
     {
         return TimeStamp(val);
+    }
+
+    uint64_t returnv() const
+    {
+        return m_val;
     }
 };
 
