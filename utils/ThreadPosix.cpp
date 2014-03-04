@@ -58,7 +58,12 @@ int Mutex::trylock()
     return pthread_mutex_trylock(&m_mutex);
 }
 
-CondVar::CondVar(Mutex* mutex) : m_mutex(mutex)
+CondVar::CondVar(Mutex* mutex) : m_mutex(mutex), m_lock(NULL)
+{
+    pthread_cond_init(&m_cond, NULL);
+}
+
+CondVar::CondVar(ReentrantLock * lock) : m_mutex(NULL), m_lock(lock)
 {
     pthread_cond_init(&m_cond, NULL);
 }
@@ -70,7 +75,10 @@ CondVar::~CondVar()
 
 void CondVar::wait()
 {
-    pthread_cond_wait(&m_cond, &m_mutex->m_mutex);
+    if(m_mutex)
+        pthread_cond_wait(&m_cond, &m_mutex->m_mutex);
+    else
+        pthread_cond_wait(&m_cond, &m_lock->m_lock.m_mutex);
 }
 
 void CondVar::signal()

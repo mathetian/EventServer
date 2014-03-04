@@ -16,6 +16,9 @@ server: tests/echo_server.cpp
 
 client: tests/echo_client.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} $^ -o $@ 
-	
+
+test_squeue: tests/test_squeue.cpp utils/Thread.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} -lpthread -pthread $^ -o $@ 
+
 clean: 
 	rm ${PROGS}

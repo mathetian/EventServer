@@ -14,9 +14,15 @@ SingletonMutex& SingletonMutex::getInstance()
 }
 
 ScopeMutex::ScopeMutex(Mutex * pmutex) :\
-    m_pmutex(pmutex)
+    m_pmutex(pmutex), m_lock(NULL)
 {
     m_pmutex -> lock();
+}
+
+ScopeMutex::ScopeMutex(ReentrantLock *lock):\
+    m_pmutex(NULL), m_lock(lock)
+{
+    m_lock -> lock();
 }
 
 ScopeMutex::~ScopeMutex()

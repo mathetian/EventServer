@@ -58,10 +58,13 @@ private:
     friend class CondVar;
 };
 
+class ReentrantLock;
+
 class CondVar
 {
 public:
     CondVar(Mutex* mutex = NULL);
+    CondVar(ReentrantLock * lock);
     ~CondVar();
 
 public:
@@ -76,6 +79,7 @@ private:
     pthread_cond_t m_cond;
 #endif
     Mutex * m_mutex;
+    ReentrantLock * m_lock;
 };
 
 class Noncopyable
@@ -105,10 +109,12 @@ class ScopeMutex : Noncopyable
 {
 public:
     ScopeMutex(Mutex * pmutex);
+    ScopeMutex(ReentrantLock * lock);
     ~ScopeMutex();
 
 private:
     Mutex * m_pmutex;
+    ReentrantLock * m_lock;
 };
 
 /**constructor can't be empty parameter.**/
@@ -149,6 +155,9 @@ private:
     Mutex m_tmplock;
     CondVar m_cond;
     int   m_time;
+
+    friend class CondVar;
+    friend class ScopeMutex;
 };
 
 class Atomic

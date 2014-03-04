@@ -7,81 +7,79 @@ using namespace std;
 #include "Thread.h"
 using namespace utils;
 
-#include "stdint.h"
-
+#include <stdint.h>
+#include <stdio.h>
 template<class T>
 class SafeQueue 
 {
-  private:
+private:
     queue<T> m_queue;
-    Mutex    m_mutex;
-    CondVar  m_cond;
+    mutable Mutex m_mutex;
+    mutable CondVar       m_cond;
 
-  public:
     typedef typename queue<T>::value_type value_type;
 
     typedef typename queue<T>::size_type size_type;
 
+public:
     SafeQueue() : m_cond(&m_mutex) { }
 
+private:
     bool empty() const 
     { 
-        ScopeMutex scope(&m_mutex);
         return m_queue.empty();
     }
 
     size_type size() const 
     { 
-        ScopeMutex scope(&m_mutex);
         return m_queue.size(); 
     }
 
     value_type& front() 
     { 
-        ScopeMutex scope(&m_mutex); 
         return m_queue.front(); 
     }
 
     const value_type& front() const 
     { 
-        ScopeMutex scope(&m_mutex); 
         return m_queue.front(); 
     }
 
     value_type& back() 
     { 
-        ScopeMutex scope(&m_mutex); 
         return m_queue.back(); 
     }
 
     const value_type& back() const 
     { 
-        ScopeMutex scope(&m_mutex); 
         return m_queue.back(); 
-    }
-
-    bool push(const value_type& v) 
-    {
-        ScopeMutex scope(&m_mutex);
-	    m_queue.push(v);
-        m_cond.signal();
-        return true;
     }
 
     void pop() 
     { 
-        ScopeMutex scope(&m_mutex);
         m_queue.pop(); 
+    }
+
+public:
+    bool push(const value_type& v) 
+    {
+        ScopeMutex scope(&m_mutex);
+	    m_queue.push(v);
+        printf("put a\n");
+        m_cond.signal();
+        return true;
     }
 
     T get() 
     {
         ScopeMutex scope(&m_mutex);
+
         if (empty()) 
             return T();
-
+        
         T ret = front();
         pop();
+        printf("get a\n");
         return ret;
     }
 
