@@ -5,6 +5,7 @@
 using namespace std;
 
 #include <assert.h>
+#include <stdio.h>
 
 template<typename R>
 class Callback{
@@ -41,6 +42,8 @@ class Callback{
     template<typename O>
     Callback( O& o, R(O::*fp)() ) : m_fn( init(o, fp) ) {}
 
+    Callback() : m_fn(NULL) { }
+    
     ~Callback()
     {
         if(m_fn) delete m_fn;
