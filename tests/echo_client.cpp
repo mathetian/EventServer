@@ -51,14 +51,15 @@ class EchoClient : public MSGHandler
         INFO << "Received from: " << getSocket().getsockname();
         INFO << buf;
       }
-      waitRead(false);waitWrite(true);
+      waitWrite(true);
   	}
 
   	void onSendMsg()
   	{
   	  Slice slice("hello, server");
       write(slice);
-      deleteMe();
+      DEBUG << "onSendMsg: " << getSocket();
+      //waitRead(true);
   	}
 
   	void onCloseSocket()
@@ -68,7 +69,9 @@ class EchoClient : public MSGHandler
 
     void onTimer()
     {
-      INFO << "Timer Event";
+      INFO << "Timer Event Start: " << getSocket();
+      sleep(2);
+      INFO << "Timer Event End: " << getSocket();
     }
 };
 

@@ -16,9 +16,6 @@ struct TimeEventItem
         ptr(ptr), timer(timer) { }
 };
 
-// typedef struct TimeEventItem_t TimeEventItem;
-
-
 class TimeEventSet
 {
 list<TimeEventItem> lists;

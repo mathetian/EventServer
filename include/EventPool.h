@@ -22,18 +22,14 @@ class EventPool
 
 	int m_thrnum;
 	vector<Thread*> threads;
-	int m_curid;
 	typedef struct ThreadArg_t ThreadArg;
 	vector<ThreadArg> thrargs;
 
-	vector<SafeQueue<Callback<void> > > m_scv;
-
+	SafeQueue<Callback<void> > m_squeue;
 	Mutex m_mutex;
 public:
-	EventPool(int thrnum = 2) : m_thrnum(thrnum) , m_curid(0)
+	EventPool(int thrnum = 2) : m_thrnum(thrnum)
 	{
-		m_scv = vector<SafeQueue<Callback<void> > >(thrnum);
-
 		threads = vector<Thread*>(thrnum);
 		thrargs   = vector<ThreadArg>(thrnum);
 
@@ -50,7 +46,7 @@ public:
 	
 	~EventPool()
 	{
-		/** Todo list, remove all queue, thread join**/
+		/** Todo list, remove queue, thread join**/
 
 		for(int i=0;i<m_thrnum;i++)
 		{
@@ -65,7 +61,7 @@ public:
 		Callback<void> call;
 		while(true)
 		{
-			m_scv[thrid].wait(call);
+			m_squeue.wait(call);
 			call();
 		}
 	}
@@ -79,9 +75,7 @@ public:
 	void insert(Callback<void> call)
 	{
 		ScopeMutex scope(&m_mutex);
-		
-		m_curid = (m_curid + 1)%m_thrnum;
-		m_scv[m_curid].push(call);
+		m_squeue.push(call);
 	}
 };
 #endif

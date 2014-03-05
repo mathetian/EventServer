@@ -42,12 +42,15 @@ class Callback{
     template<typename O>
     Callback( O& o, R(O::*fp)() ) : m_fn( init(o, fp) ) {}
 
+    template<typename O>
+    Callback( O* o, R(O::*fp)() ) : m_fn( init(*o, fp) ) {}
+
     Callback() : m_fn(NULL) { }
     
-    ~Callback()
-    {
-        if(m_fn) delete m_fn;
-    }
+    // ~Callback()
+    // {
+    //     if(m_fn) delete m_fn;
+    // }
 };
 
 #endif 

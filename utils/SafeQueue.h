@@ -7,6 +7,8 @@ using namespace std;
 #include "Thread.h"
 using namespace utils;
 
+#include "Log.h"
+
 #include <stdint.h>
 #include <stdio.h>
 template<class T>
@@ -65,7 +67,6 @@ public:
     {
         ScopeMutex scope(&m_mutex);
 	    m_queue.push(v);
-        printf("put a\n");
         m_cond.signal();
         return true;
     }

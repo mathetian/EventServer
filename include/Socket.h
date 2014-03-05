@@ -131,7 +131,7 @@ private:
             if (errno != EINPROGRESS)
                 set_status(Status::syserr("connect"));
         }
-
+        DEBUG << "connect: " << get_fd() << " " << stat();
         return stat();
     }
 

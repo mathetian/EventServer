@@ -61,7 +61,8 @@ class EchoServer : public MSGHandler
   	{
       Slice slice("hello, body");
       write(slice);
-      waitWrite(false);waitRead(true);
+      DEBUG << "Client onSendMsg:" << getSocket();
+      waitRead(true);
   	}
 
   	void onCloseSocket()

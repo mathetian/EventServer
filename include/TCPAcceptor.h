@@ -20,6 +20,7 @@ public:
         INFO << "Server Information: " << m_sock.getsockname();
         attach();
         waitRead(true);
+        setListenSocket();
     }
 
     TCPAcceptor(EventLoop& _loop, string ip, int localport) : SocketHandler(_loop)
@@ -51,6 +52,8 @@ private:
     void onSendMsg() { }
     void onCloseSocket() { }
     void onTimer() { }
+
+    void setListenSocket();
 };
 
 #endif
