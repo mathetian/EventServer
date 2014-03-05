@@ -78,14 +78,12 @@ public:
             ww = m_writefds;  
 
             m_mfd  = m_maxfd;
-            m_tsel = m_totalSelect;
-            
-           // FD_ZERO(&m_readfds);
-           // FD_ZERO(&m_writefds);
+            m_tsel = m_totalSelect;            
         }
         
         DEBUG << "Begin Select, maxfd: " << m_mfd << "(total: " << m_tsel << ")";
         int num;
+
         if (next) 
         {
             struct timeval tv = next.to_timeval();
@@ -109,18 +107,27 @@ public:
                 curnum++;
                 Callback<void> call(*m_map[i], &SocketHandler::onReceiveMsg);
                 m_pool.insert(call);
-                //FD_CLR(i, &rr);
+
                 if(i == m_listenSocket) { }
-                else { FD_CLR(i, &m_readfds); m_totalSelect--; }
+                else { FD_CLR(i, &m_readfds); m_totalSelect--;}
             }
             if (m_map.find(i) != m_map.end() && FD_ISSET(i, &ww)) 
             {
                 curnum++;
                 Callback<void> call(*m_map[i], &SocketHandler::onSendMsg);
                 m_pool.insert(call);
-                FD_CLR(i, &m_writefds); m_totalSelect--;
+                FD_CLR(i, &m_writefds); m_totalSelect--; 
             }
         }
+
+        for(int i = m_maxfd;i >= 0;i--)
+        {
+            if(FD_ISSET(i, &m_readfds) || FD_ISSET(i, &m_writefds))
+            {
+                m_maxfd = i; break;
+            }
+        }
+
     }
 
     void attachHandler(int fd, SocketHandler *p) 
@@ -131,24 +138,13 @@ public:
         assert(m_map.find(fd) == m_map.end());
 
         m_map[fd] = p;
-
-        m_maxfd = max(m_maxfd, fd);
-
-        bool r = p->m_waitRead;
-        bool w = p->m_waitWrite;
-
-        if (r) FD_SET(fd, &m_readfds); 
-        else   FD_CLR(fd, &m_readfds);
-        
-        if (w) FD_SET(fd, &m_writefds); 
-        else   FD_CLR(fd, &m_writefds);
-        m_totalSelect++;
+        m_maxfd   = max(m_maxfd, fd);
     }
 
     void detachHandler(int fd, SocketHandler *p)
     {
         ScopeMutex scope(&m_lock);
-        /**Need further process**/
+
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
@@ -157,28 +153,44 @@ public:
 
         if(m_maxfd == fd) m_maxfd--;
 
+        if(FD_ISSET(fd, &m_readfds)) m_totalSelect--;
+        if(FD_ISSET(fd, &m_writefds)) m_totalSelect--;
+        
         FD_CLR(fd, &m_readfds);
         FD_CLR(fd, &m_writefds);
-        m_totalSelect--;
     }
 
 private:
     void waitRead(int fd, bool act) 
     {
         ScopeMutex scope(&m_lock);
-        
+
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
-        DEBUG << "waitRead: " << m_map[fd]->getSocket(); 
+
         if (act)
         {
+            assert(FD_ISSET(fd, &m_readfds) == false);
             FD_SET(fd, &m_readfds);
             m_maxfd = max(m_maxfd, fd);
+            m_totalSelect++;
         }
         else
         {
-            assert(fd <= m_maxfd);
+            assert(FD_ISSET(fd, &m_readfds) == true);
             FD_CLR(fd, &m_readfds);
+            m_totalSelect--;
+            if(FD_ISSET(fd, &m_writefds) == false && m_maxfd == fd)
+            {
+                int j;
+                for(j=fd-1;j>=0;j--)
+                {
+                    if(FD_ISSET(fd, &m_readfds) || FD_ISSET(fd, &m_writefds))
+                        break;
+                }
+
+                m_maxfd = j;
+            }
         }
     }
 
@@ -188,22 +200,39 @@ private:
 
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
-        DEBUG << "waitWrite: " << m_map[fd]->getSocket(); 
+        
         if (act)
         {
+            assert(FD_ISSET(fd, &m_writefds) == false);
             FD_SET(fd, &m_writefds);
             m_maxfd = max(m_maxfd, fd);
+            m_totalSelect++;
         }
         else
         {
-            assert(fd <= m_maxfd);
+            assert(FD_ISSET(fd, &m_writefds) == true);
             FD_CLR(fd, &m_writefds);
+            m_totalSelect--;
+            if(FD_ISSET(fd, &m_readfds) == false && m_maxfd == fd)
+            {
+                int j;
+                for(j=fd-1;j>=0;j--)
+                {
+                    if(FD_ISSET(fd, &m_readfds) || FD_ISSET(fd, &m_writefds))
+                        break;
+                }
+
+                m_maxfd = j;
+            }
         }
     }
 
     void waitTimer(int fd, uint64_t second)
     {
         ScopeMutex scope(&m_lock);
+
+        assert(fd >= 0 && fd < FD_SETSIZE);
+        assert(m_map.find(fd) != m_map.end());
 
         TimeStamp tms(second*1000000);
         SocketHandler *handler = m_map[fd];
@@ -216,6 +245,7 @@ private:
 
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
+        
         SocketHandler *handler = m_map[fd];
         timeSets.insert(TimeEventItem(handler, TimeStamp::now() + tms));
     }
@@ -274,6 +304,7 @@ private:
     {
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
+
         return timeSets.exist(m_map[fd]);
     }
 
@@ -281,6 +312,7 @@ private:
     {
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
+
         timeSets.remove(m_map[fd]);
     }
 

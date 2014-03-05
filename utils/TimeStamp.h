@@ -8,7 +8,7 @@
 
 class TimeStamp {
   private:
-    uint64_t m_val;
+    int64_t m_val;
 
   public:
     TimeStamp() : m_val(0) {}

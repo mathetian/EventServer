@@ -54,7 +54,9 @@ class EchoServer : public MSGHandler
       {
         INFO << "Received from :" << getSocket().getpeername();
         INFO << buf;
+        waitRead(true);
       }
+      
     }
 
   	void onSendMsg()

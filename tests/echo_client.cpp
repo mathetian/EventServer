@@ -46,12 +46,18 @@ class EchoClient : public MSGHandler
           //Errno, Need again. No further process
         }
       }
+      else if(len == 0)
+      {
+        WARN << "Socket has been closed";
+        deleteMe();
+      }
       else
       {
         INFO << "Received from: " << getSocket().getsockname();
         INFO << buf;
+        waitWrite(true);
+        waitRead(true);
       }
-      waitWrite(true);
   	}
 
   	void onSendMsg()
