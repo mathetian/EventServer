@@ -6,7 +6,7 @@
 #include "../utils/Log.h"
 
 template<class T>
-class TCPAcceptor : public SocketHandler 
+class TCPAcceptor : public SocketHandler
 {
 public:
     TCPAcceptor(EventLoop& _loop, int localport) : SocketHandler(_loop)
@@ -16,10 +16,9 @@ public:
         DEBUG << "Acceptor Socket STATUS: " << m_sock.stat();
         assert(m_sock.stat());
         DEBUG << "TCPAcceptor Initialiaztion Successfully";
-        
+
         INFO << "Server Information: " << m_sock.getsockname();
         attach();
-        waitRead(true);
         setListenSocket();
     }
 
@@ -33,26 +32,34 @@ public:
 
         INFO << "Server Information: " << m_sock.getsockname();
         attach();
-        waitRead(true);
     }
 
     virtual ~TCPAcceptor() {}
- 
+
 private:
-    void onReceiveMsg() 
+    void onReceiveMsg()
     {
         NetAddress a;
         TCPSocket sock = m_sock.accept(&a);
-        if (sock) 
+        if (sock)
         {
-           T* t = new T(*getLoop(), sock);
+            T* t = new T(*getLoop(), sock);
         }
     }
-    /**without any implementation**/
-    void onSendMsg() { }
-    void onCloseSocket() { }
-    void onTimer() { }
+    void onSendMsg()
+    {
+        DEBUG << "NO NEED";
+    }
+    void onCloseSocket()
+    {
+        DEBUG << "NO NEED";
+    }
+    void TimerEvent()
+    {
+        DEBUG << "NO NEED";
+    }
 
+private:
     void setListenSocket();
 };
 

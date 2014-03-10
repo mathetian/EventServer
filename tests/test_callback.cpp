@@ -5,16 +5,16 @@
 class A
 {
 public:
-	void a()
-	{
-		printf("hello, enter function a\n");
-	}
+    void a()
+    {
+        printf("hello, enter function a\n");
+    }
 };
 
 int main()
 {
-	A a1;
-	Callback<void> call(a1, &A::a);
-	call();
-	return 0;
+    A a1;
+    Callback<void> call(a1, &A::a);
+    call();
+    return 0;
 }

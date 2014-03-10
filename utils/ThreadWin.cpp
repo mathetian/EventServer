@@ -48,7 +48,7 @@ int Mutex::trylock()
     //Todo list
 }
 
-CondVar::CondVar(Mutex* mutex) 
+CondVar::CondVar(Mutex* mutex)
 {
     m_cond = CreateEvent(NULL, TRUE, FALSE, TEXT("m_cond"));
 }

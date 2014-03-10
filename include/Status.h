@@ -12,12 +12,12 @@ using namespace std;
 
 #include "../utils/Utils.h"
 
-class Status 
+class Status
 {
     bool ok;
     string err;
-  
-  public:
+
+public:
     Status(bool ok, string err = string()) : ok(ok), err(err)
     { }
 
@@ -29,14 +29,23 @@ class Status
 
     Status(Status const& status) : ok(status.ok),
         err(status.err) { }
-        
-    operator bool() { return ok; }
 
-    static Status good() { return true; }
+    operator bool()
+    {
+        return ok;
+    }
 
-    static Status bad(string err = string()) { return Status(false, err); }
+    static Status good()
+    {
+        return true;
+    }
 
-    static Status syserr(int errcode, string err = string()) 
+    static Status bad(string err = string())
+    {
+        return Status(false, err);
+    }
+
+    static Status syserr(int errcode, string err = string())
     {
         if (err.empty())
             return Status(false, strerror(errcode));
@@ -44,7 +53,7 @@ class Status
             return Status(false, err + ": " + strerror(errcode));
     }
 
-    static Status syserr(string err = string()) 
+    static Status syserr(string err = string())
     {
         return syserr(errno, err);
     }

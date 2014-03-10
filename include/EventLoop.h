@@ -15,7 +15,7 @@ using namespace std;
 #include "../utils/Thread.h"
 using namespace::utils;
 
-class EventLoop 
+class EventLoop
 {
     EventLoop(const EventLoop &);
     EventLoop& operator = (const EventLoop &);
@@ -23,13 +23,14 @@ class EventLoop
     map<int, SocketHandler*> m_map;
 
     fd_set m_readfds;
-    fd_set m_writefds;
     int    m_maxfd;
     bool   m_quitFlag;
     int    m_totalSelect;
 
     TimeEventSet timeSets;
     Mutex  m_lock;
+
+public:
     EventPool m_pool;
 
     int    m_listenSocket;
@@ -37,15 +38,14 @@ public:
     EventLoop(int thrnum = 2) : m_quitFlag(false), m_pool(thrnum), m_listenSocket(-1)
     {
         FD_ZERO(&m_readfds);
-        FD_ZERO(&m_writefds);
         m_maxfd       = -1;
         m_totalSelect =  0;
     }
 
-    ~EventLoop() 
+    ~EventLoop()
     {
         map<int, SocketHandler*>::iterator iter = m_map.begin();
-        for(;iter != m_map.end();iter++)
+        for(; iter != m_map.end(); iter++)
         {
             SocketHandler *tmpHandler = iter->second;
             delete tmpHandler;
@@ -53,84 +53,75 @@ public:
         }
         m_map.clear();
     }
-    
-    void runforever() 
+
+    void runforever()
     {
-        while (!m_quitFlag) 
-        	run_once();
+        while (!m_quitFlag)
+            run_once();
     }
 
     void run_once()
     {
-        if (m_quitFlag) 
+        if (m_quitFlag)
             return;
 
-        fd_set rr, ww;
+        fd_set rr;
         int m_mfd, m_tsel;
-        
+
         DEBUG << "Begin TimeStamp";
         TimeStamp next = fireTimer();
 
         {
             ScopeMutex scope(&m_lock);
 
-            rr = m_readfds;
-            ww = m_writefds;  
+            rr     = m_readfds;
 
             m_mfd  = m_maxfd;
-            m_tsel = m_totalSelect;            
+            m_tsel = m_totalSelect;
         }
-        
+
         DEBUG << "Begin Select, maxfd: " << m_mfd << "(total: " << m_tsel << ")";
         int num;
 
-        if (next) 
+        if (next)
         {
             struct timeval tv = next.to_timeval();
             DEBUG << "Calling ::select(); waiting " << next.to_msecs() << "ms";
-            num = ::select(m_mfd+1, &rr, &ww, 0, &tv);
-        } 
-        else 
+            num = ::select(m_mfd+1, &rr, 0, 0, &tv);
+        }
+        else
         {
             DEBUG << "Calling ::select() (no timers)";
-            num = ::select(m_mfd+1, &rr, &ww, 0, 0);
-        }  
+            num = ::select(m_mfd+1, &rr, 0, 0, 0);
+        }
 
-       INFO << "Need SELECTED: "<< num;
-       ScopeMutex scope(&m_lock);
+        INFO << "Need SELECTED: "<< num;
+        ScopeMutex scope(&m_lock);
 
-       int curnum = 0;
-       for (int i = 0; i <= m_mfd && curnum < num; ++i) 
-       {
-            if (m_map.find(i) != m_map.end() && FD_ISSET(i, &rr)) 
+        int curnum = 0;
+        for (int i = 0; i <= m_mfd && curnum < num; ++i)
+        {
+            if (m_map.find(i) != m_map.end() && FD_ISSET(i, &rr))
             {
                 curnum++;
                 Callback<void> call(*m_map[i], &SocketHandler::onReceiveMsg);
+                DEBUG << "INSERT: " << i ;
                 m_pool.insert(call);
-
-                if(i == m_listenSocket) { }
-                else { FD_CLR(i, &m_readfds); m_totalSelect--;}
-            }
-            if (m_map.find(i) != m_map.end() && FD_ISSET(i, &ww)) 
-            {
-                curnum++;
-                Callback<void> call(*m_map[i], &SocketHandler::onSendMsg);
-                m_pool.insert(call);
-                FD_CLR(i, &m_writefds); m_totalSelect--; 
             }
         }
 
-        for(int i = m_maxfd;i >= 0;i--)
+        for(int i = m_maxfd; i >= 0; i--)
         {
-            if(FD_ISSET(i, &m_readfds) || FD_ISSET(i, &m_writefds))
+            if(FD_ISSET(i, &m_readfds))
             {
-                m_maxfd = i; break;
+                m_maxfd = i;
+                break;
             }
         }
 
     }
 
-    void attachHandler(int fd, SocketHandler *p) 
+    void attachHandler(int fd, SocketHandler *p)
     {
         ScopeMutex scope(&m_lock);
 
@@ -139,6 +130,8 @@ public:
 
         m_map[fd] = p;
         m_maxfd   = max(m_maxfd, fd);
+        FD_SET(fd, &m_readfds);
+        m_totalSelect++;
     }
 
     void detachHandler(int fd, SocketHandler *p)
@@ -149,84 +142,19 @@ public:
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
 
-        assert(m_map.erase(fd) == 1);
+        //assert(m_map.erase(fd) == 1);
 
         if(m_maxfd == fd) m_maxfd--;
 
         if(FD_ISSET(fd, &m_readfds)) m_totalSelect--;
-        if(FD_ISSET(fd, &m_writefds)) m_totalSelect--;
-        
+
         FD_CLR(fd, &m_readfds);
-        FD_CLR(fd, &m_writefds);
+
+        p->closeSocketForLoop();
+        //  delete p;
     }
 
 private:
-    void waitRead(int fd, bool act) 
-    {
-        ScopeMutex scope(&m_lock);
-
-        assert(fd >= 0 && fd < FD_SETSIZE);
-        assert(m_map.find(fd) != m_map.end());
-
-        if (act)
-        {
-            assert(FD_ISSET(fd, &m_readfds) == false);
-            FD_SET(fd, &m_readfds);
-            m_maxfd = max(m_maxfd, fd);
-            m_totalSelect++;
-        }
-        else
-        {
-            assert(FD_ISSET(fd, &m_readfds) == true);
-            FD_CLR(fd, &m_readfds);
-            m_totalSelect--;
-            if(FD_ISSET(fd, &m_writefds) == false && m_maxfd == fd)
-            {
-                int j;
-                for(j=fd-1;j>=0;j--)
-                {
-                    if(FD_ISSET(fd, &m_readfds) || FD_ISSET(fd, &m_writefds))
-                        break;
-                }
-
-                m_maxfd = j;
-            }
-        }
-    }
-
-    void waitWrite(int fd, bool act) 
-    {
-        ScopeMutex scope(&m_lock);
-
-        assert(fd >= 0 && fd < FD_SETSIZE);
-        assert(m_map.find(fd) != m_map.end());
-        
-        if (act)
-        {
-            assert(FD_ISSET(fd, &m_writefds) == false);
-            FD_SET(fd, &m_writefds);
-            m_maxfd = max(m_maxfd, fd);
-            m_totalSelect++;
-        }
-        else
-        {
-            assert(FD_ISSET(fd, &m_writefds) == true);
-            FD_CLR(fd, &m_writefds);
-            m_totalSelect--;
-            if(FD_ISSET(fd, &m_readfds) == false && m_maxfd == fd)
-            {
-                int j;
-                for(j=fd-1;j>=0;j--)
-                {
-                    if(FD_ISSET(fd, &m_readfds) || FD_ISSET(fd, &m_writefds))
-                        break;
-                }
-
-                m_maxfd = j;
-            }
-        }
-    }
-
     void waitTimer(int fd, uint64_t second)
     {
         ScopeMutex scope(&m_lock);
@@ -245,12 +173,12 @@ private:
 
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
-        
+
         SocketHandler *handler = m_map[fd];
         timeSets.insert(TimeEventItem(handler, TimeStamp::now() + tms));
     }
 
-    TimeStamp fireTimer() 
+    TimeStamp fireTimer()
     {
         ScopeMutex scope(&m_lock);
 
@@ -260,44 +188,44 @@ private:
         TimeStamp start = TimeStamp::now();
         TimeEventSet::Iterator iter(&timeSets);
 
-        for(const TimeEventItem *node = iter.first();node != iter.end();node = iter.next())
+        for(const TimeEventItem *node = iter.first(); node != iter.end(); node = iter.next())
         {
             if((node->timer).returnv() <= start.returnv())
-             {
+            {
                 fires.push_back(node);
                 ++count;
-             }
+            }
             else break;
         }
 
         DEBUG << count << " Timer Event would be fired";
 
         Callback<void> call;
-        for(int i=0;i<count;i++)
+        for(int i=0; i<count; i++)
         {
-            call = Callback<void>(fires[i]->ptr,&SocketHandler::onTimer);
+            call = Callback<void>(fires[i]->ptr,&SocketHandler::TimerEvent);
             m_pool.insert(call);
         }
 
-        if(count != 0) 
+        if(count != 0)
             timeSets.removen(count);
 
-        if (timeSets.empty()) 
+        if (timeSets.empty())
         {
             return TimeStamp::none();
-        } 
-        else 
+        }
+        else
         {
             TimeStamp tms = iter.first()->timer;
 
             TimeStamp tms2 = tms - TimeStamp::now();
 
-            if (tms2 > TimeStamp::usecs(0LL)) 
+            if (tms2 > TimeStamp::usecs(0LL))
                 return tms2;
             else
                 return TimeStamp::usecs(0LL);
         }
-        
+
     }
 
     bool existTimer(int fd)
@@ -340,22 +268,6 @@ inline void SocketHandler::detach()
     m_loop->detachHandler(m_sock.get_fd(), this);
 }
 
-inline void SocketHandler::waitRead(bool act)
-{
-    assert(m_loop && m_sock.stat());
-    DEBUG << "Register Event " << "Read for: " << act;
-    m_waitRead = act;   
-    m_loop->waitRead(m_sock.get_fd(), act);
-}
-
-inline void SocketHandler::waitWrite(bool act)
-{
-    assert(m_loop && m_sock.stat());
-    DEBUG << "Register Event " << "Write for: " << act;
-    m_waitWrite = act;
-    m_loop->waitWrite(m_sock.get_fd(), act);
-}
-
 inline void SocketHandler::waitTimer(int second)
 {
     assert(m_loop && m_sock.stat());
@@ -375,4 +287,5 @@ inline void TCPAcceptor<T>::setListenSocket()
 {
     m_loop->m_listenSocket = getSocket().get_fd();
 }
+
 #endif

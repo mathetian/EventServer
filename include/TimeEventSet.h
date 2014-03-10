@@ -10,36 +10,36 @@ using std::list;
 
 struct TimeEventItem
 {
-	SocketHandler *ptr;
-	TimeStamp      timer;
-	TimeEventItem(SocketHandler *ptr, TimeStamp timer) :\
+    SocketHandler *ptr;
+    TimeStamp      timer;
+    TimeEventItem(SocketHandler *ptr, TimeStamp timer) :\
         ptr(ptr), timer(timer) { }
 };
 
 class TimeEventSet
 {
-list<TimeEventItem> lists;
+    list<TimeEventItem> lists;
 public:
 
-	void insert(const TimeEventItem &item)
-	{
-		list<TimeEventItem>::iterator iter = lists.begin();
-		for(;iter != lists.end();iter++)
-		{
-			const TimeEventItem t2 = *iter;
-			if(t2.timer > item.timer) break;
-		}
-		lists.insert(iter, item);
-	}
+    void insert(const TimeEventItem &item)
+    {
+        list<TimeEventItem>::iterator iter = lists.begin();
+        for(; iter != lists.end(); iter++)
+        {
+            const TimeEventItem t2 = *iter;
+            if(t2.timer > item.timer) break;
+        }
+        lists.insert(iter, item);
+    }
 
     bool remove(const TimeEventItem &item)
     {
         list<TimeEventItem>::iterator iter = lists.begin();
-        for(;iter != lists.end();iter++)
+        for(; iter != lists.end(); iter++)
         {
             const TimeEventItem t2 = *iter;
             if(t2.timer > item.timer) break;
-            else if(t2.timer == item.timer && item.ptr == t2.ptr) 
+            else if(t2.timer == item.timer && item.ptr == t2.ptr)
                 break;
         }
         if(iter != lists.end() && (*iter).timer == item.timer)
@@ -62,7 +62,7 @@ public:
     bool exist(SocketHandler *phandler)
     {
         list<TimeEventItem>::iterator iter = lists.begin();
-        for(;iter != lists.end();iter++)
+        for(; iter != lists.end(); iter++)
         {
             if(phandler == (*iter).ptr)
                 return true;
@@ -73,12 +73,12 @@ public:
     bool remove(SocketHandler *phandler)
     {
         list<TimeEventItem>::iterator iter = lists.begin();
-        for(;iter != lists.end();iter++)
+        for(; iter != lists.end(); iter++)
         {
             if(phandler == (*iter).ptr)
             {
                 lists.erase(iter);
-                return true;                
+                return true;
             }
         }
         return false;
@@ -89,39 +89,42 @@ public:
         return lists.begin() == lists.end();
     }
 
-	const list<TimeEventItem>* getlist() const
-	{
-		return &lists;
-	}
+    const list<TimeEventItem>* getlist() const
+    {
+        return &lists;
+    }
 
-	class Iterator
+    class Iterator
     {
     public:
         Iterator(TimeEventSet * pset) : \
-        	m_pset(pset) { seekToFirst(); }
-        
+            m_pset(pset)
+        {
+            seekToFirst();
+        }
+
         const TimeEventItem * next()
-        {	
-        	assert(iter != m_pset->lists.end());
-        	iter++;
+        {
+            assert(iter != m_pset->lists.end());
+            iter++;
             return &(*iter);
         }
 
         const TimeEventItem * prev()
         {
-        	assert(iter != m_pset->lists.begin());
-        	iter--;
+            assert(iter != m_pset->lists.begin());
+            iter--;
             return &(*iter);
         }
 
         void seekToFirst()
         {
-        	iter = m_pset->lists.begin();
+            iter = m_pset->lists.begin();
         }
 
         void seekToEnd()
         {
-        	iter = m_pset->lists.end();
+            iter = m_pset->lists.end();
         }
 
         const TimeEventItem * first()

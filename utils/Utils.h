@@ -10,27 +10,32 @@ using namespace std;
 #include <string.h>
 
 template<class T>
-inline string to_string(const T* t) {
+inline string to_string(const T* t)
+{
     char buf[64];
     sprintf(buf, "&(%p)", t);
     return buf;
 }
 
-inline string to_string(const char* ch) {
+inline string to_string(const char* ch)
+{
     return string(ch);
 }
 
-inline string to_string(const string& s) {
+inline string to_string(const string& s)
+{
     return s;
 }
 
-inline string to_string(const void* t) {
+inline string to_string(const void* t)
+{
     char buf[64];
     sprintf(buf, "&%p", t);
     return buf;
 }
 
-inline string to_string(const bool& i) {
+inline string to_string(const bool& i)
+{
     static string t = "true";
     static string f = "false";
     return i ? t : f;
@@ -46,50 +51,61 @@ SCALAR_STRING(uint64_t);
 
 #define TO_STRING(T) \
     inline string to_string(const T& t) { return t.as_string(); }
-    
-inline string to_string(const float& t) 
-{ 
-    ostringstream o; o << t; return o.str(); 
+
+inline string to_string(const float& t)
+{
+    ostringstream o;
+    o << t;
+    return o.str();
 }
 
-inline string to_string(const double& t) 
-{ 
-    ostringstream o; o << t; return o.str(); 
+inline string to_string(const double& t)
+{
+    ostringstream o;
+    o << t;
+    return o.str();
 }
 
-inline string to_escaped_string(const void *data, int length) 
+inline string to_escaped_string(const void *data, int length)
 {
     const unsigned char *cdata = static_cast<const unsigned char *>(data);
     string out;
-    while (length--) {
+    while (length--)
+    {
         unsigned char ch = *cdata++;
-        switch (ch) {
-          case '\"': case '\\':
-            out += '\\'; out += ch;
+        switch (ch)
+        {
+        case '\"':
+        case '\\':
+            out += '\\';
+            out += ch;
             break;
 
-          case '\n':
+        case '\n':
             out += "\\n";
             break;
 
-          case '\r':
+        case '\r':
             out += "\\r";
             break;
 
-          case '\t':
+        case '\t':
             out += "\\t";
             break;
 
-          default:
+        default:
 
             if (ch >= ' ' && ch <= '~')
                 out += char(ch);
-            else 
+            else
             {
                 out += '\\';
-                if (ch < 8) {
+                if (ch < 8)
+                {
                     out += '0' + ch;
-                } else {
+                }
+                else
+                {
                     out += "x";
                     out += "0123456789ABCDEF"[ch >> 4];
                     out += "0123456789ABCDEF"[ch & 0xF];
@@ -97,7 +113,7 @@ inline string to_escaped_string(const void *data, int length)
             }
         }
     }
-    return out;	
+    return out;
 }
 
 #endif

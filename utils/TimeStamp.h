@@ -6,90 +6,91 @@
 
 #include <sys/time.h>
 
-class TimeStamp {
-  private:
+class TimeStamp
+{
+private:
     int64_t m_val;
 
-  public:
+public:
     TimeStamp() : m_val(0) {}
 
-    TimeStamp(uint64_t val) : m_val(val) 
+    TimeStamp(uint64_t val) : m_val(val)
     { }
 
-    static TimeStamp now() 
+    static TimeStamp now()
     {
-    	struct timeval tv;
-    	gettimeofday(&tv, 0);
-    	return TimeStamp(tv.tv_sec * 1000000LL + tv.tv_usec);
+        struct timeval tv;
+        gettimeofday(&tv, 0);
+        return TimeStamp(tv.tv_sec * 1000000LL + tv.tv_usec);
     }
 
-    uint64_t to_secs() const 
-    { 
-        return m_val / 1000000LL; 
-    }
-
-    uint64_t to_msecs() const 
-    { 
-        return m_val / 1000LL; 
-    }
-
-    uint64_t to_usecs() const 
-    { 
-        return m_val; 
-    }
-
-    timespec to_timespec() const 
+    uint64_t to_secs() const
     {
-	   struct timespec ret;
-	   ret.tv_sec  = m_val / 1000000LL;
-	   ret.tv_nsec = (m_val % 1000000LL) * 1000;
-	   return ret;
+        return m_val / 1000000LL;
     }
 
-    timeval to_timeval() const 
+    uint64_t to_msecs() const
     {
-    	struct timeval ret;
-    	ret.tv_sec  = m_val / 1000000LL;
-    	ret.tv_usec = m_val % 1000000LL;
-    	return ret;
+        return m_val / 1000LL;
     }
 
-    operator bool() const 
+    uint64_t to_usecs() const
+    {
+        return m_val;
+    }
+
+    timespec to_timespec() const
+    {
+        struct timespec ret;
+        ret.tv_sec  = m_val / 1000000LL;
+        ret.tv_nsec = (m_val % 1000000LL) * 1000;
+        return ret;
+    }
+
+    timeval to_timeval() const
+    {
+        struct timeval ret;
+        ret.tv_sec  = m_val / 1000000LL;
+        ret.tv_usec = m_val % 1000000LL;
+        return ret;
+    }
+
+    operator bool() const
     {
         if(m_val == 0) return false;
         return true;
     }
 
-    TimeStamp operator + (TimeStamp other) const 
+    TimeStamp operator + (TimeStamp other) const
     {
-	   return TimeStamp(m_val + other.m_val);
+        return TimeStamp(m_val + other.m_val);
     }
 
-    TimeStamp operator - (TimeStamp other) const 
+    TimeStamp operator - (TimeStamp other) const
     {
-	   return TimeStamp(m_val - other.m_val);
+        return TimeStamp(m_val - other.m_val);
     }
 
-    TimeStamp& operator += (TimeStamp other) 
+    TimeStamp& operator += (TimeStamp other)
     {
-    	m_val += other.m_val;
-    	return *this;
+        m_val += other.m_val;
+        return *this;
     }
 
-    TimeStamp& operator -= (TimeStamp other) 
+    TimeStamp& operator -= (TimeStamp other)
     {
-	   m_val -= other.m_val;
-	   return *this;
+        m_val -= other.m_val;
+        return *this;
     }
 
-    static TimeStamp none() 
-    { 
-        return TimeStamp(); 
+    static TimeStamp none()
+    {
+        return TimeStamp();
     }
 
-    string as_string() const 
-    { 
-        return to_string(to_usecs()); 
+    string as_string() const
+    {
+        return to_string(to_usecs());
     }
 
     bool operator()(const TimeStamp &tmp) const

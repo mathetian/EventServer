@@ -8,56 +8,53 @@
 
 class EventLoop;
 
-class SocketHandler 
+class SocketHandler
 {
 protected:
-	EventLoop*  m_loop;
+    EventLoop*  m_loop;
     Socket      m_sock;
-    bool        m_waitRead;
-    bool        m_waitWrite;
 
 public:
-    SocketHandler(EventLoop& loop):
-    	 m_loop(&loop), m_waitRead(false), m_waitWrite(false)
-    {
-    }
+    SocketHandler(EventLoop& loop) : m_loop(&loop)
+    { }
 
-    virtual ~SocketHandler() 
-    {
-        detach();
-        m_sock.close();
-    }
+    virtual ~SocketHandler()
+    { }
 
 public:
     //Todo List
-    virtual void onReceiveMsg() = 0;
-    virtual void onSendMsg() = 0;
+    virtual void onReceiveMsg()  = 0;
+    virtual void onSendMsg()     = 0;
     virtual void onCloseSocket() = 0;
-    virtual void onTimer() = 0;
-    
-    void waitRead(bool);
-    void waitWrite(bool);
+    virtual void TimerEvent()       = 0;
+
     void waitTimer(int);
     void waitTimer(const TimeStamp &tms);
-    void   setSock(Socket sock)
+    void setSock(Socket sock)
     {
         m_sock = sock;
     }
 
-    Socket getSocket() 
-    { 
-    	return m_sock; 
+    Socket getSocket()
+    {
+        return m_sock;
     }
 
     EventLoop *getLoop()
     {
         return m_loop;
     }
-    
+
+    void closeSocketForLoop()
+    {
+        // getSocket().close();
+        INFO << "Socket has been closed & obejct has been destructed";
+    }
+
 protected:
     void attach();
     void detach();
-    
+
     friend class EventLoop;
 };
 

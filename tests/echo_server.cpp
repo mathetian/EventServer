@@ -7,82 +7,58 @@
 using namespace std;
 
 #define PORT 10000
-#define MSGLEN 512
+
 
 EventLoop loop;
 
 class EchoServer : public MSGHandler
 {
- public:
+public:
     EchoServer(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
-       waitWrite(true);
+        Buffer buf("hello world");
+        write(buf);
     }
 
     ~EchoServer()
     { }
 
-  protected:
-  	void onReceiveMsg()
-  	{
-      char buf[MSGLEN];
-      memset(buf, 0, MSGLEN);
-      int len = read(buf, MSGLEN);
-  	  if(len == MSGLEN)
-      {
-        WARN << "Exceed the buf length";
-      }
-      else if(len < 0)
-      {
-        if(getSocket().stat() == false)
+private:
+    virtual void receivedMsg(STATUS status, Buffer &buf)
+    {
+        if(status == SUCC)
         {
-          WARN << "Socket error";
-          deleteMe();
+            INFO << buf.data();
+            write(buf);
         }
-        else
-        {
-          //Errno, Need again. No further process
-          WARN << "Need Receive Again";
-        }
-      }
-      else if(len == 0)
-      {
-        WARN << "Socket has been closed";
-        deleteMe();
-      }
-      else
-      {
-        INFO << "Received from :" << getSocket().getpeername();
-        INFO << buf;
-        waitRead(true);
-      }
-      
     }
 
-  	void onSendMsg()
-  	{
-      Slice slice("hello, body");
-      write(slice);
-      DEBUG << "Client onSendMsg:" << getSocket();
-      waitRead(true);
-  	}
-
-  	void onCloseSocket()
-  	{
-      /**Todo List**/
-  	}
-
-    void onTimer() 
+    virtual void sendedMsg(STATUS status, int len, int targetLen)
     {
-      
+        if(status == SUCC)
+        {
+            INFO << "sendedMsg: " << len << " " << targetLen << " for socket: " << getSocket();
+        }
+    }
+
+    virtual void TimerEvent()
+    {
+        INFO << "Timer Event Start: " << getSocket();
+        sleep(2);
+        INFO << "Timer Event End: " << getSocket();
+    }
+
+    virtual void closedSocket()
+    {
+        INFO << "Socket has been closed, will remove it from memory soon.";
     }
 };
 
 int main()
 {
-	TCPAcceptor<EchoServer> acceptor(loop, PORT);
+    TCPAcceptor<EchoServer> acceptor(loop, PORT);
 
-  loop.runforever();
-  
-	return 0;
+    loop.runforever();
+
+    return 0;
 }

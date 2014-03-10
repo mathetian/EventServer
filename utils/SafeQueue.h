@@ -12,7 +12,7 @@ using namespace utils;
 #include <stdint.h>
 #include <stdio.h>
 template<class T>
-class SafeQueue 
+class SafeQueue
 {
 private:
     queue<T> m_queue;
@@ -27,57 +27,57 @@ public:
     SafeQueue() : m_cond(&m_mutex) { }
 
 private:
-    bool empty() const 
-    { 
+    bool empty() const
+    {
         return m_queue.empty();
     }
 
-    size_type size() const 
-    { 
-        return m_queue.size(); 
+    size_type size() const
+    {
+        return m_queue.size();
     }
 
-    value_type& front() 
-    { 
-        return m_queue.front(); 
+    value_type& front()
+    {
+        return m_queue.front();
     }
 
-    const value_type& front() const 
-    { 
-        return m_queue.front(); 
+    const value_type& front() const
+    {
+        return m_queue.front();
     }
 
-    value_type& back() 
-    { 
-        return m_queue.back(); 
+    value_type& back()
+    {
+        return m_queue.back();
     }
 
-    const value_type& back() const 
-    { 
-        return m_queue.back(); 
+    const value_type& back() const
+    {
+        return m_queue.back();
     }
 
-    void pop() 
-    { 
-        m_queue.pop(); 
+    void pop()
+    {
+        m_queue.pop();
     }
 
 public:
-    bool push(const value_type& v) 
+    bool push(const value_type& v)
     {
         ScopeMutex scope(&m_mutex);
-	    m_queue.push(v);
+        m_queue.push(v);
         m_cond.signal();
         return true;
     }
 
-    T get() 
+    T get()
     {
         ScopeMutex scope(&m_mutex);
 
-        if (empty()) 
+        if (empty())
             return T();
-        
+
         T ret = front();
         pop();
         printf("get a\n");
@@ -105,7 +105,7 @@ public:
     bool tryget(T& out)
     {
         ScopeMutex scope(&m_mutex);
-        
+
         if(!empty())
         {
             out = front();

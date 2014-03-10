@@ -13,7 +13,7 @@ using namespace std;
 
 /**Internal Class, can't be used directly**/
 
-class Log 
+class Log
 {
 public:
     static ostream* m_out;
@@ -23,23 +23,29 @@ public:
 
     class LogMsg;
 public:
-    enum 
+    enum
     {
-    	fatal = 0,
-    	error = 1,
-    	warn  = 2,
-    	info  = 3,
-    	debug = 4
+        fatal = 0,
+        error = 1,
+        warn  = 2,
+        info  = 3,
+        debug = 4
     };
 
     Log(int level = debug, ostream *out = &cout)
     {
-    	m_level = level;
-    	m_out = out;
+        m_level = level;
+        m_out = out;
     }
 
-    static Log& get() { return m_log; }
-    static int getLevel() { return m_level; }
+    static Log& get()
+    {
+        return m_log;
+    }
+    static int getLevel()
+    {
+        return m_level;
+    }
     bool operator ^ (const LogMsg& msg);
 };
 
@@ -54,16 +60,26 @@ class Log::LogMsg
 public:
     static const char *level2string(int level)
     {
-    	switch(level)
-    	{
-    	case Log::fatal: return "FATAL"; break;
-    	case Log::error: return "ERROR"; break;
-    	case Log::warn:  return "WARN"; break;
-    	case Log::info:  return "INFO"; break;
-    	case Log::debug: return "DEBUG"; break;
-    	}
+        switch(level)
+        {
+        case Log::fatal:
+            return "FATAL";
+            break;
+        case Log::error:
+            return "ERROR";
+            break;
+        case Log::warn:
+            return "WARN";
+            break;
+        case Log::info:
+            return "INFO";
+            break;
+        case Log::debug:
+            return "DEBUG";
+            break;
+        }
 
-    	return "";
+        return "";
     }
 
 public:
@@ -72,15 +88,27 @@ public:
     { }
 
     template<class T>
-    LogMsg& operator << (const T& t) { str += to_string(t); return *this; }
-    LogMsg& operator << (const string& s) { str += s; return *this; }
-    LogMsg& operator << (const char* s) { str += s; return *this; }
+    LogMsg& operator << (const T& t)
+    {
+        str += to_string(t);
+        return *this;
+    }
+    LogMsg& operator << (const string& s)
+    {
+        str += s;
+        return *this;
+    }
+    LogMsg& operator << (const char* s)
+    {
+        str += s;
+        return *this;
+    }
     void write(ostream &o) const
     {
-    	string out;
+        string out;
 
-	    const char *slash = strrchr(m_file, '/');
-	    const char *file_str = slash ? slash + 1 : m_file;
+        const char *slash = strrchr(m_file, '/');
+        const char *file_str = slash ? slash + 1 : m_file;
 
         out += level2string(m_level);
         if(m_level == Log::warn || m_level == Log::info)
@@ -91,8 +119,8 @@ public:
         out += to_string(m_line);
         out += "] ";
 
-	    out += str + "\n";
-	    o << out;
+        out += str + "\n";
+        o << out;
     }
 };
 
@@ -110,6 +138,6 @@ int      Log::m_level;
 
 inline bool Log::operator ^ (const Log::LogMsg &msg)
 {
-	msg.write(*m_out);
+    msg.write(*m_out);
 }
 #endif

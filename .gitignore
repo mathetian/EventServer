@@ -19,4 +19,8 @@ tests/test_callback
 utils/Bind
 utils/Callback
 utils/SafeQueue
+utils/Atom
+utils/Buffer
+utils/Thread
+*.orig
 
