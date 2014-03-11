@@ -11,6 +11,7 @@ using std::string;
 #include <string.h>
 
 #include "Atom.h"
+#include "Log.h"
 
 class ConstBuffer
 {
@@ -26,11 +27,6 @@ public:
 
     ConstBuffer(const string& s) :
         dat(const_cast<char*>(s.data())), len(s.length()) {}
-
-    const char *data() const
-    {
-        return dat;
-    }
 
     unsigned int length() const
     {
@@ -90,6 +86,7 @@ private:
     {
         if (ref && *(ref--) == 0)
         {
+            DEBUG << "release finally" ;
             delete[] dat;
             delete ref;
         }
@@ -98,7 +95,7 @@ private:
 public:
     Buffer() : InnerBuffer(), ref(0) {}
 
-    Buffer(unsigned int maxlen) : InnerBuffer(new char[len], 0, len), ref(new Atomic(0)) {}
+    Buffer(unsigned int maxlen) : InnerBuffer(new char[len + 1], 0, len + 1), ref(new Atomic(0)) {}
 
     Buffer(const Buffer &other) : InnerBuffer(other.dat, other.len, other.maxlen), ref(other.ref)
     {

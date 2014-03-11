@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PORT 10000
-#define CLIENT_NUM 5
+#define CLIENT_NUM 1
 
 EventLoop loop;
 

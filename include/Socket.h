@@ -51,6 +51,7 @@ public:
             if (f & acceptor)
             {
                 int optval = 1;
+                DEBUG << "setsockopt" ;
                 setsockopt(get_fd(), SOL_SOCKET, SO_REUSEADDR,
                            &optval, sizeof(optval));
 
@@ -69,9 +70,7 @@ public:
     }
 
     Socket(Socket const& sock) : m_fd(sock.m_fd), m_stat(sock.m_stat)
-    {
-
-    }
+    { }
 
     int get_fd() const
     {
@@ -97,6 +96,7 @@ private:
 
     Status listen(int backlog = 5)
     {
+        DEBUG << "Listen" ;
         if (::listen(get_fd(), backlog) != 0)
         {
             set_status(Status::syserr("listen"));
@@ -107,6 +107,7 @@ public:
     /**confused with this function**/
     Socket accept(Address *pa)
     {
+        DEBUG << "Accept" ;
         sockaddr addr;
         socklen_t addrlen = sizeof addr;
 
@@ -123,6 +124,7 @@ public:
 
     void close()
     {
+        DEBUG << "Close" ;
         assert(get_fd() >= 0);
         ::close(get_fd());
     }
@@ -130,6 +132,7 @@ public:
 private:
     Status connect(const Address *paddr)
     {
+        DEBUG << "connect" ;
         if (::connect(get_fd(), paddr->data(), paddr->length()) != 0)
         {
             if (errno != EINPROGRESS)
@@ -141,6 +144,8 @@ private:
 
     bool set_blocking(bool block)
     {
+        DEBUG << "set_blocking";
+        
         int flags = fcntl(get_fd(), F_GETFL);
         assert(flags >= 0);
         flags = block ? flags & ~O_NONBLOCK : flags | O_NONBLOCK;
@@ -152,6 +157,7 @@ private:
 public:
     NetAddress getpeername()
     {
+        DEBUG << "getpeername" ;
         char buf[sizeof(sockaddr_in) + 1];
         memset(buf, 0, sizeof(buf));
 
@@ -166,6 +172,7 @@ public:
 
     NetAddress getsockname()
     {
+        DEBUG << "getsockname";
         char buf[sizeof(sockaddr_in) + 1];
         memset(buf, 0, sizeof(buf));
         socklen_t len = sizeof(buf);
@@ -180,95 +187,37 @@ public:
 public:
     int read(void *buf, uint32_t count)
     {
+        DEBUG << "read" ;
         count = ::read(get_fd(), buf, count);
 
         if(count < 0 && errno == EAGAIN)
-        {
-            //log warn
-        }
+            WARN << "EAGAIN Read";
         else if (count < 0)
             set_status(Status::syserr("Socket::read"));
 
         return count;
     }
 
-    int readn(void *buf, unsigned int count)
-    {
-        int orig_count = count;
-
-        while (count)
-        {
-            int bytes = ::read(get_fd(), buf, count);
-
-            if (bytes < 0 && errno == EAGAIN)
-            {
-                //log error
-            }
-            else if(bytes < 0)
-            {
-                set_status(Status::syserr("iohandle::read_fully"));
-                return 0;
-            }
-
-            if (bytes == 0) return 0;
-
-            assert(bytes <= int(count));
-
-            buf = (char*)buf + bytes;
-            count -= bytes;
-        }
-
-        return orig_count;
-    }
-
     int write(const void *buf, int count)
     {
+        DEBUG << "write" ;
         count = ::write(get_fd(), buf, count);
         if(count < 0 && errno == EAGAIN)
-        {
-            //log_warning
-        }
+            WARN << "EAGAIN Read";
         else if(count < 0)
             set_status(Status::syserr("write"));
 
         return count;
     }
 
-    int writen(const void *buf, unsigned int count)
-    {
-        int orig_count = count;
-        while (count)
-        {
-            int bytes = ::write(get_fd(), buf, count);
-
-            if (bytes < 0 && errno == EAGAIN)
-            {
-                //log warning
-            }
-            else if(bytes < 0)
-            {
-                set_status(Status::syserr("writen"));
-                return bytes;
-            }
-            else if (bytes == 0)  return bytes;
-
-            assert(bytes <= int(count));
-            buf = static_cast<const char*>(buf) + bytes;
-            count -= bytes;
-        }
-
-        return orig_count;
-    }
-
 public:
 
     Status stat() const
     {
-        assert(get_fd() >= 0);
+        get_fd();
         return m_stat;
     }
 
-    /**pipe for local**/
     static pair<Socket, Socket> pipe()
     {
         int fds[2];

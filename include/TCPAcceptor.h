@@ -13,23 +13,21 @@ public:
     {
         NetAddress addr = NetAddress(localport);
         setSock(TCPSocket(&addr, Socket::acceptor));
-        DEBUG << "Acceptor Socket STATUS: " << m_sock.stat();
-        assert(m_sock.stat());
         DEBUG << "TCPAcceptor Initialiaztion Successfully";
-
+        assert(m_sock.stat());
         INFO << "Server Information: " << m_sock.getsockname();
         attach();
         setListenSocket();
+        registerRead();
     }
 
     TCPAcceptor(EventLoop& _loop, string ip, int localport) : SocketHandler(_loop)
     {
         NetAddress addr = NetAddress(ip,localport);
         setSock(TCPSocket(&addr, Socket::acceptor));
+        DEBUG << "TCPAcceptor Initialiaztion Successfully";
         DEBUG << "Acceptor Socket STATUS: " << m_sock.stat();
         assert(m_sock.stat());
-        DEBUG << "TCPAcceptor Initialiaztion Successfully";
-
         INFO << "Server Information: " << m_sock.getsockname();
         attach();
     }

@@ -20,11 +20,11 @@ public:
     MSGHandler(EventLoop& loop, Socket sock) : SocketHandler(loop)
     {
         setSock(sock);
-        DEBUG << "MSGHandler Socket STATUS: " << m_sock.stat();
-        assert(m_sock.stat());
         DEBUG << "MSGHandler Initialiaztion Successfully";
+        assert(m_sock.stat());
         DEBUG << "Peer Information: " << m_sock.getpeername();
         attach();
+        registerRead();
     }
 
     virtual ~MSGHandler()
@@ -39,15 +39,35 @@ protected:
         m_loop->m_pool.insert(call);
     }
 
-    typedef enum  { EXCEED, SOCKERR, BLOCK, SUCC} STATUS;
+    typedef enum  { EXCEED, SOCKERR, BLOCKED, SUCC} STATUS;
 
 private:
     virtual void onReceiveMsg()
     {
+        if(getSocket().stat() == false)
+        {
+            WARN << "Socket has been closed" ;
+            return;
+        }
+
         Buffer buf(MSGLEN);
         int len = getSocket().read(buf.data(), MSGLEN);
 
         INFO << "Received from :" << getSocket().getpeername();
+
+        if(len == 0)
+        {
+            WARN << "need close the socket: " << getSocket();
+            onCloseSocket();
+            return;
+        }
+
+        if(len < 0 && getSocket().stat() == false)
+        {
+            WARN << "Socket error: " << getSocket();
+            onCloseSocket();
+            return;
+        }
 
         if(len == MSGLEN)
         {
@@ -56,28 +76,21 @@ private:
         }
         else if(len < 0)
         {
-            if(getSocket().stat() == false)
-            {
-                WARN << "Socket error";
-                receivedMsg(SOCKERR, buf);
-            }
-            else
-            {
-                WARN << "EWOULDBLOCK";
-                receivedMsg(BLOCK, buf);
-            }
+            WARN << "EWOULDBLOCK";
+            receivedMsg(BLOCKED, buf);
         }
-        else if(len == 0) onCloseSocket();
         else
         {
             buf.set_length(len);
             receivedMsg(SUCC, buf);
         }
-    }
 
+        registerRead();
+    }
+    
     virtual void onCloseSocket()
     {
-        WARN << "Socket has been closed";
+        WARN << "Socket will be closed";
         closedSocket();
         detach();
     }

@@ -15,6 +15,7 @@ private:
     {
         virtual R operator () () = 0;
         virtual ~func() {}
+        virtual bool stat() = 0;
     };
 
     func *m_fn;
@@ -24,6 +25,11 @@ public:
     {
         assert(m_fn);
         return (*m_fn)();
+    }
+
+    operator bool()
+    {
+        return m_fn->stat();
     }
 
     template<typename O>
@@ -41,6 +47,12 @@ public:
         {
             return (o.*fp)();
         }
+        bool stat()
+        {
+            if(&o == NULL)
+                return false;
+            return true;
+        }
     };
 
     template<typename O>
@@ -57,10 +69,10 @@ public:
 
     Callback() : m_fn(NULL) { }
 
-    // ~Callback()
-    // {
-    //     if(m_fn) delete m_fn;
-    // }
+    ~Callback()
+    {
+        
+    }
 };
 
 #endif

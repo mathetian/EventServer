@@ -46,8 +46,6 @@ public:
 
     ~EventPool()
     {
-        /** Todo list, remove queue, thread join**/
-
         for(int i=0; i<m_thrnum; i++)
         {
             threads[i]->join();
@@ -62,7 +60,7 @@ public:
         while(true)
         {
             m_squeue.wait(call);
-            call();
+            if(call) call();
         }
     }
 

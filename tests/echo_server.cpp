@@ -39,6 +39,8 @@ private:
         {
             INFO << "sendedMsg: " << len << " " << targetLen << " for socket: " << getSocket();
         }
+        else
+            WARN << "Some warning" ;
     }
 
     virtual void TimerEvent()
@@ -50,7 +52,7 @@ private:
 
     virtual void closedSocket()
     {
-        INFO << "Socket has been closed, will remove it from memory soon.";
+        INFO << "Socket need to be closed";
     }
 };
 

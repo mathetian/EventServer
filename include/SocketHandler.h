@@ -16,7 +16,7 @@ protected:
 
 public:
     SocketHandler(EventLoop& loop) : m_loop(&loop)
-    { }
+    {  }
 
     virtual ~SocketHandler()
     { }
@@ -26,7 +26,8 @@ public:
     virtual void onReceiveMsg()  = 0;
     virtual void onSendMsg()     = 0;
     virtual void onCloseSocket() = 0;
-    virtual void TimerEvent()       = 0;
+    virtual void TimerEvent()    = 0;
+    void registerRead();
 
     void waitTimer(int);
     void waitTimer(const TimeStamp &tms);
