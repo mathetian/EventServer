@@ -93,9 +93,15 @@ private:
     }
 
 public:
-    Buffer() : InnerBuffer(), ref(0) {}
+    Buffer() : InnerBuffer(), ref(0)
+    {
+        acquire();
+    }
 
-    Buffer(unsigned int maxlen) : InnerBuffer(new char[len + 1], 0, len + 1), ref(new Atomic(0)) {}
+    Buffer(unsigned int maxlen) : InnerBuffer(new char[len + 1], 0, len + 1), ref(new Atomic(0))
+    {
+        acquire();
+    }
 
     Buffer(const Buffer &other) : InnerBuffer(other.dat, other.len, other.maxlen), ref(other.ref)
     {

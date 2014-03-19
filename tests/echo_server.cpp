@@ -28,7 +28,7 @@ private:
     {
         if(status == SUCC)
         {
-            INFO << buf.data();
+            INFO << "Received(from Socket: " << getSocket() << "): " << buf.data();
             write(buf);
         }
     }
@@ -39,8 +39,7 @@ private:
         {
             INFO << "sendedMsg: " << len << " " << targetLen << " for socket: " << getSocket();
         }
-        else
-            WARN << "Some warning" ;
+        else WARN << "Some Error" ;
     }
 
     virtual void TimerEvent()

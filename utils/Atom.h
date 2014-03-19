@@ -20,7 +20,6 @@ class Atomic
 public:
     Atomic(int val = 0) : val(val) {}
 
-
     inline int exchange_and_add(int addend)
     {
         return __exchange_and_add(&val, addend);

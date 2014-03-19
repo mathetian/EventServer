@@ -20,9 +20,9 @@ public:
     MSGHandler(EventLoop& loop, Socket sock) : SocketHandler(loop)
     {
         setSock(sock);
-        DEBUG << "MSGHandler Initialiaztion Successfully";
-        assert(m_sock.stat());
-        DEBUG << "Peer Information: " << m_sock.getpeername();
+        DEBUG << "MSGHandler Initialiaztion, Peer Information: " << getSocket().getpeername();
+        assert(getSocket().stat());
+
         attach();
         registerRead();
     }
@@ -44,20 +44,16 @@ protected:
 private:
     virtual void onReceiveMsg()
     {
-        if(getSocket().stat() == false)
-        {
-            WARN << "Socket has been closed" ;
-            return;
-        }
+        assert(getSocket().stat() == true);
 
         Buffer buf(MSGLEN);
         int len = getSocket().read(buf.data(), MSGLEN);
 
-        INFO << "Received from :" << getSocket().getpeername();
+        INFO << "Received from :" << getSocket();
 
         if(len == 0)
         {
-            WARN << "need close the socket: " << getSocket();
+            WARN << "Need close the socket: " << getSocket();
             onCloseSocket();
             return;
         }
@@ -65,6 +61,7 @@ private:
         if(len < 0 && getSocket().stat() == false)
         {
             WARN << "Socket error: " << getSocket();
+            WARN << "Socket will be closed: " << getSocket();
             onCloseSocket();
             return;
         }
@@ -87,13 +84,6 @@ private:
 
         registerRead();
     }
-    
-    virtual void onCloseSocket()
-    {
-        WARN << "Socket will be closed";
-        closedSocket();
-        detach();
-    }
 
     virtual void onSendMsg()
     {
@@ -109,6 +99,16 @@ private:
 
         int len = getSocket().write(data, length);
         sendedMsg(SUCC, len, length);
+    }
+
+    virtual void onCloseSocket()
+    {
+        detach();
+        closedSocket();
+        getSocket().close();
+        INFO << "Socket has been closed & obejct will be destructed";
+
+        delete this;
     }
 
 public:

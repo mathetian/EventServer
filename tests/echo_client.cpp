@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PORT 10000
-#define CLIENT_NUM 1
+#define CLIENT_NUM 5
 
 EventLoop loop;
 
@@ -27,17 +27,15 @@ protected:
     virtual void receivedMsg(STATUS status, Buffer &buf)
     {
         if(status == SUCC)
-        {
-            INFO << buf.data();
-        }
+            INFO << "Received(from Socket: " << getSocket() << "): " << buf.data();
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)
     {
         if(status == SUCC)
-        {
             INFO << "sendedMsg: " << len << " " << targetLen << " for socket: " << getSocket();
-        }
+        else
+            WARN << "Some Error" ;
     }
 
     virtual void TimerEvent()
@@ -84,7 +82,7 @@ private:
         for(int i = 0; i < size; i++)
         {
             Socket sock(AF_INET, SOCK_STREAM, psvrAddr);
-            DEBUG << "createClients: " << sock << " " << sock.stat().as_string();
+            DEBUG << "CreateClients: " << sock << " status: " << sock.stat();
             EchoClient *client = new EchoClient(loop, sock);
         }
     }

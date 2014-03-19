@@ -13,9 +13,9 @@ public:
     {
         NetAddress addr = NetAddress(localport);
         setSock(TCPSocket(&addr, Socket::acceptor));
-        DEBUG << "TCPAcceptor Initialiaztion Successfully";
-        assert(m_sock.stat());
-        INFO << "Server Information: " << m_sock.getsockname();
+        INFO << "TCPAcceptor Initialiaztion, Server Information: " << getSocket().getsockname();
+        assert(getSocket().stat());
+
         attach();
         setListenSocket();
         registerRead();
@@ -25,10 +25,8 @@ public:
     {
         NetAddress addr = NetAddress(ip,localport);
         setSock(TCPSocket(&addr, Socket::acceptor));
-        DEBUG << "TCPAcceptor Initialiaztion Successfully";
-        DEBUG << "Acceptor Socket STATUS: " << m_sock.stat();
+        DEBUG << "TCPAcceptor Initialiaztion, " << "Acceptor Socket STATUS: " << getSocket().stat();
         assert(m_sock.stat());
-        INFO << "Server Information: " << m_sock.getsockname();
         attach();
     }
 
@@ -39,19 +37,20 @@ private:
     {
         NetAddress a;
         TCPSocket sock = m_sock.accept(&a);
-        if (sock)
-        {
-            T* t = new T(*getLoop(), sock);
-        }
+
+        if (sock) T* t = new T(*getLoop(), sock);
     }
+
     void onSendMsg()
     {
         DEBUG << "NO NEED";
     }
+
     void onCloseSocket()
     {
         DEBUG << "NO NEED";
     }
+
     void TimerEvent()
     {
         DEBUG << "NO NEED";

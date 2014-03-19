@@ -43,29 +43,21 @@ public:
         m_fd(sys_socket(family, type, 0)), m_stat(true)
     {
         DEBUG << "LISTEN or Accept in Socket FD: " << m_fd;
-        if (f & nonblocking)
-            set_blocking(false);
+        if (f & nonblocking) set_blocking(false);
 
         if (paddr)
         {
             if (f & acceptor)
             {
                 int optval = 1;
-                DEBUG << "setsockopt" ;
-                setsockopt(get_fd(), SOL_SOCKET, SO_REUSEADDR,
-                           &optval, sizeof(optval));
+                setsockopt(get_fd(), SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
                 bind(paddr);
                 listen();
-                if(stat() == false)
-                    ERROR << "SOCKET LISTEN ERROR";
-                else
-                    DEBUG << "LISTEN Successfully";
+                if(stat() == false) WARN << "Socket Bind/Listen Error";
+                else INFO << "LISTEN Successfully";
             }
-            else
-            {
-                connect(paddr);
-            }
+            else connect(paddr);
         }
     }
 
@@ -96,7 +88,6 @@ private:
 
     Status listen(int backlog = 5)
     {
-        DEBUG << "Listen" ;
         if (::listen(get_fd(), backlog) != 0)
         {
             set_status(Status::syserr("listen"));
@@ -104,27 +95,27 @@ private:
         return stat();
     }
 public:
-    /**confused with this function**/
     Socket accept(Address *pa)
     {
-        DEBUG << "Accept" ;
         sockaddr addr;
-        socklen_t addrlen = sizeof addr;
-
+        socklen_t addrlen = sizeof(addr);
+retry:
         int new_fd = ::accept(get_fd(), &addr, &addrlen);
         if (new_fd < 0)
         {
+            if (errno == EAGAIN || errno == ECONNABORTED)
+                goto retry;
+
             set_status(Status::syserr("accept"));
             return Socket();
         }
         pa->setAddr(&addr, addrlen);
-
+        INFO << "Accept socket ID: " << new_fd;
         return Socket(new_fd);
     }
 
     void close()
     {
-        DEBUG << "Close" ;
         assert(get_fd() >= 0);
         ::close(get_fd());
     }
@@ -132,20 +123,17 @@ public:
 private:
     Status connect(const Address *paddr)
     {
-        DEBUG << "connect" ;
         if (::connect(get_fd(), paddr->data(), paddr->length()) != 0)
         {
             if (errno != EINPROGRESS)
                 set_status(Status::syserr("connect"));
         }
-        DEBUG << "connect: " << get_fd() << " " << stat();
+        INFO << "connect: " << get_fd() << " " << stat();
         return stat();
     }
 
     bool set_blocking(bool block)
     {
-        DEBUG << "set_blocking";
-        
         int flags = fcntl(get_fd(), F_GETFL);
         assert(flags >= 0);
         flags = block ? flags & ~O_NONBLOCK : flags | O_NONBLOCK;
@@ -157,7 +145,6 @@ private:
 public:
     NetAddress getpeername()
     {
-        DEBUG << "getpeername" ;
         char buf[sizeof(sockaddr_in) + 1];
         memset(buf, 0, sizeof(buf));
 
@@ -172,7 +159,6 @@ public:
 
     NetAddress getsockname()
     {
-        DEBUG << "getsockname";
         char buf[sizeof(sockaddr_in) + 1];
         memset(buf, 0, sizeof(buf));
         socklen_t len = sizeof(buf);
@@ -187,25 +173,19 @@ public:
 public:
     int read(void *buf, uint32_t count)
     {
-        DEBUG << "read" ;
         count = ::read(get_fd(), buf, count);
 
-        if(count < 0 && errno == EAGAIN)
-            WARN << "EAGAIN Read";
-        else if (count < 0)
-            set_status(Status::syserr("Socket::read"));
+        if(count < 0 && errno == EAGAIN) WARN << "EWouldBlock Read";
+        else if (count < 0) set_status(Status::syserr("Socket::read"));
 
         return count;
     }
 
     int write(const void *buf, int count)
     {
-        DEBUG << "write" ;
         count = ::write(get_fd(), buf, count);
-        if(count < 0 && errno == EAGAIN)
-            WARN << "EAGAIN Read";
-        else if(count < 0)
-            set_status(Status::syserr("write"));
+        if(count < 0 && errno == EAGAIN) WARN << "EWouldBlock Read";
+        else if(count < 0) set_status(Status::syserr("write"));
 
         return count;
     }

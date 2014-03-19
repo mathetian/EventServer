@@ -45,4 +45,6 @@ public:
     }
 };
 
+TO_STRING(Slice);
+
 #endif

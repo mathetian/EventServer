@@ -68,7 +68,6 @@ public:
         fd_set rr;
         int m_mfd, m_tsel;
 
-        DEBUG << "Begin TimeStamp";
         TimeStamp next = fireTimer();
 
         {
@@ -80,24 +79,23 @@ public:
             m_tsel = m_totalSelect;
         }
 
-        DEBUG << "Begin Select, maxfd: " << m_mfd << "(total: " << m_tsel << ")";
         int num;
 
         if (next)
         {
             struct timeval tv = next.to_timeval();
-            DEBUG << "Calling ::select(); waiting " << next.to_msecs() << "ms";
+            DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms";
             num = ::select(m_mfd+1, &rr, 0, 0, &tv);
         }
         else
         {
-            DEBUG << "Calling ::select() (1 seconds)";
-            next = TimeStamp(1000000);
+            next = TimeStamp(5000000);
             struct timeval tv = next.to_timeval();
+            DEBUG << "Calling ::select() (at most 5 seconds)";
             num = ::select(m_mfd+1, &rr, 0, 0, &tv);
         }
 
-        INFO << "Need SELECTED: "<< num;
+        INFO << "Calling ::select(): "<< num << " events occured";
         ScopeMutex scope(&m_lock);
 
         int curnum = 0;
@@ -105,9 +103,9 @@ public:
         {
             if (FD_ISSET(i, &rr))
             {
-                curnum++; assert(m_map.find(i) != m_map.end());
+                curnum++;
+                assert(m_map.find(i) != m_map.end());
                 Callback<void> call(*m_map[i], &SocketHandler::onReceiveMsg);
-                DEBUG << "INSERT: " << i ;
                 if(i != m_listenSocket)
                 {
                     m_totalSelect--;
@@ -117,9 +115,13 @@ public:
             }
         }
 
-        for(int i = m_mfd; i >= 0; i--)
+        for (int i = m_maxfd; i >= 0; i--)
         {
-            if(i == m_listenSocket || !FD_ISSET(i, &rr)) continue;
+            if(FD_ISSET(i, &m_readfds) == true)
+            {
+                m_maxfd = i;
+                break;
+            }
         }
     }
 
@@ -140,17 +142,23 @@ public:
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
+        assert(m_map.erase(fd) == 1);
 
-        // assert(m_map.erase(fd) == 1);
-
-        if(m_maxfd == fd) m_maxfd--;
+        if(m_maxfd == fd)
+        {
+            for(int i=m_maxfd-1; i>=0; i--)
+            {
+                if(FD_ISSET(i,&m_readfds) == true)
+                {
+                    m_maxfd = i;
+                    break;
+                }
+            }
+        }
 
         if(FD_ISSET(fd, &m_readfds)) m_totalSelect--;
 
         FD_CLR(fd, &m_readfds);
-
-        p->closeSocketForLoop();
-        //  delete p;
     }
 
 private:
@@ -209,7 +217,7 @@ private:
             else break;
         }
 
-        DEBUG << count << " Timer Event would be fired";
+        INFO << count << " Timer Event would be fired";
 
         Callback<void> call;
         for(int i=0; i<count; i++)
@@ -218,25 +226,19 @@ private:
             m_pool.insert(call);
         }
 
-        if(count != 0)
-            timeSets.removen(count);
+        if(count != 0) timeSets.removen(count);
 
         if (timeSets.empty())
-        {
             return TimeStamp::none();
-        }
         else
         {
             TimeStamp tms = iter.first()->timer;
 
             TimeStamp tms2 = tms - TimeStamp::now();
 
-            if (tms2 > TimeStamp::usecs(0LL))
-                return tms2;
-            else
-                return TimeStamp::usecs(0LL);
+            if (tms2 > TimeStamp::usecs(0LL)) return tms2;
+            else return TimeStamp::usecs(0LL);
         }
-
     }
 
     bool existTimer(int fd)
@@ -257,45 +259,42 @@ private:
 
     friend class SocketHandler;
 
-    template<class T> friend   class TCPAcceptor;
+    template<class T> friend  class TCPAcceptor;
 };
 
 inline void SocketHandler::attach()
 {
-    DEBUG << "Attach Handler for socket: " << m_sock;
-    assert(m_loop && m_sock.stat());
-    m_loop->attachHandler(m_sock.get_fd(), this);
+    INFO << "Attach Handler for socket: " << getSocket();
+    assert(m_loop && getSocket().stat());
+    m_loop->attachHandler(getSocket().get_fd(), this);
 }
 
 inline void SocketHandler::detach()
 {
-    DEBUG << "Detach Handler for socket: " << m_sock;
-    assert(m_loop && m_sock.stat());
-    if(m_loop->existTimer(m_sock.get_fd()))
-    {
-        DEBUG << "Exist Timer for socket: " << m_sock;
-        m_loop->deleteTimer(m_sock.get_fd());
-    }
-    m_loop->detachHandler(m_sock.get_fd(), this);
+    INFO << "Detach Handler for socket: " << getSocket();
+    assert(m_loop && getSocket().stat());
+    if(m_loop->existTimer(getSocket().get_fd()))
+        m_loop->deleteTimer(getSocket().get_fd());
+    m_loop->detachHandler(getSocket().get_fd(), this);
 }
 
 inline void SocketHandler::waitTimer(int second)
 {
-    DEBUG << "Register Event " << "Timer for: " << m_sock;
-    assert(m_loop && m_sock.stat());
+    INFO << "Register " << "Timer for: " << getSocket();
+    assert(m_loop && getSocket().stat());
     m_loop->waitTimer(m_sock.get_fd(), second);
 }
 
 inline void SocketHandler::waitTimer(const TimeStamp &tms)
 {
-    DEBUG << "Register Event " << "Timer for: " << m_sock;
+    INFO << "Register " << "Timer for: " << getSocket();
     assert(m_loop && m_sock.stat());
     m_loop->waitTimer(m_sock.get_fd(), tms);
 }
 
 inline void SocketHandler::registerRead()
 {
-    DEBUG << "Register Event " << "Timer for: " << m_sock;
+    INFO << "Register " << "Timer for: " << m_sock;
     assert(m_loop && m_sock.stat());
     m_loop->registerRead(m_sock.get_fd());
 }
@@ -303,7 +302,7 @@ inline void SocketHandler::registerRead()
 template<class T>
 inline void TCPAcceptor<T>::setListenSocket()
 {
-    DEBUG << "setListenSocket";
+    INFO << "TCPAcceptor SetListenSocket: " << getSocket();
     m_loop->m_listenSocket = getSocket().get_fd();
 }
 

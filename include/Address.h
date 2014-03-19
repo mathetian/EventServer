@@ -34,8 +34,6 @@ public:
         return m_addr.length();
     }
 
-
-    /**As can be expressed with operator bool**/
     operator const void *() const
     {
         return m_addr.length() ? this : 0;

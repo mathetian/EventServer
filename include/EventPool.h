@@ -53,9 +53,9 @@ public:
         }
     }
 
-    void* ThreadBody(int thrid)
+    void* ThreadBody(int thrID)
     {
-        INFO << "Enter Thread: " << thrid;
+        INFO << "Enter Thread: " << thrID;
         Callback<void> call;
         while(true)
         {

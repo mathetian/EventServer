@@ -22,11 +22,11 @@ public:
     { }
 
 public:
-    //Todo List
     virtual void onReceiveMsg()  = 0;
     virtual void onSendMsg()     = 0;
-    virtual void onCloseSocket() = 0;
     virtual void TimerEvent()    = 0;
+    virtual void onCloseSocket() = 0;
+
     void registerRead();
 
     void waitTimer(int);
@@ -44,12 +44,6 @@ public:
     EventLoop *getLoop()
     {
         return m_loop;
-    }
-
-    void closeSocketForLoop()
-    {
-        // getSocket().close();
-        INFO << "Socket has been closed & obejct has been destructed";
     }
 
 protected:
