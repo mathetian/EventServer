@@ -54,8 +54,10 @@ public:
 
                 bind(paddr);
                 listen();
-                if(stat() == false) WARN << "Socket Bind/Listen Error";
-                else INFO << "LISTEN Successfully";
+                if(stat() == false) 
+                    WARN << "Socket Bind/Listen Error: " << m_stat;
+                else 
+                    INFO << "LISTEN Successfully";
             }
             else connect(paddr);
         }

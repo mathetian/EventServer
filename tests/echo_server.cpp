@@ -8,7 +8,6 @@ using namespace std;
 
 #define PORT 10000
 
-
 EventLoop loop;
 
 class EchoServer : public MSGHandler

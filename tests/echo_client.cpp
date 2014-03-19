@@ -33,7 +33,7 @@ protected:
     virtual void sendedMsg(STATUS status, int len, int targetLen)
     {
         if(status == SUCC)
-            INFO << "sendedMsg: " << len << " " << targetLen << " for socket: " << getSocket();
+            INFO << "SendedMsg: " << len << " " << targetLen << " for socket: " << getSocket();
         else
             WARN << "Some Error" ;
     }

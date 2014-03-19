@@ -23,7 +23,7 @@ public:
     ConstBuffer() : dat(0), len(0) {}
 
     ConstBuffer(const void *dat, unsigned int len) :
-        dat(static_cast<char*>(const_cast<void*>(dat))), len(len) {}
+        dat(static_cast<char*>(const_cast<void*>(dat))), len(len) { }
 
     ConstBuffer(const string& s) :
         dat(const_cast<char*>(s.data())), len(s.length()) {}
@@ -55,7 +55,7 @@ public:
     InnerBuffer(const void *dat, unsigned int len) : ConstBuffer(dat, len), maxlen(len) {}
 
     InnerBuffer(const void *dat, unsigned int len, unsigned int maxlen) :
-        ConstBuffer(dat, len), maxlen(maxlen) {}
+        ConstBuffer(dat, len), maxlen(maxlen) { }
 
     char *data()
     {
@@ -108,23 +108,18 @@ public:
         acquire();
     }
 
-    Buffer(const char* str) : ref(new Atomic(0))
+    Buffer(const char* str) : InnerBuffer(str, strlen(str), strlen(str) + 1), ref(new Atomic(0))
     {
-        char *inner = new char[strlen(str) + 1];
-        memset(inner, 0, strlen(str) + 1);
-        InnerBuffer(inner, strlen(str), strlen(str) + 1);
-
         acquire();
     }
 
     Buffer& operator = (const Buffer &other)
     {
         release();
-        dat = other.dat;
-        len = other.len;
-        maxlen = other.maxlen;
-        acquire();
-        return *this;
+
+        dat = other.dat; len = other.len;
+        ref = other.ref; maxlen = other.maxlen;
+        acquire(); return *this;
     }
 
     ~Buffer()

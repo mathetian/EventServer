@@ -61,7 +61,7 @@ public:
     string as_string() const
     {
         if(ok == true) return "True";
-        else return "False";
+        else return "False :" + err;
     }
 };
 
