@@ -15,6 +15,10 @@ using namespace std;
 #include "../utils/Thread.h"
 using namespace::utils;
 
+#include "ReactorImpl.h"
+#include "ReactorSelect.h"
+#include "ReactorEPoll.h"
+
 class EventLoop
 {
     EventLoop(const EventLoop &);
@@ -22,24 +26,22 @@ class EventLoop
 
     map<int, SocketHandler*> m_map;
 
-    fd_set m_readfds;
-    int    m_maxfd;
     bool   m_quitFlag;
-    int    m_totalSelect;
 
     TimeEventSet timeSets;
     Mutex  m_lock;
-
+    ReactorImpl *selector;
 public:
     EventPool m_pool;
-
     int    m_listenSocket;
+
 public:
-    EventLoop(int thrnum = 2) : m_quitFlag(false), m_pool(thrnum), m_listenSocket(-1)
+    EventLoop(const char *name = "ReactorSelect", int thrnum = 2) : m_quitFlag(false), m_pool(thrnum), m_listenSocket(-1)
     {
-        FD_ZERO(&m_readfds);
-        m_maxfd       = -1;
-        m_totalSelect =  0;
+        if(strcmp(name, "ReactorSelect") == 0)
+            selector = new ReactorSelect(this);
+        else
+            selector = new ReactorEPoll(this);
     }
 
     ~EventLoop()
@@ -69,60 +71,6 @@ public:
         int m_mfd, m_tsel;
 
         TimeStamp next = fireTimer();
-
-        {
-            ScopeMutex scope(&m_lock);
-
-            rr     = m_readfds;
-
-            m_mfd  = m_maxfd;
-            m_tsel = m_totalSelect;
-        }
-
-        int num;
-
-        if (next)
-        {
-            struct timeval tv = next.to_timeval();
-            DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms";
-            num = ::select(m_mfd+1, &rr, 0, 0, &tv);
-        }
-        else
-        {
-            next = TimeStamp(5000000);
-            struct timeval tv = next.to_timeval();
-            DEBUG << "Calling ::select() (at most 5 seconds)";
-            num = ::select(m_mfd+1, &rr, 0, 0, &tv);
-        }
-
-        INFO << "Calling ::select(): "<< num << " events occured";
-        ScopeMutex scope(&m_lock);
-
-        int curnum = 0;
-        for (int i = 0; i <= m_mfd && curnum < num; ++i)
-        {
-            if (FD_ISSET(i, &rr))
-            {
-                curnum++;
-                assert(m_map.find(i) != m_map.end());
-                Callback<void> call(*m_map[i], &SocketHandler::onReceiveMsg);
-                if(i != m_listenSocket)
-                {
-                    m_totalSelect--;
-                    FD_CLR(i, &m_readfds);
-                }
-                m_pool.insert(call);
-            }
-        }
-
-        for (int i = m_maxfd; i >= 0; i--)
-        {
-            if(FD_ISSET(i, &m_readfds) == true)
-            {
-                m_maxfd = i;
-                break;
-            }
-        }
     }
 
     void attachHandler(int fd, SocketHandler *p)
@@ -143,22 +91,6 @@ public:
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
         assert(m_map.erase(fd) == 1);
-
-        if(m_maxfd == fd)
-        {
-            for(int i=m_maxfd-1; i>=0; i--)
-            {
-                if(FD_ISSET(i,&m_readfds) == true)
-                {
-                    m_maxfd = i;
-                    break;
-                }
-            }
-        }
-
-        if(FD_ISSET(fd, &m_readfds)) m_totalSelect--;
-
-        FD_CLR(fd, &m_readfds);
     }
 
 private:
@@ -191,10 +123,6 @@ private:
 
         assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
-
-        m_maxfd   = max(m_maxfd, fd);
-        FD_SET(fd, &m_readfds);
-        m_totalSelect++;
     }
 
     TimeStamp fireTimer()
@@ -305,5 +233,7 @@ inline void TCPAcceptor<T>::setListenSocket()
     INFO << "TCPAcceptor SetListenSocket: " << getSocket();
     m_loop->m_listenSocket = getSocket().get_fd();
 }
+
+
 
 #endif

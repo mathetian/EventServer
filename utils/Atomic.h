@@ -1,6 +1,6 @@
 
-#ifndef NMSTL_H_ATOMIC
-#define NMSTL_H_ATOMIC
+#ifndef _ATOMIC_H
+#define _ATOMIC_H
 
 
 static inline int  __exchange_and_add (volatile int *__mem, int __val)
@@ -30,6 +30,11 @@ public:
         __sync_add_and_fetch(&val, addend);
     }
 
+    inline int addAndGet(int addend)
+    {
+        return __sync_add_and_fetch(&val, addend);
+    }
+    
     inline void operator += (int addend)
     {
         add(addend);

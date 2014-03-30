@@ -10,7 +10,7 @@ using std::string;
 #include <errno.h>
 #include <string.h>
 
-#include "Atom.h"
+#include "Atomic.h"
 #include "Log.h"
 
 class ConstBuffer
@@ -84,7 +84,7 @@ private:
     }
     void release()
     {
-        if (ref && *(ref--) == 0)
+        if (ref && (ref->addAndGet(-1)) == 0 == 0)
         {
             DEBUG << "release finally" ;
             delete[] dat;

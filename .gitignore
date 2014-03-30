@@ -6,6 +6,9 @@ include/SocketHandler
 include/TimeEventSet
 include/Status
 include/TCPAcceptor
+include/ReactorImpl
+include/ReactorEPoll
+include/ReactorSelect
 tests/echo_client
 tests/echo_server
 tests/test_log
@@ -19,8 +22,9 @@ tests/test_callback
 utils/Bind
 utils/Callback
 utils/SafeQueue
-utils/Atom
+utils/Atomic
 utils/Buffer
 utils/Thread
+
 *.orig
 
