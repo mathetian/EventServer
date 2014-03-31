@@ -3,15 +3,20 @@
 
 #include "SocketHandler.h"
 
+#define EV_READ   (1<<0)
+#define EV_WRITE  (1<<1)
+#define EV_TIMER  (1<<2)
+#define EV_SIGNAL (1<<3)
+
 class ReactorImpl{
 public:
-	ReactorImpl(const EventLoop*loop) : m_loop(loop) { };
-	virtual int sispatch(TimeStamp tv) = 0;
+	ReactorImpl(EventLoop* const loop) : m_loop(loop) { };
+	virtual int dispatch(TimeStamp next) = 0;
 	virtual const char *getMethod() = 0;
 	virtual int registerEvent(SocketHandler *handler, short event) = 0;
 	virtual int unRegisterEvent(SocketHandler *handler, short event) = 0;
 
 protected:
-	const EventLoop *m_loop;
+	EventLoop * const m_loop;
 };
 #endif

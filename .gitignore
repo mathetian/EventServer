@@ -7,8 +7,8 @@ include/TimeEventSet
 include/Status
 include/TCPAcceptor
 include/ReactorImpl
-include/ReactorEPoll
-include/ReactorSelect
+include/Selector/ReactorEPoll
+include/Selector/ReactorSelect
 tests/echo_client
 tests/echo_server
 tests/test_log

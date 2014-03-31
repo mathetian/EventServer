@@ -16,13 +16,8 @@ using namespace std;
 using namespace::utils;
 
 #include "ReactorImpl.h"
-#include "ReactorSelect.h"
-#include "ReactorEPoll.h"
-
-#define EV_READ   (1<<0)
-#define EV_WRITE  (1<<1)
-#define EV_TIMER  (1<<2)
-#define EV_SIGNAL (1<<3)
+#include "Selector/ReactorSelect.h"
+#include "Selector/ReactorEPoll.h"
 
 class EventLoop
 {
@@ -72,7 +67,7 @@ public:
         if (m_quitFlag)
             return;
         TimeStamp next = fireTimer();
-        m_selector.dispatch(&next);
+        m_selector->dispatch(next);
     }
 
     void attachHandler(int fd, SocketHandler *p)
@@ -248,11 +243,12 @@ inline void TCPAcceptor<T>::setListenSocket()
     m_loop->m_listenSocket = getSocket().get_fd();
 }
 
-inline void ReactorSelect::dispatch(TimeStamp next)
+inline int ReactorSelect::dispatch(TimeStamp next)
 {
     fd_set rr,ww;
     FD_ZERO(&rr);FD_ZERO(&ww);
 
+    int num;
     {
         ScopeMutex scope(&m_mutex);
         rr = m_readfds;
@@ -263,20 +259,20 @@ inline void ReactorSelect::dispatch(TimeStamp next)
     {
         struct timeval tv = next.to_timeval();
         DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms";
-        num = ::select(m_mfd+1, &rr, &ww, 0, &tv);
+        num = ::select(m_maxfd+1, &rr, &ww, 0, &tv);
     }
     else
     {
         next = TimeStamp(5000000);
         struct timeval tv = next.to_timeval();
         DEBUG << "Calling ::select() (at most 5 seconds)";
-        num = ::select(m_mfd+1, &rr, &ww, 0, &tv);
+        num = ::select(m_maxfd+1, &rr, &ww, 0, &tv);
     }
 
     {
         ScopeMutex scope(&m_mutex);
         int curnum = 0, i;
-        for (i = 0; i <= m_mfd && curnum < num; ++i)
+        for (i = 0; i <= m_maxfd && curnum < num; ++i)
         {
             if(FD_ISSET(i, &rr) || FD_ISSET(i, &ww))
                 curnum++;
@@ -302,24 +298,27 @@ inline void ReactorSelect::dispatch(TimeStamp next)
     }
 }
 
-inline void ReactorEPoll::dispatch(TimeStamp next)
+inline int ReactorEPoll::dispatch(TimeStamp next)
 {
     int num;
+    struct timeval tv;
     if (next)
     {
-        struct timeval tv = next.to_timeval();
+        tv = next.to_timeval();
         DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms";
-        num = epoll_wait(m_epollFD, m_pEvents, m_iEvents, tv);
     }
     else
     {
         next = TimeStamp(5000000);
-        struct timeval tv = next.to_timeval();
+        tv = next.to_timeval();
         DEBUG << "Calling ::select() (at most 5 seconds)";
-        num = epoll_wait(m_epollFD, m_pEvents, m_iEvents, tv);
     }
 
-    for(int i = 0; i < res; i++)
+    int timeout = tv.tv_sec*1000 + (tv.tv_usec+999)/1000;
+
+    num = epoll_wait(m_epollFD, m_pEvents, m_iEvents, timeout);
+
+    for(int i = 0; i < num; i++)
     {
         int what = m_pEvents[i].events;
         int events = 0;
