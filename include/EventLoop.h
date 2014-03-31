@@ -129,7 +129,7 @@ private:
             else break;
         }
 
-        INFO << count << " Timer Event would be fired";
+        DEBUG << count << " Timer Event would be fired";
 
         Callback<void> call;
         for(int i=0; i<count; i++)
@@ -174,6 +174,7 @@ public:
     void addActive(int fd,int type)
     {
         assert(m_map.find(fd) != m_map.end());
+        DEBUG << "addActive: " << fd << " " << type;
         if((type & EV_READ) != 0)
         {
             Callback<void> call(*m_map[fd], &SocketHandler::onReceiveMsg);
@@ -222,7 +223,7 @@ inline void SocketHandler::waitTimer(const TimeStamp &tms)
 
 inline void SocketHandler::registerRead()
 {
-    INFO << "Register " << "Timer for: " << m_sock;
+    INFO << "Register " << "reader for: " << m_sock;
     assert(m_loop && m_sock.stat());
     m_loop->registerRead(m_sock.get_fd());
 }
@@ -249,43 +250,38 @@ inline int ReactorSelect::dispatch(TimeStamp next)
     if (next)
     {
         struct timeval tv = next.to_timeval();
-        DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms, for " << m_maxfd <<" sockets";
+        INFO << "Calling ::select(): waiting " << next.to_msecs() << "ms, for " << m_scknum <<" sockets";
         num = ::select(m_maxfd+1, &rr, &ww, 0, &tv);
     }
     else
     {
         next = TimeStamp(5000000);
         struct timeval tv = next.to_timeval();
-        DEBUG << "Calling ::select(): (at most 5 seconds) for " << m_maxfd <<" sockets";
+        INFO << "Calling ::select(): (at most 5 seconds) for " << m_scknum <<" sockets";
         num = ::select(m_maxfd+1, &rr, &ww, 0, &tv);
     }
 
     {
         ScopeMutex scope(&m_lock);
+        DEBUG << num << "Sockets Bits Active";
         int curnum = 0, i;
         for (i = 0; i <= m_maxfd && curnum < num; ++i)
         {
             if(FD_ISSET(i, &rr) || FD_ISSET(i, &ww))
                 curnum++;
             if (FD_ISSET(i, &rr))
-                m_loop->addActive(i,0);
+                m_loop->addActive(i,EV_READ);
             if(FD_ISSET(i, &ww))
-                m_loop->addActive(i,1);
+                m_loop->addActive(i,EV_WRITE);
         }
 
         for (i = m_maxfd; i >= 0; i--)
         {
-            if(FD_ISSET(i, &m_readfds) == true)
-            {
-                m_maxfd = i; break;
-            }
-            else if(FD_ISSET(i, &m_writefds) == true)
-            {
-                m_maxfd = i; break;
-            }
+            if(FD_ISSET(i, &m_readfds) || FD_ISSET(i, &m_writefds))
+               break;
         }
 
-        if(i == 0) m_maxfd = -1;
+        m_maxfd = i;
     }
 }
 

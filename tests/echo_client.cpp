@@ -16,9 +16,9 @@ class EchoClient : public MSGHandler
 public:
     EchoClient(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
-        waitTimer(1);
-        write("wait for me");
         registerRead();
+        //waitTimer(1);
+        write("wait for me");
     }
 
     ~EchoClient()

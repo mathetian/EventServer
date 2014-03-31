@@ -15,9 +15,9 @@ class EchoServer : public MSGHandler
 public:
     EchoServer(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
+        registerRead();
         Buffer buf("hello world");
         write(buf);
-        registerRead();
     }
 
     ~EchoServer()

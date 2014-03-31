@@ -20,7 +20,8 @@ public:
     MSGHandler(EventLoop& loop, Socket sock) : SocketHandler(loop)
     {
         setSock(sock);
-        DEBUG << "MSGHandler Initialiaztion, Peer Information: " << getSocket().getpeername();
+        DEBUG << "MSGHandler Initialiaztion";
+        DEBUG << "Peer Information: " << getSocket().getpeername();
         assert(getSocket().stat());
 
         attach();

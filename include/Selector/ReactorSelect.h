@@ -18,7 +18,8 @@ public:
 	{ 
 		FD_ZERO(&m_readfds);
 		FD_ZERO(&m_writefds);
-		m_maxfd = -1;
+		m_maxfd  = -1;
+		m_scknum = 0;
 	}
 
 	virtual const char *getMethod() { return "RectorSelect"; }
@@ -28,53 +29,56 @@ public:
 	virtual int registerEvent(SocketHandler *handler, short event)
 	{
 		Socket sock = handler->getSocket();
+		int fd = sock.get_fd();
+
 		if(event == EV_READ) 
 		{
-			INFO << FD_ISSET(sock, &m_readfds);
-			assert(FD_ISSET(sock, &m_readfds) == false);
-			FD_SET(sock,&m_readfds);
+			assert(FD_ISSET(fd, &m_readfds) == false);
+			FD_SET(fd,&m_readfds);
 		}
 		else
 		{
-			assert(FD_ISSET(sock, &m_writefds) == false);
-			FD_SET(sock,&m_writefds);
+			assert(FD_ISSET(fd, &m_writefds) == false);
+			FD_SET(fd,&m_writefds);
 		}
-
-		ScopeMutex scope(&m_lock);
-		m_maxfd = max(m_maxfd, (int)sock);
+		ScopeMutex scope(&m_lock2);
+		m_maxfd = max(m_maxfd, fd);
+		m_scknum++;
 	}
 
 	virtual int unRegisterEvent(SocketHandler *handler, short event)
 	{
 		Socket sock = handler->getSocket();
+		int fd = sock.get_fd();
 		if(event == EV_READ) 
 		{
-			assert(FD_ISSET(sock, &m_readfds) == true);
-			FD_CLR(sock,&m_readfds);
+			assert(FD_ISSET(fd, &m_readfds) == true);
+			FD_CLR(fd,&m_readfds);
 		}
 		else
 		{
-			assert(FD_ISSET(sock, &m_writefds) == true);
-			FD_CLR(sock,&m_writefds);
+			assert(FD_ISSET(fd, &m_writefds) == true);
+			FD_CLR(fd,&m_writefds);
 		}
 
-		ScopeMutex scope(&m_lock);
+		ScopeMutex scope(&m_lock2);
 		int i;
 		for(i=m_maxfd;i>=0;i--)
 		{
 			if(FD_ISSET(i,&m_readfds) || FD_ISSET(i,&m_writefds))
-			{
-				m_maxfd = i; break;
-			}
+				break;
 		}
-		if(i<0) m_maxfd = -1;
+		m_maxfd = i;
+		m_scknum--;
 	}
 
 private:
-	int       m_maxfd; 
+	int       m_maxfd;
+	int       m_scknum; 
 	fd_set    m_readfds;
 	fd_set    m_writefds;
 	Mutex     m_lock;
+	Mutex     m_lock2;
 };
 
 

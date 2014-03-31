@@ -71,6 +71,11 @@ public:
     {
         return maxlen;
     }
+
+    void zeros()
+    {
+        memset(dat,0,maxlen);
+    }
 };
 
 class Buffer : public InnerBuffer
@@ -102,6 +107,7 @@ public:
 
     Buffer(unsigned int maxlen) : InnerBuffer(new char[len + 1], 0, len + 1), ref(new Atomic(0))
     {
+        zeros();
         acquire();
         self_alloc = 1;
     }
@@ -116,6 +122,7 @@ public:
     {
         acquire();
         this->self_alloc = self_alloc;
+        if(self_alloc == 1) zeros();
     }
 
     Buffer& operator = (const Buffer &other)
