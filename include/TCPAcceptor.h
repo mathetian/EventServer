@@ -39,6 +39,7 @@ private:
         TCPSocket sock = m_sock.accept(&a);
 
         if (sock) T* t = new T(*getLoop(), sock);
+        registerRead();
     }
 
     void onSendMsg()

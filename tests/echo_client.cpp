@@ -28,6 +28,7 @@ protected:
     {
         if(status == SUCC)
             INFO << "Received(from Socket: " << getSocket() << "): " << buf.data();
+        registerRead();
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)

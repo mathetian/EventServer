@@ -81,8 +81,6 @@ private:
             buf.set_length(len);
             receivedMsg(SUCC, buf);
         }
-
-        registerRead();
     }
 
     virtual void onSendMsg()
@@ -98,6 +96,7 @@ private:
         uint32_t length  = buf.length();
 
         int len = getSocket().write(data, length);
+        assert(len == length);
         sendedMsg(SUCC, len, length);
     }
 

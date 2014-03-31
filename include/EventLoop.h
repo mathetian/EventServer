@@ -19,6 +19,11 @@ using namespace::utils;
 #include "ReactorSelect.h"
 #include "ReactorEPoll.h"
 
+#define EV_READ   (1<<0)
+#define EV_WRITE  (1<<1)
+#define EV_TIMER  (1<<2)
+#define EV_SIGNAL (1<<3)
+
 class EventLoop
 {
     EventLoop(const EventLoop &);
@@ -30,7 +35,7 @@ class EventLoop
 
     TimeEventSet timeSets;
     Mutex  m_lock;
-    ReactorImpl *selector;
+    ReactorImpl *m_selector;
 public:
     EventPool m_pool;
     int    m_listenSocket;
@@ -39,9 +44,9 @@ public:
     EventLoop(const char *name = "ReactorSelect", int thrnum = 2) : m_quitFlag(false), m_pool(thrnum), m_listenSocket(-1)
     {
         if(strcmp(name, "ReactorSelect") == 0)
-            selector = new ReactorSelect(this);
+            m_selector = new ReactorSelect(this);
         else
-            selector = new ReactorEPoll(this);
+            m_selector = new ReactorEPoll(this);
     }
 
     ~EventLoop()
@@ -66,18 +71,14 @@ public:
     {
         if (m_quitFlag)
             return;
-
-        fd_set rr;
-        int m_mfd, m_tsel;
-
         TimeStamp next = fireTimer();
+        m_selector.dispatch(&next);
     }
 
     void attachHandler(int fd, SocketHandler *p)
     {
         ScopeMutex scope(&m_lock);
 
-        assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) == m_map.end());
 
         m_map[fd] = p;
@@ -87,7 +88,6 @@ public:
     {
         ScopeMutex scope(&m_lock);
 
-        assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
         assert(m_map.erase(fd) == 1);
@@ -98,7 +98,6 @@ private:
     {
         ScopeMutex scope(&m_lock);
 
-        assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
 
         TimeStamp tms(second*1000000);
@@ -110,7 +109,6 @@ private:
     {
         ScopeMutex scope(&m_lock);
 
-        assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
 
         SocketHandler *handler = m_map[fd];
@@ -120,9 +118,8 @@ private:
     void registerRead(int fd)
     {
         ScopeMutex scope(&m_lock);
-
-        assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
+        m_selector -> registerEvent(m_map[fd], EV_READ);
     }
 
     TimeStamp fireTimer()
@@ -171,7 +168,6 @@ private:
 
     bool existTimer(int fd)
     {
-        assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
 
         return timeSets.exist(m_map[fd]);
@@ -179,7 +175,6 @@ private:
 
     void deleteTimer(int fd)
     {
-        assert(fd >= 0 && fd < FD_SETSIZE);
         assert(m_map.find(fd) != m_map.end());
 
         timeSets.remove(m_map[fd]);
@@ -188,6 +183,25 @@ private:
     friend class SocketHandler;
 
     template<class T> friend  class TCPAcceptor;
+
+public:
+    void addActive(int fd,int type)
+    {
+        assert(m_map.find(fd) != m_map.end());
+        if((type & EV_READ) != 0)
+        {
+            Callback<void> call(*m_map[fd], &SocketHandler::onReceiveMsg);
+            m_selector->unRegisterEvent(m_map[fd],EV_READ);
+            m_pool.insert(call);
+        }
+
+        if((type & EV_WRITE) != 0)
+        {
+            Callback<void> call(*m_map[fd], &SocketHandler::onSendMsg);
+            m_selector->unRegisterEvent(m_map[fd],EV_WRITE);
+            m_pool.insert(call);
+        }
+    }
 };
 
 inline void SocketHandler::attach()
@@ -234,6 +248,95 @@ inline void TCPAcceptor<T>::setListenSocket()
     m_loop->m_listenSocket = getSocket().get_fd();
 }
 
+inline void ReactorSelect::dispatch(TimeStamp next)
+{
+    fd_set rr,ww;
+    FD_ZERO(&rr);FD_ZERO(&ww);
 
+    {
+        ScopeMutex scope(&m_mutex);
+        rr = m_readfds;
+        ww = m_writefds;
+    }
+    
+    if (next)
+    {
+        struct timeval tv = next.to_timeval();
+        DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms";
+        num = ::select(m_mfd+1, &rr, &ww, 0, &tv);
+    }
+    else
+    {
+        next = TimeStamp(5000000);
+        struct timeval tv = next.to_timeval();
+        DEBUG << "Calling ::select() (at most 5 seconds)";
+        num = ::select(m_mfd+1, &rr, &ww, 0, &tv);
+    }
+
+    {
+        ScopeMutex scope(&m_mutex);
+        int curnum = 0, i;
+        for (i = 0; i <= m_mfd && curnum < num; ++i)
+        {
+            if(FD_ISSET(i, &rr) || FD_ISSET(i, &ww))
+                curnum++;
+            if (FD_ISSET(i, &rr))
+                m_loop->addActive(i,0);
+            if(FD_ISSET(i, &ww))
+                m_loop->addActive(i,1);
+        }
+
+        for (i = m_maxfd; i >= 0; i--)
+        {
+            if(FD_ISSET(i, &m_readfds) == true)
+            {
+                m_maxfd = i; break;
+            }
+            else if(FD_ISSET(i, &m_writefds) == true)
+            {
+                m_maxfd = i; break;
+            }
+        }
+
+        if(i == 0) m_maxfd = -1;
+    }
+}
+
+inline void ReactorEPoll::dispatch(TimeStamp next)
+{
+    int num;
+    if (next)
+    {
+        struct timeval tv = next.to_timeval();
+        DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms";
+        num = epoll_wait(m_epollFD, m_pEvents, m_iEvents, tv);
+    }
+    else
+    {
+        next = TimeStamp(5000000);
+        struct timeval tv = next.to_timeval();
+        DEBUG << "Calling ::select() (at most 5 seconds)";
+        num = epoll_wait(m_epollFD, m_pEvents, m_iEvents, tv);
+    }
+
+    for(int i = 0; i < res; i++)
+    {
+        int what = m_pEvents[i].events;
+        int events = 0;
+        SocketHandler *handler = (SocketHandler*)m_pEvents[i].data.ptr;
+
+        if(what & (EPOLLHUP|EPOLLERR))
+        {
+            events = EV_READ|EV_WRITE;
+            assert(0);
+        }
+        else
+        {
+            if(what & EPOLLIN ) events |= EV_READ;
+            if(what & EPOLLOUT) events |= EV_WRITE;
+        }
+        if(events != 0) m_loop->addActive(handler->getSocket(), events);
+    }
+}
 
 #endif

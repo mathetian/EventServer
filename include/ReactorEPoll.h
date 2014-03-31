@@ -11,24 +11,23 @@ public:
 	ReactorEPoll(const EventLoop*loop) : ReactorImpl(loop) 
 	{ 
 		assert((m_epollFD = epoll_create(0)) != -1);
-
+		m_pEvents = (struct epoll_event*)malloc(MAX_NEVENTS * sizeof(struct epoll_event));
+		assert(m_pEvents != NULL);
+		m_iEvents = MAX_NEVENTS;
 	}
-	virtual int Finalize() { }
-	virtual const char *GetMethod() { return "ReactorEPoll"; }
-	virtual int RegisterEvent(SocketHandler *handler, short event) 
+	virtual const char *getMethod() { return "ReactorEPoll"; }
+	virtual int registerEvent(SocketHandler *handler, short event) 
 	{
 		Socket sock = handler->getSocket();
-		int events = 0, op;
-
-		op = EPOLL_CTL_ADD;
-		events = 0;
-
-		if(event & EV_READ) events  |= EPOLLIN;
+		int events = 0
+		
+		if(event & EV_READ)  events |= EPOLLIN;
 		if(event & EV_WRITE) events |= EPOLLOUT;
 
 		struct epoll_event epev = {0, {0}};
 		epev.events = events;
-		if(epoll_ctl(m_epollFD, op, sock, &epev) == -1)
+		epev.data.prt = handler;
+		if(epoll_ctl(m_epollFD, EPOLL_CTL_ADD, sock, &epev) == -1)
 		{
 			switch(errno)
 			{
@@ -39,33 +38,37 @@ public:
 	    }
 		return 1;
 	}
-	virtual int UnregisterEvent(SocketHandler *handler, short event)
+	virtual int unRegisterEvent(SocketHandler *handler, short event)
 	{
 		Socket sock = handler->getSocket();
 		int op = EPOLL_CTL_DEL, events = 0;
 
+		if(event & EV_READ)  events |= EPOLLIN;
+		if(event & EV_WRITE) events |= EPOLLOUT;
+
 		struct epoll_event epev = {0, {0}};
 	    epev.events = events;
-	    if(epoll_ctl(m_epollFD, op, sock, &epev) == -1)
+	    epev.data.prt = handler;
+
+	    if(epoll_ctl(m_epollFD, EPOLL_CTL_DEL, sock, &epev) == -1)
 	    {
-			if(op == EPOLL_CTL_DEL)
+			switch(errno)
 			{
-				switch(errno)
-				{
-					case EBADF: // bad file descriptor
-					case ENOENT: // the fd is already removed
-					return 0;
-				}
+				case EBADF: // bad file descriptor
+				case ENOENT: // the fd is already removed
+				return 0;
 			}
-	          
 	         return (-1); 
 		}
 		return (0);
 	}
-	virtual int Dispatch(struct timeval *tv);
+	virtual int dispatch(TimeStamp tv);
 
 private:
 	int m_epollFD;
+	struct epoll_event *m_pEvents;
+	int m_iEvents;
+
 };
 
 #endif

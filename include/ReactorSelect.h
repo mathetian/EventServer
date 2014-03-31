@@ -18,12 +18,11 @@ public:
 		m_maxfd = -1;
 	}
 
-	virtual int Finalize() { }
-	virtual const char *GetMethod() { return "RectorSelect"; }
+	virtual const char *getMethod() { return "RectorSelect"; }
 
-	virtual int Dispatch(struct timeval *tv);
+	virtual int dispatch(TimeStamp tv);
 
-	virtual int RegisterEvent(SocketHandler *handler, short event)
+	virtual int registerEvent(SocketHandler *handler, short event)
 	{
 		Socket sock = handler->getSocket();
 		if(event == 0) 
@@ -40,7 +39,7 @@ public:
 		m_maxfd = max(m_maxfd, (int)sock);
 	}
 
-	virtual int UnregisterEvent(SocketHandler *handler, short event)
+	virtual int unRegisterEvent(SocketHandler *handler, short event)
 	{
 		Socket sock = handler->getSocket();
 		if(event == 0) 
@@ -56,9 +55,10 @@ public:
 	}
 
 private:
-	int m_maxfd; 
+	int       m_maxfd; 
 	fd_set    m_readfds;
 	fd_set    m_writefds;
+	Mutex     m_mutex;
 };
 
 

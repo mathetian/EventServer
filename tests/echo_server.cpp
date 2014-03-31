@@ -30,6 +30,7 @@ private:
             INFO << "Received(from Socket: " << getSocket() << "): " << buf.data();
             write(buf);
         }
+        registerRead();
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)
