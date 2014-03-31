@@ -18,6 +18,7 @@ public:
     {
         waitTimer(1);
         write("wait for me");
+        registerRead();
     }
 
     ~EchoClient()

@@ -76,7 +76,7 @@ public:
 class Buffer : public InnerBuffer
 {
     Atomic *ref;
-
+    int self_alloc;
 private:
     void acquire()
     {
@@ -84,7 +84,8 @@ private:
     }
     void release()
     {
-        if (ref && (ref->addAndGet(-1)) == 0 == 0)
+        if(self_alloc == 0) return;
+        if (ref && (ref->addAndGet(-1)) == 0)
         {
             DEBUG << "release finally" ;
             delete[] dat;
@@ -96,21 +97,25 @@ public:
     Buffer() : InnerBuffer(), ref(0)
     {
         acquire();
+        self_alloc = 0;
     }
 
     Buffer(unsigned int maxlen) : InnerBuffer(new char[len + 1], 0, len + 1), ref(new Atomic(0))
     {
         acquire();
+        self_alloc = 1;
     }
 
     Buffer(const Buffer &other) : InnerBuffer(other.dat, other.len, other.maxlen), ref(other.ref)
     {
         acquire();
+        self_alloc = other.self_alloc;
     }
 
-    Buffer(const char* str) : InnerBuffer(str, strlen(str), strlen(str) + 1), ref(new Atomic(0))
+    Buffer(const char* str, int self_alloc = 0) : InnerBuffer(str, strlen(str), strlen(str) + 1), ref(new Atomic(0))
     {
         acquire();
+        this->self_alloc = self_alloc;
     }
 
     Buffer& operator = (const Buffer &other)
@@ -119,7 +124,9 @@ public:
 
         dat = other.dat; len = other.len;
         ref = other.ref; maxlen = other.maxlen;
-        acquire(); return *this;
+        acquire(); self_alloc = other.self_alloc;
+
+        return *this;
     }
 
     ~Buffer()

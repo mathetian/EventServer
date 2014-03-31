@@ -24,7 +24,6 @@ public:
         assert(getSocket().stat());
 
         attach();
-        registerRead();
     }
 
     virtual ~MSGHandler()

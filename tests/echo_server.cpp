@@ -17,6 +17,7 @@ public:
     {
         Buffer buf("hello world");
         write(buf);
+        registerRead();
     }
 
     ~EchoServer()

@@ -72,17 +72,12 @@ public:
 
     void attachHandler(int fd, SocketHandler *p)
     {
-        ScopeMutex scope(&m_lock);
-
         assert(m_map.find(fd) == m_map.end());
-
         m_map[fd] = p;
     }
 
     void detachHandler(int fd, SocketHandler *p)
     {
-        ScopeMutex scope(&m_lock);
-
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
         assert(m_map.erase(fd) == 1);
@@ -91,30 +86,27 @@ public:
 private:
     void waitTimer(int fd, uint64_t second)
     {
-        ScopeMutex scope(&m_lock);
-
         assert(m_map.find(fd) != m_map.end());
 
         TimeStamp tms(second*1000000);
         SocketHandler *handler = m_map[fd];
+        ScopeMutex scope(&m_lock);
         timeSets.insert(TimeEventItem(handler, TimeStamp::now() + tms));
     }
 
     void waitTimer(int fd, const TimeStamp &tms)
     {
-        ScopeMutex scope(&m_lock);
-
         assert(m_map.find(fd) != m_map.end());
 
         SocketHandler *handler = m_map[fd];
+        ScopeMutex scope(&m_lock);
         timeSets.insert(TimeEventItem(handler, TimeStamp::now() + tms));
     }
 
     void registerRead(int fd)
     {
-        ScopeMutex scope(&m_lock);
         assert(m_map.find(fd) != m_map.end());
-        m_selector -> registerEvent(m_map[fd], EV_READ);
+        m_selector->registerEvent(m_map[fd], EV_READ);
     }
 
     TimeStamp fireTimer()
@@ -148,8 +140,7 @@ private:
 
         if(count != 0) timeSets.removen(count);
 
-        if (timeSets.empty())
-            return TimeStamp::none();
+        if (timeSets.empty()) return TimeStamp::none();
         else
         {
             TimeStamp tms = iter.first()->timer;
@@ -250,7 +241,7 @@ inline int ReactorSelect::dispatch(TimeStamp next)
 
     int num;
     {
-        ScopeMutex scope(&m_mutex);
+        ScopeMutex scope(&m_lock);
         rr = m_readfds;
         ww = m_writefds;
     }
@@ -258,19 +249,19 @@ inline int ReactorSelect::dispatch(TimeStamp next)
     if (next)
     {
         struct timeval tv = next.to_timeval();
-        DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms";
+        DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms, for " << m_maxfd <<" sockets";
         num = ::select(m_maxfd+1, &rr, &ww, 0, &tv);
     }
     else
     {
         next = TimeStamp(5000000);
         struct timeval tv = next.to_timeval();
-        DEBUG << "Calling ::select() (at most 5 seconds)";
+        DEBUG << "Calling ::select(): (at most 5 seconds) for " << m_maxfd <<" sockets";
         num = ::select(m_maxfd+1, &rr, &ww, 0, &tv);
     }
 
     {
-        ScopeMutex scope(&m_mutex);
+        ScopeMutex scope(&m_lock);
         int curnum = 0, i;
         for (i = 0; i <= m_maxfd && curnum < num; ++i)
         {

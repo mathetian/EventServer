@@ -6,7 +6,7 @@ using namespace std;
 
 void TestBuffer(const Buffer buf)
 {
-	cout<<"len:"<<buf.length()<<endl;
+	cout<<"len2:"<<buf.length()<<endl;
 }
 
 int main()

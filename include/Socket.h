@@ -42,7 +42,7 @@ public:
     Socket(int family, int type, Address *paddr, Flags f = nonblocking) :
         m_fd(sys_socket(family, type, 0)), m_stat(true)
     {
-        DEBUG << "LISTEN or Accept in Socket FD: " << m_fd;
+        DEBUG << "LISTEN or Accept or Connect in Socket FD: " << m_fd;
         if (f & nonblocking) set_blocking(false);
 
         if (paddr)

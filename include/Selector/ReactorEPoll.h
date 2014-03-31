@@ -29,15 +29,8 @@ public:
 		struct epoll_event epev = {0, {0}};
 		epev.events = events;
 		epev.data.ptr = handler;
-		if(epoll_ctl(m_epollFD, EPOLL_CTL_ADD, sock, &epev) == -1)
-		{
-			switch(errno)
-			{
-				case EEXIST: 
-					return 1;
-			}
-			return 0;
-	    }
+		
+		assert(epoll_ctl(m_epollFD, EPOLL_CTL_ADD, sock, &epev) == 0);
 		return 1;
 	}
 	virtual int unRegisterEvent(SocketHandler *handler, short event)
