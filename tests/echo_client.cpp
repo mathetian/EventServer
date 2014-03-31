@@ -9,7 +9,7 @@ using namespace std;
 #define PORT 10000
 #define CLIENT_NUM 5
 
-EventLoop loop;
+EventLoop loop("EPoll");
 
 class EchoClient : public MSGHandler
 {

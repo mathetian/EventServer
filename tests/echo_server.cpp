@@ -8,7 +8,7 @@ using namespace std;
 
 #define PORT 10000
 
-EventLoop loop;
+EventLoop loop("EPoll");
 
 class EchoServer : public MSGHandler
 {

@@ -36,9 +36,9 @@ public:
     int    m_listenSocket;
 
 public:
-    EventLoop(const char *name = "ReactorSelect", int thrnum = 2) : m_quitFlag(false), m_pool(thrnum), m_listenSocket(-1)
+    EventLoop(const char *name = "Select", int thrnum = 2) : m_quitFlag(false), m_pool(thrnum), m_listenSocket(-1)
     {
-        if(strcmp(name, "ReactorSelect") == 0)
+        if(strcmp(name, "Select") == 0)
             m_selector = new ReactorSelect(this);
         else
             m_selector = new ReactorEPoll(this);
@@ -188,6 +188,14 @@ public:
             m_selector->unRegisterEvent(m_map[fd],EV_WRITE);
             m_pool.insert(call);
         }
+
+        /**Only for epoll**/
+        if((type & EV_CLOSE) != 0)
+        {
+            Callback<void> call(*m_map[fd], &SocketHandler::onCloseSocket);
+            m_selector->unRegisterEvent(m_map[fd],EV_CLOSE);
+            m_pool.insert(call);
+        }
     }
 };
 
@@ -292,19 +300,19 @@ inline int ReactorEPoll::dispatch(TimeStamp next)
     if (next)
     {
         tv = next.to_timeval();
-        DEBUG << "Calling ::select(): waiting " << next.to_msecs() << "ms";
+        INFO << "Calling ::EPoll(): waiting " << next.to_msecs() << "ms, for " << m_scknum <<" sockets";
     }
     else
     {
         next = TimeStamp(5000000);
         tv = next.to_timeval();
-        DEBUG << "Calling ::select() (at most 5 seconds)";
+        INFO << "Calling ::EPoll(): (at most 5 seconds) for " << m_scknum <<" sockets";
     }
 
     int timeout = tv.tv_sec*1000 + (tv.tv_usec+999)/1000;
 
-    num = epoll_wait(m_epollFD, m_pEvents, m_iEvents, timeout);
-
+    num = epoll_wait(m_epollFD, m_pEvents, MAX_NEVENTS, timeout);
+    INFO << num << "Sockets Active";
     for(int i = 0; i < num; i++)
     {
         int what = m_pEvents[i].events;
@@ -312,16 +320,13 @@ inline int ReactorEPoll::dispatch(TimeStamp next)
         SocketHandler *handler = (SocketHandler*)m_pEvents[i].data.ptr;
 
         if(what & (EPOLLHUP|EPOLLERR))
-        {
-            events = EV_READ|EV_WRITE;
-            assert(0);
-        }
+            events = EV_CLOSE;
         else
         {
             if(what & EPOLLIN ) events |= EV_READ;
             if(what & EPOLLOUT) events |= EV_WRITE;
         }
-        if(events != 0) m_loop->addActive(handler->getSocket(), events);
+        if(events != 0) m_loop->addActive(handler->getSocket().get_fd(), events);
     }
 }
 

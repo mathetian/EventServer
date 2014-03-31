@@ -5,8 +5,7 @@
 
 #define EV_READ   (1<<0)
 #define EV_WRITE  (1<<1)
-#define EV_TIMER  (1<<2)
-#define EV_SIGNAL (1<<3)
+#define EV_CLOSE  (1<<2)
 
 class ReactorImpl{
 public:
