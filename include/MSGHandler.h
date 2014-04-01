@@ -21,7 +21,7 @@ public:
     {
         setSock(sock);
         DEBUG << "MSGHandler Initialiaztion";
-        DEBUG << "Peer Information: " << getSocket().getpeername();
+       // DEBUG << "Peer Information: " << getSocket().getpeername();
         assert(getSocket().stat());
 
         attach();
@@ -38,6 +38,7 @@ protected:
             m_Bufs.push_back(buf);
         }
         registerWrite();
+        INFO << "Can anyone tells me what's wrong" ;
         // Callback<void> call(this, &MSGHandler::onSendMsg);
         // m_loop->m_pool.insert(call);
     }
@@ -101,6 +102,7 @@ private:
         int len = getSocket().write(data, length);
         if(len < 0 && errno == EAGAIN)
         {
+            INFO << "Here" ; 
             ScopeMutex scope(&m_mutex);
             m_Bufs.push_back(buf);
             registerWrite();

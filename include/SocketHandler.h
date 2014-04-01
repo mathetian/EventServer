@@ -57,12 +57,21 @@ public:
 
     void updateStatus(int val)
     {
+        if((m_status & val) != 0)
+        {
+            INFO << "updateStatus: " << m_status << " " << val;
+        }
+
         assert((m_status & val) == 0);
         m_status |= val;
     }
 
     void removeStatus(int val)
     {
+        if((m_status & val) == 0)
+        {
+            INFO << "removeStatus: " << m_status << " " << val;
+        }
         assert((m_status & val) != 0);
         m_status ^= val;
     }

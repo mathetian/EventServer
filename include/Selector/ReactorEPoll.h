@@ -58,6 +58,12 @@ public:
 		Socket sock = handler->getSocket();
 		int fd = sock.get_fd(), events = 0, delflag = 1;
 
+		if(event == EV_CLOSE)
+		{
+			assert(epoll_ctl(m_epollFD, EPOLL_CTL_DEL, fd, NULL) == 0);
+			return 1;
+		}
+		
 		handler->removeStatus(event);
 		event = handler->getStatus();
 		if(event != 0) delflag = 0;

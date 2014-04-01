@@ -32,7 +32,6 @@ private:
             write(buf);
         }
         registerRead();
-        write(buf);
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)

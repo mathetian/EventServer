@@ -158,7 +158,11 @@ public:
 
         int ret = ::getpeername(get_fd(), (sockaddr*)&buf, &len);
 
-        assert(ret == 0 && len != sizeof(buf));
+        if(ret != 0)
+        {
+            INFO << "getpeername: " << ret << " " << errno ;
+        }
+        //assert(ret == 0 && len != sizeof(buf));
 
         return NetAddress(buf, len);
     }
