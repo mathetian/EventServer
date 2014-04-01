@@ -7,7 +7,7 @@
 using namespace std;
 
 #define PORT 10000
-#define CLIENT_NUM 100
+#define CLIENT_NUM 1000
 
 EventLoop loop("EPoll");
 
@@ -17,7 +17,6 @@ public:
     EchoClient(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
         registerRead();
-        //waitTimer(1);
         write("wait for me");
     }
 
@@ -29,7 +28,6 @@ protected:
     {
         if(status == SUCC)
             INFO << "Received(from Socket: " << getSocket() << "): " << buf.data();
-        registerRead();
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)

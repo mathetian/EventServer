@@ -16,8 +16,6 @@ public:
     EchoServer(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
         registerRead();
-        //Buffer buf("hello world");
-       // write(buf);
     }
 
     ~EchoServer()
@@ -31,7 +29,6 @@ private:
             INFO << "Received(from Socket: " << getSocket() << "): " << buf.data();
             write(buf);
         }
-        registerRead();
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)
@@ -52,7 +49,7 @@ private:
 
     virtual void closedSocket()
     {
-        INFO << "Socket need to be closed";
+        INFO << "Socket need to be closed: " << getSocket();
     }
 };
 

@@ -14,10 +14,11 @@ protected:
     EventLoop*  m_loop;
     Socket      m_sock;
     int         m_status;
+    int         m_delflag;
 
 public:
     SocketHandler(EventLoop& loop) : m_loop(&loop)
-    {  m_status = 0; }
+    {  m_status = 0; m_delflag = 0; }
 
     virtual ~SocketHandler()
     { }
@@ -55,8 +56,15 @@ public:
         return m_status;
     }
 
+    int setdelflag()
+    {
+        m_delflag = 1;
+    }
+
     void updateStatus(int val)
     {
+        if(m_delflag == 1) return;
+
         if((m_status & val) != 0)
         {
             INFO << "updateStatus: " << m_status << " " << val;
@@ -68,6 +76,8 @@ public:
 
     void removeStatus(int val)
     {
+        if(m_delflag == 1) return;
+
         if((m_status & val) == 0)
         {
             INFO << "removeStatus: " << m_status << " " << val;

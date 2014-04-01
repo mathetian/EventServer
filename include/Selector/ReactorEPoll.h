@@ -9,7 +9,7 @@ using namespace utils;
 
 #include "../ReactorImpl.h"
 
-#define MAX_NEVENTS 4096
+#define MAX_NEVENTS 1000000
 
 class ReactorEPoll : public ReactorImpl
 {
@@ -34,6 +34,7 @@ public:
 
 		if(event & EV_READ)  events |= EPOLLIN;
 		if(event & EV_WRITE) events |= EPOLLOUT;
+		events |= EPOLLET;
 
 		struct epoll_event epev = {0, {0}};
 		epev.events   = events;
@@ -70,6 +71,7 @@ public:
 
 		if(event & EV_READ)  events |= EPOLLIN;
 		if(event & EV_WRITE) events |= EPOLLOUT;
+		events |= EPOLLET;
 		
 		ScopeMutex scope(&m_lock);
 		if(delflag == 0)

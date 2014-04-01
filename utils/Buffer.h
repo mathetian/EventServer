@@ -92,7 +92,6 @@ private:
         if(self_alloc == 0) return;
         if (ref && (ref->addAndGet(-1)) == 0)
         {
-            DEBUG << "release finally" ;
             delete[] dat;
             delete ref;
         }

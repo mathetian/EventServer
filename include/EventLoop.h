@@ -81,6 +81,7 @@ public:
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
         assert(m_map.erase(fd) == 1);
+        m_selector->unRegisterEvent(p,EV_READ);
     }
 
 private:
@@ -196,14 +197,19 @@ public:
         if((type & EV_READ) != 0)
         {
             Callback<void> call(*m_map[fd], &SocketHandler::onReceiveMsg);
-            m_selector->unRegisterEvent(m_map[fd],EV_READ);
+
+            if(strcmp(m_selector->getMethod(),"RectorSelect")==0)
+                m_selector->unRegisterEvent(m_map[fd],EV_READ);
+            
             m_pool.insert(call);
         }
 
         if((type & EV_WRITE) != 0)
         {
             Callback<void> call(*m_map[fd], &SocketHandler::onSendMsg);
+            
             m_selector->unRegisterEvent(m_map[fd],EV_WRITE);
+            
             m_pool.insert(call);
         }
 
@@ -334,8 +340,8 @@ inline int ReactorSelect::dispatch(TimeStamp next)
 
 inline int ReactorEPoll::dispatch(TimeStamp next)
 {
-    int num;
-    struct timeval tv;
+    int num; struct timeval tv;
+    
     if (next)
     {
         tv = next.to_timeval();
