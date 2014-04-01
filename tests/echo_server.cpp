@@ -16,8 +16,8 @@ public:
     EchoServer(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
     {
         registerRead();
-        Buffer buf("hello world");
-        write(buf);
+        //Buffer buf("hello world");
+       // write(buf);
     }
 
     ~EchoServer()
@@ -32,6 +32,7 @@ private:
             write(buf);
         }
         registerRead();
+        write(buf);
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)

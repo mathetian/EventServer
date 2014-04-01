@@ -13,10 +13,11 @@ class SocketHandler
 protected:
     EventLoop*  m_loop;
     Socket      m_sock;
+    int         m_status;
 
 public:
     SocketHandler(EventLoop& loop) : m_loop(&loop)
-    {  }
+    {  m_status = 0; }
 
     virtual ~SocketHandler()
     { }
@@ -28,6 +29,9 @@ public:
     virtual void onCloseSocket() = 0;
 
     void registerRead();
+    void registerWrite();
+    void unRegisterRead();
+    void unRegisterWrite();
 
     void waitTimer(int);
     void waitTimer(const TimeStamp &tms);
@@ -44,6 +48,23 @@ public:
     EventLoop *getLoop()
     {
         return m_loop;
+    }
+
+    int getStatus()
+    {
+        return m_status;
+    }
+
+    void updateStatus(int val)
+    {
+        assert((m_status & val) == 0);
+        m_status |= val;
+    }
+
+    void removeStatus(int val)
+    {
+        assert((m_status & val) != 0);
+        m_status ^= val;
     }
 
 protected:

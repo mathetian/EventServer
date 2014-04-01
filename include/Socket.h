@@ -15,6 +15,10 @@ using namespace std;
 
 #include "../utils/Log.h"
 
+#define EV_READ   (1<<0)
+#define EV_WRITE  (1<<1)
+#define EV_CLOSE  (1<<2)
+
 class Socket
 {
 private:
@@ -186,7 +190,7 @@ public:
     int write(const void *buf, int count)
     {
         count = ::write(get_fd(), buf, count);
-        if(count < 0 && errno == EAGAIN) WARN << "EWouldBlock Read";
+        if(count < 0 && errno == EAGAIN) WARN << "EWouldBlock Write";
         else if(count < 0) set_status(Status::syserr("write"));
 
         return count;

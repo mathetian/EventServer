@@ -109,6 +109,24 @@ private:
         m_selector->registerEvent(m_map[fd], EV_READ);
     }
 
+    void registerWrite(int fd)
+    {
+        assert(m_map.find(fd) != m_map.end());
+        m_selector->registerEvent(m_map[fd], EV_WRITE);
+    }
+
+    void unRegisterRead(int fd)
+    {
+        assert(m_map.find(fd) != m_map.end());
+        m_selector->unRegisterEvent(m_map[fd], EV_READ);
+    }
+
+    void unRegisterWrite(int fd)
+    {
+        assert(m_map.find(fd) != m_map.end());
+        m_selector->unRegisterEvent(m_map[fd], EV_WRITE);
+    }
+
     TimeStamp fireTimer()
     {
         ScopeMutex scope(&m_lock);
@@ -234,6 +252,27 @@ inline void SocketHandler::registerRead()
     INFO << "Register " << "reader for: " << m_sock;
     assert(m_loop && m_sock.stat());
     m_loop->registerRead(m_sock.get_fd());
+}
+
+inline void SocketHandler::registerWrite()
+{
+    INFO << "Register " << "writer for: " << m_sock;
+    assert(m_loop && m_sock.stat());
+    m_loop->registerWrite(m_sock.get_fd());
+}
+
+inline void SocketHandler::unRegisterRead()
+{
+    INFO << "unRegister " << "reader for: " << m_sock;
+    assert(m_loop && m_sock.stat());
+    m_loop->unRegisterRead(m_sock.get_fd());
+}
+
+inline void SocketHandler::unRegisterWrite()
+{
+    INFO << "unRegister " << "writer for: " << m_sock;
+    assert(m_loop && m_sock.stat());
+    m_loop->unRegisterWrite(m_sock.get_fd());
 }
 
 template<class T>

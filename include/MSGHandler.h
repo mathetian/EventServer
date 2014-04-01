@@ -33,10 +33,13 @@ public:
 protected:
     int write(const Buffer& buf)
     {
-        ScopeMutex scope(&m_mutex);
-        m_Bufs.push_back(buf);
-        Callback<void> call(this, &MSGHandler::onSendMsg);
-        m_loop->m_pool.insert(call);
+        {
+            ScopeMutex scope(&m_mutex);
+            m_Bufs.push_back(buf);
+        }
+        registerWrite();
+        // Callback<void> call(this, &MSGHandler::onSendMsg);
+        // m_loop->m_pool.insert(call);
     }
 
     typedef enum  { EXCEED, SOCKERR, BLOCKED, SUCC} STATUS;
@@ -96,8 +99,22 @@ private:
         uint32_t length  = buf.length();
 
         int len = getSocket().write(data, length);
-        assert(len == length);
-        sendedMsg(SUCC, len, length);
+        if(len < 0 && errno == EAGAIN)
+        {
+            ScopeMutex scope(&m_mutex);
+            m_Bufs.push_back(buf);
+            registerWrite();
+        }
+        else if(len < 0)
+        {
+            WARN << "Write Error, so close socket" ;
+            onCloseSocket();
+        }
+        else
+        {
+            assert(len == length);
+            sendedMsg(SUCC, len, length);
+        }
     }
 
     virtual void onCloseSocket()

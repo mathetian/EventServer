@@ -3,10 +3,6 @@
 
 #include "SocketHandler.h"
 
-#define EV_READ   (1<<0)
-#define EV_WRITE  (1<<1)
-#define EV_CLOSE  (1<<2)
-
 class ReactorImpl{
 public:
 	ReactorImpl(EventLoop* const loop) : m_loop(loop) { };

@@ -25,10 +25,13 @@ public:
 	virtual int registerEvent(SocketHandler *handler, short event) 
 	{
 		Socket sock = handler->getSocket();
-		int fd = sock.get_fd();
+		int fd = sock.get_fd(), events = 0, addFlag = 1;
 
-		int events = 0;
+		if(handler->getStatus() != 0) addFlag = 0;
 		
+		handler->updateStatus(event);
+		event = handler->getStatus();
+
 		if(event & EV_READ)  events |= EPOLLIN;
 		if(event & EV_WRITE) events |= EPOLLOUT;
 
@@ -37,8 +40,15 @@ public:
 		epev.data.ptr = handler;
 		
 		ScopeMutex scope(&m_lock);
-		assert(epoll_ctl(m_epollFD, EPOLL_CTL_ADD, fd, &epev) == 0);
-		m_scknum++;
+		if(addFlag == 1)
+		{
+			assert(epoll_ctl(m_epollFD, EPOLL_CTL_ADD, fd, &epev) == 0);
+			m_scknum++;
+		}
+		else
+		{
+			assert(epoll_ctl(m_epollFD, EPOLL_CTL_MOD, fd, &epev) == 0);
+		}
 		
 		return 1;
 	}
@@ -46,12 +56,29 @@ public:
 	virtual int unRegisterEvent(SocketHandler *handler, short event)
 	{
 		Socket sock = handler->getSocket();
-		int fd = sock.get_fd();
+		int fd = sock.get_fd(), events = 0, delflag = 1;
 
+		handler->removeStatus(event);
+		event = handler->getStatus();
+		if(event != 0) delflag = 0;
+
+		if(event & EV_READ)  events |= EPOLLIN;
+		if(event & EV_WRITE) events |= EPOLLOUT;
+		
 		ScopeMutex scope(&m_lock);
-		assert(epoll_ctl(m_epollFD, EPOLL_CTL_DEL, fd, NULL) == 0);
-		m_scknum--;
-
+		if(delflag == 0)
+		{
+			struct epoll_event epev = {0, {0}};
+			epev.events   = events;
+			epev.data.ptr = handler;
+			assert(epoll_ctl(m_epollFD, EPOLL_CTL_MOD, fd, &epev) == 0);
+		}
+		else if(delflag == 1)
+		{
+			assert(epoll_ctl(m_epollFD, EPOLL_CTL_DEL, fd, NULL) == 0);
+			m_scknum--;
+		}
+		
 		return 1;
 	}
 	virtual int dispatch(TimeStamp next);
