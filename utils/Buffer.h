@@ -13,6 +13,9 @@ using std::string;
 #include "Atomic.h"
 #include "Log.h"
 
+namespace utils
+{
+
 class ConstBuffer
 {
 protected:
@@ -128,9 +131,12 @@ public:
     {
         release();
 
-        dat = other.dat; len = other.len;
-        ref = other.ref; maxlen = other.maxlen;
-        acquire(); self_alloc = other.self_alloc;
+        dat = other.dat;
+        len = other.len;
+        ref = other.ref;
+        maxlen = other.maxlen;
+        acquire();
+        self_alloc = other.self_alloc;
 
         return *this;
     }
@@ -141,4 +147,5 @@ public:
     }
 };
 
+};
 #endif

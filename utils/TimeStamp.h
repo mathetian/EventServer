@@ -1,10 +1,13 @@
 #ifndef _TIME_STAMP_H
 #define _TIME_STAMP_H
 
+#include <sys/time.h>
+
 #include "Utils.h"
 #include "Log.h"
 
-#include <sys/time.h>
+namespace utils
+{
 
 class TimeStamp
 {
@@ -110,5 +113,8 @@ public:
 };
 
 TO_STRING(TimeStamp);
+
+};
+
 
 #endif

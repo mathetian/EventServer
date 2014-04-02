@@ -1,9 +1,11 @@
 #ifndef _ACCEPTOR_H
 #define _ACCEPTOR_H
 
+#include "Log.h"
 #include "SocketHandler.h"
 
-#include "../utils/Log.h"
+namespace sealedServer
+{
 
 template<class T>
 class TCPAcceptor : public SocketHandler
@@ -19,7 +21,7 @@ public:
 
         attach();
         setListenSocket();
-        
+
         registerRead();
     }
 
@@ -61,6 +63,8 @@ private:
 
 private:
     void setListenSocket();
+};
+
 };
 
 #endif

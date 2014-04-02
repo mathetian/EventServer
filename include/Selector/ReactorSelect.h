@@ -1,15 +1,19 @@
 #ifndef _RECTOR_SEL_H
 #define _RECTOR_SEL_H
 
+#include "assert.h"
+
 #include <vector>
 using namespace std;
 
-#include "../../utils/Thread.h"
-#include "../../utils/Log.h"
+#include "Thread.h"
+#include "Log.h"
 using namespace utils;
+
 #include "../ReactorImpl.h"
 
-#include "assert.h"
+namespace sealedServer
+{
 
 class ReactorSelect : public ReactorImpl
 {
@@ -81,5 +85,6 @@ private:
 	Mutex     m_lock2;
 };
 
+};
 
 #endif

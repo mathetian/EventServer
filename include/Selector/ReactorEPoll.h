@@ -3,13 +3,16 @@
 
 #include <sys/epoll.h>
 
-#include "../../utils/Thread.h"
-#include "../../utils/Log.h"
+#include "Thread.h"
+#include "Log.h"
 using namespace utils;
 
 #include "../ReactorImpl.h"
 
 #define MAX_NEVENTS 1000000
+
+namespace sealedServer
+{
 
 class ReactorEPoll : public ReactorImpl
 {
@@ -62,8 +65,11 @@ public:
 		if(event == EV_CLOSE)
 		{
 			assert(epoll_ctl(m_epollFD, EPOLL_CTL_DEL, fd, NULL) == 0);
+			handler->setdelflag();
 			return 1;
 		}
+
+		if(handler->getdelflag() == 1) return 1;
 		
 		handler->removeStatus(event);
 		event = handler->getStatus();
@@ -96,6 +102,8 @@ private:
 	struct epoll_event *m_pEvents;
 	int m_scknum;
 	Mutex m_lock;
+};
+
 };
 
 #endif

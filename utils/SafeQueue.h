@@ -3,14 +3,15 @@
 
 #include <queue>
 using namespace std;
-
-#include "Thread.h"
-using namespace utils;
-
-#include "Log.h"
-
 #include <stdint.h>
 #include <stdio.h>
+
+#include "Thread.h"
+#include "Log.h"
+
+namespace utils
+{
+
 template<class T>
 class SafeQueue
 {
@@ -114,6 +115,8 @@ public:
         }
         return false;
     }
+};
+
 };
 
 

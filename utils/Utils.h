@@ -9,6 +9,9 @@ using namespace std;
 #include <stdio.h>
 #include <string.h>
 
+namespace utils
+{
+
 template<class T>
 inline string to_string(const T* t)
 {
@@ -115,5 +118,7 @@ inline string to_escaped_string(const void *data, int length)
     }
     return out;
 }
+
+};
 
 #endif

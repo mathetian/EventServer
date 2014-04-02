@@ -1,7 +1,8 @@
-#include "../utils/SafeQueue.h"
-#include "../utils/Callback.h"
-
 #include <stdio.h>
+
+#include "SafeQueue.h"
+#include "Callback.h"
+using namespace utils;
 
 class A
 {

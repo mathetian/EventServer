@@ -1,6 +1,7 @@
-#include "../utils/Callback.h"
-
 #include <stdio.h>
+
+#include "Callback.h"
+using namespace utils;
 
 class A
 {

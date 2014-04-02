@@ -7,6 +7,9 @@ using namespace std;
 #include <assert.h>
 #include <stdio.h>
 
+namespace utils
+{
+
 template<typename R>
 class Callback
 {
@@ -73,6 +76,8 @@ public:
     {
 
     }
+};
+
 };
 
 #endif

@@ -1,8 +1,6 @@
 #ifndef _ADDRESS_H
 #define _ADDRESS_H
 
-#include "../utils/Utils.h"
-
 #include <netdb.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
@@ -12,6 +10,12 @@
 
 #include <iostream>
 using namespace std;
+
+#include "../utils/Utils.h"
+using namespace utils;
+
+namespace sealedServer
+{
 
 class Address
 {
@@ -147,6 +151,7 @@ public:
     }
 };
 
-TO_STRING(NetAddress);
+TO_STRING(sealedServer::NetAddress);
 
+};
 #endif

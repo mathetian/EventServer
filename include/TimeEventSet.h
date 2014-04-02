@@ -2,11 +2,15 @@
 #define _TIME_EVENT_SET_H
 
 #include <list>
-using std::list;
+using namespace std;
+
+#include "TimeStamp.h"
+using namespace utils;
 
 #include "SocketHandler.h"
 
-#include "../utils/TimeStamp.h"
+namespace sealedServer
+{
 
 struct TimeEventItem
 {
@@ -147,4 +151,7 @@ public:
         list<TimeEventItem>::iterator iter;
     };
 };
+
+};
+
 #endif

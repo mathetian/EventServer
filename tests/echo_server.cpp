@@ -1,12 +1,13 @@
-#include "../include/EventLoop.h"
-#include "../include/MSGHandler.h"
-#include "../include/Socket.h"
-#include "../include/TCPAcceptor.h"
-
 #include <iostream>
 using namespace std;
 
 #define PORT 10000
+
+#include "EventLoop.h"
+#include "MSGHandler.h"
+#include "Socket.h"
+#include "TCPAcceptor.h"
+using namespace sealedServer;
 
 EventLoop loop("EPoll");
 

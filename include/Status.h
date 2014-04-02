@@ -1,16 +1,17 @@
 #ifndef _STATUS_H
 #define _STATUS_H
 
-#include <string>
-using std::string;
-
 #include <errno.h>
 #include <string.h>
 
+#include <string>
 #include <iostream>
 using namespace std;
 
 #include "../utils/Utils.h"
+
+namespace sealedServer
+{
 
 class Status
 {
@@ -65,6 +66,8 @@ public:
     }
 };
 
-TO_STRING(Status);
+TO_STRING(sealedServer::Status);
+
+};
 
 #endif

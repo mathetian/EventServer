@@ -4,20 +4,21 @@
 #include <map>
 using namespace std;
 
+#include "Log.h"
+#include "Callback.h"
+#include "Thread.h"
+using namespace utils;
+
 #include "SocketHandler.h"
 #include "TimeEventSet.h"
 #include "EventPool.h"
 #include "TCPAcceptor.h"
-
-#include "../utils/Log.h"
-#include "../utils/Callback.h"
-
-#include "../utils/Thread.h"
-using namespace::utils;
-
 #include "ReactorImpl.h"
 #include "Selector/ReactorSelect.h"
 #include "Selector/ReactorEPoll.h"
+
+namespace sealedServer
+{
 
 class EventLoop
 {
@@ -80,6 +81,7 @@ public:
     {
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
+        ScopeMutex scope(&m_lock);
         assert(m_map.erase(fd) == 1);
         m_selector->unRegisterEvent(p,EV_READ);
     }
@@ -200,16 +202,16 @@ public:
 
             if(strcmp(m_selector->getMethod(),"RectorSelect")==0)
                 m_selector->unRegisterEvent(m_map[fd],EV_READ);
-            
+
             m_pool.insert(call);
         }
 
         if((type & EV_WRITE) != 0)
         {
             Callback<void> call(*m_map[fd], &SocketHandler::onSendMsg);
-            
+
             m_selector->unRegisterEvent(m_map[fd],EV_WRITE);
-            
+
             m_pool.insert(call);
         }
 
@@ -291,7 +293,8 @@ inline void TCPAcceptor<T>::setListenSocket()
 inline int ReactorSelect::dispatch(TimeStamp next)
 {
     fd_set rr,ww;
-    FD_ZERO(&rr);FD_ZERO(&ww);
+    FD_ZERO(&rr);
+    FD_ZERO(&ww);
 
     int num;
     {
@@ -299,7 +302,7 @@ inline int ReactorSelect::dispatch(TimeStamp next)
         rr = m_readfds;
         ww = m_writefds;
     }
-    
+
     if (next)
     {
         struct timeval tv = next.to_timeval();
@@ -331,7 +334,7 @@ inline int ReactorSelect::dispatch(TimeStamp next)
         for (i = m_maxfd; i >= 0; i--)
         {
             if(FD_ISSET(i, &m_readfds) || FD_ISSET(i, &m_writefds))
-               break;
+                break;
         }
 
         m_maxfd = i;
@@ -340,8 +343,9 @@ inline int ReactorSelect::dispatch(TimeStamp next)
 
 inline int ReactorEPoll::dispatch(TimeStamp next)
 {
-    int num; struct timeval tv;
-    
+    int num;
+    struct timeval tv;
+
     if (next)
     {
         tv = next.to_timeval();
@@ -375,4 +379,5 @@ inline int ReactorEPoll::dispatch(TimeStamp next)
     }
 }
 
+};
 #endif

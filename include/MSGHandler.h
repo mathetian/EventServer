@@ -1,18 +1,21 @@
 #ifndef _MSG_HANDLER_H
 #define _MSG_HANDLER_H
 
-#include "../utils/Slice.h"
-#include "../utils/Buffer.h"
-#include "../utils/Thread.h"
-using namespace utils;
-
 #include <list>
 using namespace std;
+
+#include "Slice.h"
+#include "Buffer.h"
+#include "Thread.h"
+using namespace utils;
 
 #include "SocketHandler.h"
 #include "EventLoop.h"
 
 #define MSGLEN 512
+
+namespace sealedServer
+{
 
 class MSGHandler : public SocketHandler
 {
@@ -136,6 +139,8 @@ public:
 private:
     list<Buffer>   m_Bufs;
     Mutex          m_mutex;
+};
+
 };
 
 #endif

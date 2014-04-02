@@ -1,23 +1,26 @@
 #ifndef _SOCKET_H
 #define _SOCKET_H
 
-#include "Status.h"
-#include "Address.h"
-
-#include <vector>
-using namespace std;
-
 #include <sys/un.h>
 #include <assert.h>
 
+#include <vector>
 #include <iostream>
 using namespace std;
 
 #include "../utils/Log.h"
+#include "../utils/Utils.h"
+using namespace utils;
+
+#include "Status.h"
+#include "Address.h"
 
 #define EV_READ   (1<<0)
 #define EV_WRITE  (1<<1)
 #define EV_CLOSE  (1<<2)
+
+namespace sealedServer
+{
 
 class Socket
 {
@@ -58,9 +61,9 @@ public:
 
                 bind(paddr);
                 listen();
-                if(stat() == false) 
+                if(stat() == false)
                     WARN << "Socket Bind/Listen Error: " << m_stat;
-                else 
+                else
                     INFO << "LISTEN Successfully";
             }
             else connect(paddr);
@@ -222,11 +225,13 @@ public:
 
     string as_string() const
     {
-        return to_string(m_fd);
+        ostringstream o;
+        o << m_fd;
+        return o.str();
     }
 };
 
-TO_STRING(Socket);
+TO_STRING(sealedServer::Socket);
 
 class TCPSocket : public Socket
 {
@@ -234,6 +239,8 @@ public:
     TCPSocket() : Socket() {}
     TCPSocket(Address *paddr, Flags f = none) : Socket(AF_INET, SOCK_STREAM, paddr, f) {  }
     TCPSocket(const Socket& sock) : Socket(sock) {}
+};
+
 };
 
 #endif

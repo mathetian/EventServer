@@ -1,10 +1,14 @@
 #ifndef _EVENT_HANDLER_H
 #define _EVENT_HANDLER_H
 
+#include "Log.h"
+#include "TimeStamp.h"
+using namespace utils;
+
 #include "Socket.h"
 
-#include "../utils/Log.h"
-#include "../utils/TimeStamp.h"
+namespace sealedServer
+{
 
 class EventLoop;
 
@@ -18,7 +22,10 @@ protected:
 
 public:
     SocketHandler(EventLoop& loop) : m_loop(&loop)
-    {  m_status = 0; m_delflag = 0; }
+    {
+        m_status = 0;
+        m_delflag = 0;
+    }
 
     virtual ~SocketHandler()
     { }
@@ -61,6 +68,11 @@ public:
         m_delflag = 1;
     }
 
+    int getdelflag()
+    {
+        return m_delflag;
+    }
+
     void updateStatus(int val)
     {
         if(m_delflag == 1) return;
@@ -91,6 +103,8 @@ protected:
     void detach();
 
     friend class EventLoop;
+};
+
 };
 
 #endif

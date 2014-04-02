@@ -9,9 +9,8 @@ using namespace std;
 
 #include <string.h>
 
-/**different pattern compared with CustomDB**/
-
-/**Internal Class, can't be used directly**/
+namespace utils
+{
 
 class Log
 {
@@ -139,5 +138,7 @@ int      Log::m_level;
 inline bool Log::operator ^ (const Log::LogMsg &msg)
 {
     msg.write(*m_out);
+}
+
 }
 #endif

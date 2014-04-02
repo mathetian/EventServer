@@ -2,7 +2,8 @@
 #include <string>
 using namespace std;
 
-#include "../utils/Slice.h"
+#include "Slice.h"
+using namespace utils;
 
 int main()
 {

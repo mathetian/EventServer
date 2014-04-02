@@ -1,15 +1,17 @@
 #ifndef _EVENT_POOL_H
 #define _EVENT_POOL_H
 
-#include "../utils/Thread.h"
-using namespace utils;
-
-#include "../utils/Log.h"
-#include "../utils/SafeQueue.h"
-#include "../utils/Callback.h"
-
 #include <vector>
 using namespace std;
+
+#include "Log.h"
+#include "Thread.h"
+#include "SafeQueue.h"
+#include "Callback.h"
+using namespace utils;
+
+namespace sealedServer
+{
 
 class EventPool
 {
@@ -76,4 +78,7 @@ public:
         m_squeue.push(call);
     }
 };
+
+};
+
 #endif

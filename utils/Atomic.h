@@ -1,7 +1,8 @@
-
 #ifndef _ATOMIC_H
 #define _ATOMIC_H
 
+namespace utils
+{
 
 static inline int  __exchange_and_add (volatile int *__mem, int __val)
 {
@@ -34,7 +35,7 @@ public:
     {
         return __sync_add_and_fetch(&val, addend);
     }
-    
+
     inline void operator += (int addend)
     {
         add(addend);
@@ -71,5 +72,6 @@ public:
     }
 };
 
+};
 
 #endif

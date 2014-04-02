@@ -1,10 +1,10 @@
-#include "../include/EventLoop.h"
-#include "../include/MSGHandler.h"
-#include "../include/Socket.h"
-#include "../include/TCPAcceptor.h"
-
 #include <iostream>
 using namespace std;
+
+#include "Socket.h"
+#include "EventLoop.h"
+#include "MSGHandler.h"
+using namespace sealedServer;
 
 #define PORT 10000
 #define CLIENT_NUM 1000

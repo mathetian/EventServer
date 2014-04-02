@@ -1,6 +1,7 @@
-#include "../utils/Log.h"
-
 #include <stdint.h>
+
+#include "Log.h"
+using namespace utils;
 
 int main()
 {

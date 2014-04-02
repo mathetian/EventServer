@@ -3,6 +3,9 @@
 
 #include "Utils.h"
 
+namespace utils
+{
+
 class Slice
 {
 protected:
@@ -46,5 +49,8 @@ public:
 };
 
 TO_STRING(Slice);
+
+};
+
 
 #endif
