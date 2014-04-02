@@ -7,6 +7,8 @@
 #include <pthread.h>
 #endif
 
+#include <assert.h>
+
 namespace utils
 {
 
@@ -25,10 +27,31 @@ class Thread
 public:
     Thread(Task task = NULL, void * args = NULL) : m_task(task), m_args(args), m_tid(THRINIT) { }
     Thread(const Thread & thr) : m_task(thr.m_task), m_args(thr.m_args), m_tid(thr.m_tid) { }
-    id_type  run();
-    void     join();
-    void     cancel();
-    static id_type  getIDType();
+    id_type  run()
+    {
+        if(m_tid != -1)
+            return m_tid;
+
+        pthread_create(&m_tid, NULL, m_task, m_args);
+        return m_tid;
+    }
+
+    void     join()
+    {
+        if(m_tid != -1)
+            pthread_join(m_tid, NULL);
+    }
+
+    void     cancel()
+    {
+        if(m_tid != -1)
+            pthread_cancel(m_tid);
+    }
+
+    static id_type  getIDType()
+    {
+        return pthread_self();
+    }
 
 private:
     id_type  m_tid;
@@ -41,13 +64,31 @@ class CondVar;
 class Mutex
 {
 public:
-    Mutex();
-    virtual ~Mutex();
+    Mutex()
+    {
+        pthread_mutex_init(&m_mutex, 0);
+    }
+    virtual ~Mutex()
+    {
+        pthread_mutex_destroy(&m_mutex);
+    }
 
 public:
-    void lock();
-    void unlock();
-    int  trylock();
+    void lock()
+    {
+        pthread_mutex_lock(&m_mutex);
+    }
+
+    void unlock()
+    {
+        pthread_mutex_unlock(&m_mutex);
+    }
+
+    int trylock()
+    {
+        return pthread_mutex_trylock(&m_mutex);
+    }
+
 
 private:
 #ifdef __WIN32
@@ -63,14 +104,32 @@ class ReentrantLock;
 class CondVar
 {
 public:
-    CondVar(Mutex* mutex = NULL);
-    CondVar(ReentrantLock * lock);
-    ~CondVar();
+    CondVar(Mutex* mutex) : m_mutex(mutex), m_lock(NULL)
+    {
+        pthread_cond_init(&m_cond, NULL);
+    }
 
-public:
+    CondVar(ReentrantLock * lock) : m_mutex(NULL), m_lock(lock)
+    {
+        pthread_cond_init(&m_cond, NULL);
+    }
+
+    ~CondVar()
+    {
+        pthread_cond_destroy(&m_cond);
+    }
+
     void wait();
-    void signal();
-    void signalAll();
+
+    void signal()
+    {
+        pthread_cond_signal(&m_cond);
+    }
+
+    void signalAll()
+    {
+        pthread_cond_broadcast(&m_cond);
+    }
 
 private:
 #ifdef __WIN32
@@ -96,7 +155,11 @@ private:
 class SingletonMutex : Noncopyable
 {
 public:
-    static SingletonMutex& getInstance();
+    static SingletonMutex& getInstance()
+    {
+        static SingletonMutex instance;
+        return instance;
+    }
 
 private:
     SingletonMutex() {}
@@ -121,13 +184,60 @@ private:
 class RWLock
 {
 public:
-    RWLock(Mutex * mutex = NULL);
+    RWLock(Mutex * mutex = NULL) : m_mutex(mutex), m_condRead(m_mutex),
+        m_condWrite(m_mutex), m_nReader(0), m_nWriter(0), m_wReader(0), m_wWriter(0)
+    {
+        if(mutex == NULL) m_mutex = new Mutex;
+    }
 
-public:
-    void readLock();
-    void readUnlock();
-    void writeLock();
-    void writeUnlock();
+    void readLock()
+    {
+        ScopeMutex scope(m_mutex);
+        if(m_nWriter || m_wWriter)
+        {
+            m_wReader++;
+            while(m_nWriter || m_wWriter)
+                m_condRead.wait();
+            m_wReader--;
+        }
+        m_nReader++;
+    }
+
+    void readUnlock()
+    {
+        ScopeMutex scope(m_mutex);
+        m_nReader--;
+
+        if(m_wWriter != 0)
+            m_condWrite.signal();
+        else if(m_wReader != 0)
+            m_condRead.signal();
+    }
+
+    void writeLock()
+    {
+        ScopeMutex scope(m_mutex);
+        if(m_nReader || m_nWriter)
+        {
+            m_wWriter++;
+            while(m_nReader || m_nWriter)
+                m_condWrite.wait();
+            m_wWriter--;
+        }
+        m_nWriter++;
+    }
+
+    void writeUnlock()
+    {
+        ScopeMutex scope(m_mutex);
+        m_nWriter--;
+
+        if(m_wWriter != 0)
+            m_condWrite.signal();
+        else if(m_wReader != 0)
+            m_condRead.signal();
+    }
+
 
 private:
     int  m_nReader;
@@ -146,9 +256,66 @@ class ReentrantLock
 {
 public:
     ReentrantLock() : m_id(-1), m_cond(&m_tmplock), m_time(0) { }
-    void  lock();
-    void  unlock();
-    bool  trylock();
+
+    void lock()
+    {
+        m_tmplock.lock();
+
+        if(m_id == -1)
+        {
+            assert(m_lock.trylock() == 0);
+            m_id = pthread_self();
+            m_tmplock.unlock();
+            m_time = 1;
+            return;
+        }
+        else if(m_id == pthread_self())
+        {
+            m_tmplock.unlock();
+            m_time++;
+            return;
+        }
+
+        while(m_id != -1) m_cond.wait();
+        m_id = pthread_self();
+        m_time = 1;
+        m_tmplock.unlock();
+    }
+
+    void unlock()
+    {
+        m_tmplock.lock();
+
+        m_time--;
+        if(m_time == 0)
+        {
+            m_lock.unlock();
+            m_id = -1;
+            m_tmplock.unlock();
+            m_cond.signal();
+        }
+        else
+            m_tmplock.unlock();
+    }
+
+    bool trylock()
+    {
+        m_tmplock.lock();
+        if(m_id != -1)
+        {
+            m_tmplock.unlock();
+            return false;
+        }
+        else
+        {
+            assert(m_lock.trylock() == 0);
+            m_id = pthread_self();
+            m_tmplock.unlock();
+            m_time = 1;
+            return true;
+        }
+    }
+
 private:
     Mutex m_lock;
     id_type m_id;
@@ -159,6 +326,31 @@ private:
     friend class CondVar;
     friend class ScopeMutex;
 };
+
+inline void CondVar::wait()
+{
+    if(m_mutex)
+        pthread_cond_wait(&m_cond, &m_mutex->m_mutex);
+    else
+        pthread_cond_wait(&m_cond, &m_lock->m_lock.m_mutex);
+}
+
+inline ScopeMutex::ScopeMutex(Mutex * pmutex) :\
+    m_pmutex(pmutex), m_lock(NULL)
+{
+    m_pmutex -> lock();
+}
+
+inline ScopeMutex::ScopeMutex(ReentrantLock *lock):\
+    m_pmutex(NULL), m_lock(lock)
+{
+    m_lock -> lock();
+}
+
+inline ScopeMutex::~ScopeMutex()
+{
+    m_pmutex -> unlock();
+}
 
 };
 

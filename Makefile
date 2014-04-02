@@ -14,35 +14,35 @@ PROGS = server client ${tests}
 
 all: clean prepare ${PROGS}
 	
-server: tests/echo_server.cpp utils/Thread.cpp
+server: tests/echo_server.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-client: tests/echo_client.cpp utils/Thread.cpp
+client: tests/echo_client.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-test_squeue: tests/test_squeue.cpp utils/Thread.cpp
+test_squeue: tests/test_squeue.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-test_buffer: tests/test_buffer.cpp utils/Thread.cpp
+test_buffer: tests/test_buffer.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-test_callback: tests/test_callback.cpp utils/Thread.cpp
+test_callback: tests/test_callback.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-test_log: tests/test_log.cpp utils/Thread.cpp
+test_log: tests/test_log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-test_slice: tests/test_slice.cpp utils/Thread.cpp
+test_slice: tests/test_slice.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-test_tostring: tests/test_tostring.cpp utils/Thread.cpp
+test_tostring: tests/test_tostring.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
