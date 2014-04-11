@@ -8,8 +8,8 @@
 #include <iostream>
 using namespace std;
 
-#include "../utils/Log.h"
-#include "../utils/Utils.h"
+#include "Log.h"
+#include "Utils.h"
 using namespace utils;
 
 #include "Status.h"

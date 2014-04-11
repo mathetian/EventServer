@@ -107,7 +107,7 @@ public:
         self_alloc = 0;
     }
 
-    Buffer(unsigned int maxlen) : InnerBuffer(new char[len + 1], 0, len + 1), ref(new Atomic(0))
+    Buffer(unsigned int maxlen) : InnerBuffer(new char[maxlen + 1], 0, maxlen + 1), ref(new Atomic(0))
     {
         zeros();
         acquire();

@@ -66,7 +66,6 @@ public:
     }
 };
 
-TO_STRING(sealedServer::Status);
 
 };
 
