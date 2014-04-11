@@ -12,6 +12,7 @@ using namespace std;
 #include "../include/Acceptor.h"
 
 #define BASE_PORT 10000
+#define PORT_NUM  1
 
 EventPool pool(4);
 
@@ -67,12 +68,13 @@ int setlimit(int num_pipes)
 
 int main()
 {
-    ::signal(SIGINT, signalStop);
+    //::signal(SIGINT, signalStop);
     setlimit(100000); errno = 0;
-    TCPAcceptor<EchoServer> acceptors[10];
+    // TCPAcceptor<EchoServer> acceptors[PORT_NUM];
 
-    for(int i = 0;i < 10;i++)
-        acceptors[i] = TCPAcceptor<EchoServer>(EventPool::getRandomLoop(), BASE_PORT+i);
+    // for(int i = 0;i < PORT_NUM;i++)
+    //     acceptors[i] = TCPAcceptor<EchoServer>(pool.getRandomLoop(), BASE_PORT+i);
+    TCPAcceptor<EchoServer> acceptors(pool.getRandomLoop(), BASE_PORT);
 
     pool.runforever();
 

@@ -15,12 +15,14 @@ tests = test_squeue test_buffer test_callback test_log test_slice test_tostring
 PROGS = server client ${tests}
 
 all: clean prepare ${PROGS}
+
+echo: clean prepare server client
 	
-server: tests/echo_server.cpp utils/Log.cpp include/EventPool.cpp
+server: tests/echo_server.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-client: tests/echo_client.cpp utils/Log.cpp include/EventPool.cpp
+client: tests/echo_client.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 

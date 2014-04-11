@@ -11,6 +11,7 @@ class TCPAcceptor : public SocketHandler
 {
 public:
     TCPAcceptor() : SocketHandler(NULL) { }
+    
     TCPAcceptor(EventLoop* _loop, int localport) : SocketHandler(_loop), ip(""), port(localport)
     {
         NetAddress addr = NetAddress(localport);

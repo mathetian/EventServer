@@ -26,14 +26,13 @@ class EventPool
     typedef struct ThreadArg_t ThreadArg;
     vector<ThreadArg> thrargs;
 
-public:
-    static vector<EventLoop*> loops;
-    static int m_thrnum;
+private:
+    vector<EventLoop*> loops;
+    int m_thrnum;
 
 public:
-    EventPool(int thrnum = 2) 
+    EventPool(int thrnum = 2) : m_thrnum(thrnum)
     {
-        m_thrnum = thrnum;
         threads  = vector<Thread*>(m_thrnum);
         thrargs  = vector<ThreadArg>(m_thrnum);
 
@@ -64,8 +63,9 @@ public:
         ((targ.ep)->*(targ.func))(targ.id);
     }
 
-    static EventLoop* getRandomLoop()
+    EventLoop* getRandomLoop()
     {
+        INFO << "getRandomLoop: " << m_thrnum << ", loops: " << loops.size();
         return loops.at(rand()%m_thrnum);
     }
 
@@ -74,12 +74,22 @@ public:
         for(int i=0; i<m_thrnum;i++)
             threads[i]->join();
     }
+
+    int getNum() const 
+    {
+        return m_thrnum;
+    }
+
+    EventLoop* getLoop(int id)
+    {
+        return loops.at(id);
+    }
 };
 
 inline EventLoop* SocketHandler::getLoop2()
 {
-    int id = rand()%EventPool::m_thrnum;
-    return EventPool::loops.at(id);
+    int id = rand()%(m_loop->m_pool->getNum());
+    return m_loop->m_pool->getLoop(id);
 }
 
 #endif

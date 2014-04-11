@@ -32,7 +32,7 @@ public:
         debug = 4
     };
 
-    Log(int level = warn, ostream *out = &cout)
+    Log(int level = debug, ostream *out = &cout)
     {
         m_level = level;
         m_out = out;

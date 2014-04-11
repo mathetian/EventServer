@@ -90,7 +90,7 @@ private:
             Socket sock(AF_INET, SOCK_STREAM);
             sock.cliConnect(&svrAddr);
             assert(sock.get_fd() >= 0);
-            EchoClient *client = new EchoClient(EventPool::getRandomLoop(), sock);
+            EchoClient *client = new EchoClient(pool.getRandomLoop(), sock);
             if(i%10000==0) 
             {   
                 printf("press Enter to continue: ");
@@ -120,7 +120,7 @@ int setlimit(int num_pipes)
 
 int main()
 {
-    ::signal(SIGINT, signalStop);
+    //::signal(SIGINT, signalStop);
     setlimit(100000);
     errno = 0;
     ClientSimulator simulator(BASE_PORT);
