@@ -1,13 +1,11 @@
 #ifndef _TIME_STAMP_H
 #define _TIME_STAMP_H
 
+#include <string>
+using namespace std;
+
 #include <sys/time.h>
-
-#include "Utils.h"
-#include "Log.h"
-
-namespace utils
-{
+#include <stdint.h>
 
 class TimeStamp
 {
@@ -91,11 +89,6 @@ public:
         return TimeStamp();
     }
 
-    string as_string() const
-    {
-        return to_string(to_usecs());
-    }
-
     bool operator()(const TimeStamp &tmp) const
     {
         return m_val > tmp.m_val ? false : true;
@@ -111,10 +104,5 @@ public:
         return m_val;
     }
 };
-
-TO_STRING(TimeStamp);
-
-};
-
 
 #endif

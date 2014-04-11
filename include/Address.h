@@ -14,9 +14,6 @@ using namespace std;
 #include "../utils/Utils.h"
 using namespace utils;
 
-namespace sealedServer
-{
-
 class Address
 {
 protected:
@@ -25,7 +22,7 @@ protected:
 public:
     Address() {}
 
-    Address(const void *addr, socklen_t len) : m_addr(static_cast<const char *>(addr), len)
+    Address(const void *addr, socklen_t len) : m_addr(static_cast<const char*>(addr), len)
     { }
 
     const sockaddr *data() const
@@ -37,13 +34,6 @@ public:
     {
         return m_addr.length();
     }
-
-    operator const void *() const
-    {
-        return m_addr.length() ? this : 0;
-    }
-
-    virtual string as_string() const = 0;
 
     void   setAddr(const void *addr, socklen_t len)
     {
@@ -83,8 +73,7 @@ private:
     }
 
 public:
-    NetAddress() {}
-
+    NetAddress() { }
     NetAddress(port pt)
     {
         sockaddr_in a;
@@ -95,35 +84,16 @@ public:
         m_addr = string(static_cast<const char *>(static_cast<const void *>(&a)), sizeof a);
     }
 
-    NetAddress(string ip, port pt = 0)
+    NetAddress(string ip, port pt)
     {
         init(ip, pt);
     }
 
-    NetAddress(string ip, string pt)
-    {
-        init(ip, atoi(pt.c_str()));
-    }
-
-    NetAddress(const void *addr, socklen_t len) : Address(addr, len)
-    {
-    }
+    NetAddress(const void *addr, socklen_t len) : Address(addr, len) { }
 
     string getIP() const
     {
         return inet_ntoa(inetAddr()->sin_addr);
-    }
-
-    string get_hostname() const
-    {
-        struct hostent* ent =
-            gethostbyaddr(static_cast<const char *>(static_cast<const void *>\
-                          (&inetAddr()->sin_addr.s_addr)), sizeof(in_addr_t), AF_INET);
-
-        if (ent)
-            return string(ent->h_name);
-
-        return getIP();
     }
 
     port getPort() const
@@ -139,19 +109,8 @@ public:
 
         return out;
     }
-
-    static string local_hostname()
-    {
-        char name[128];
-
-        if (gethostname(name, sizeof(name)))
-            return "";
-
-        return name;
-    }
 };
 
-TO_STRING(sealedServer::NetAddress);
+TO_STRING(NetAddress);
 
-};
 #endif

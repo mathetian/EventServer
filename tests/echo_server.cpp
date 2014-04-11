@@ -1,22 +1,25 @@
 #include <iostream>
 using namespace std;
 
-#define PORT 10000
+#include <signal.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
-#include "EventLoop.h"
-#include "MSGHandler.h"
-#include "Socket.h"
-#include "TCPAcceptor.h"
-using namespace sealedServer;
 
-EventLoop loop("EPoll");
+#include "../include/EventLoop.h"
+#include "../include/MsgHandler.h"
+#include "../include/Socket.h"
+#include "../include/Acceptor.h"
+
+#define BASE_PORT 10000
+
+EventLoop loop;
 
 class EchoServer : public MSGHandler
 {
 public:
-    EchoServer(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
-    {
-        registerRead();
+    EchoServer(EventLoop *loop, Socket sock) : MSGHandler(loop, sock,1)
+    { 
     }
 
     ~EchoServer()
@@ -27,36 +30,51 @@ private:
     {
         if(status == SUCC)
         {
-            INFO << "Received(from Socket: " << getSocket() << "): " << buf.data();
+            INFO << "Received: " << (string)buf << " through fd " << m_sock.get_fd();
             write(buf);
         }
+
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)
     {
         if(status == SUCC)
         {
-            INFO << "sendedMsg: " << len << " " << targetLen << " for socket: " << getSocket();
+            INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.get_fd();
         }
-        else WARN << "Some Error" ;
-    }
-
-    virtual void TimerEvent()
-    {
-        INFO << "Timer Event Start: " << getSocket();
-        sleep(2);
-        INFO << "Timer Event End: " << getSocket();
+        else { }
     }
 
     virtual void closedSocket()
-    {
-        INFO << "Socket need to be closed: " << getSocket();
-    }
+    { }
 };
+
+void signalStop(int)
+{
+    INFO << "Stop running...by manually";
+    loop.stop();
+}
+
+int setlimit(int num_pipes)
+{
+    struct rlimit rl;
+    rl.rlim_cur = rl.rlim_max = num_pipes * 2 + 50;
+    if (::setrlimit(RLIMIT_NOFILE, &rl) == -1)
+    {
+        fprintf(stderr, "setrlimit error: %s", strerror(errno));
+        return 1;
+    }
+}
 
 int main()
 {
-    TCPAcceptor<EchoServer> acceptor(loop, PORT);
+    ::signal(SIGINT, signalStop);
+    setlimit(100000);
+    errno = 0;
+    TCPAcceptor<EchoServer> acceptors[10];
+
+    for(int i = 0;i < 10;i++)
+        acceptors[i] = TCPAcceptor<EchoServer>(&loop, BASE_PORT+i);
 
     loop.runforever();
 

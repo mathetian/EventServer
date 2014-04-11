@@ -3,11 +3,12 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 using namespace std;
 
-#include "Utils.h"
-
 #include <string.h>
+
+#include "Utils.h"
 
 namespace utils
 {
@@ -31,7 +32,7 @@ public:
         debug = 4
     };
 
-    Log(int level = debug, ostream *out = &cout)
+    Log(int level = warn, ostream *out = &cout)
     {
         m_level = level;
         m_out = out;
@@ -115,7 +116,9 @@ public:
         out += " [";
         out += file_str;
         out += ":";
-        out += to_string(m_line);
+        ostringstream o1;
+        o1 << m_line;
+        out += o1.str();
         out += "] ";
 
         out += str + "\n";
@@ -131,14 +134,10 @@ public:
 #define ERROR    LOG(error)
 #define FATAL    LOG(fatal)
 
-ostream* Log::m_out;
-Log      Log::m_log;
-int      Log::m_level;
-
 inline bool Log::operator ^ (const Log::LogMsg &msg)
 {
     msg.write(*m_out);
 }
 
-}
+};
 #endif

@@ -11,7 +11,6 @@ using std::string;
 #include <string.h>
 
 #include "Atomic.h"
-#include "Log.h"
 
 namespace utils
 {
@@ -97,6 +96,7 @@ private:
         {
             delete[] dat;
             delete ref;
+            ref = NULL;
         }
     }
 
@@ -125,6 +125,12 @@ public:
         acquire();
         this->self_alloc = self_alloc;
         if(self_alloc == 1) zeros();
+    }
+
+    Buffer(string str) : InnerBuffer(str.data(), str.size(), str.size() + 1), ref(new Atomic(0))
+    {
+        acquire();
+        this->self_alloc = 0;
     }
 
     Buffer& operator = (const Buffer &other)

@@ -31,10 +31,10 @@ public:
     Status(Status const& status) : ok(status.ok),
         err(status.err) { }
 
-    operator bool()
-    {
-        return ok;
-    }
+    // operator bool()
+    // {
+    //     return ok;
+    // }
 
     static Status good()
     {
@@ -64,6 +64,8 @@ public:
         if(ok == true) return "True";
         else return "False :" + err;
     }
+
+    TO_STRING(sealedServer::Status);
 };
 
 

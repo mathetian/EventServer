@@ -1,23 +1,28 @@
 #include <iostream>
 using namespace std;
 
-#include "Socket.h"
-#include "EventLoop.h"
-#include "MSGHandler.h"
-using namespace sealedServer;
+#include <stdio.h>
+#include <signal.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
-#define PORT 10000
-#define CLIENT_NUM 1000
+#include "../include/EventLoop.h"
+#include "../include/MsgHandler.h"
+#include "../include/Socket.h"
 
-EventLoop loop("EPoll");
+#define BASE_PORT 9000
+#define PORT_NUM  10
+
+#define CLIENT_NUM 10000
+
+EventLoop loop;
 
 class EchoClient : public MSGHandler
 {
 public:
-    EchoClient(EventLoop& loop, Socket sock) : MSGHandler(loop, sock)
+    EchoClient(EventLoop *loop, Socket sock) : MSGHandler(loop, sock)
     {
-        registerRead();
-        write("wait for me");
+        DEBUG << m_sock.getsockname() << " " << sock.get_fd();
     }
 
     ~EchoClient()
@@ -27,27 +32,26 @@ protected:
     virtual void receivedMsg(STATUS status, Buffer &buf)
     {
         if(status == SUCC)
-            INFO << "Received(from Socket: " << getSocket() << "): " << buf.data();
+        {
+            INFO << "ReceivedMsg: " << (string)buf << " through fd " << m_sock.get_fd();
+        }
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)
     {
         if(status == SUCC)
-            INFO << "SendedMsg: " << len << " " << targetLen << " for socket: " << getSocket();
-        else
-            WARN << "Some Error" ;
-    }
-
-    virtual void TimerEvent()
-    {
-        INFO << "Timer Event Start: " << getSocket();
-        sleep(2);
-        INFO << "Timer Event End: " << getSocket();
+        {
+            INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.get_fd();
+        }
     }
 
     virtual void closedSocket()
+    { }
+
+    virtual void onConnected(STATUS status)
     {
-        INFO << "Socket has been closed, will remove it from memory soon.";
+        INFO << "Connected Successful";
+        write("wait for me");
     }
 };
 
@@ -81,16 +85,44 @@ private:
     {
         for(int i = 0; i < size; i++)
         {
-            Socket sock(AF_INET, SOCK_STREAM, psvrAddr);
-            DEBUG << "CreateClients: " << sock << " status: " << sock.stat();
-            EchoClient *client = new EchoClient(loop, sock);
+            NetAddress svrAddr(BASE_PORT+(i%PORT_NUM));
+            Socket sock(AF_INET, SOCK_STREAM);
+            sock.cliConnect(&svrAddr);
+            assert(sock.get_fd() >= 0);
+            EchoClient *client = new EchoClient(&loop, sock);
+            if(i%10000==0) 
+            {   
+                printf("press Enter to continue: ");
+                getchar();
+            }
+            usleep(1 * 1000);
         }
     }
 };
 
+void signalStop(int)
+{
+    INFO << "Stop running...by manually";
+    loop.stop();
+}
+
+int setlimit(int num_pipes)
+{
+    struct rlimit rl;
+    rl.rlim_cur = rl.rlim_max = num_pipes * 2 + 50;
+    if (::setrlimit(RLIMIT_NOFILE, &rl) == -1)
+    {
+        fprintf(stderr, "setrlimit error: %s", strerror(errno));
+        return 1;
+    }
+}
+
 int main()
 {
-    ClientSimulator simulator(PORT);
+    ::signal(SIGINT, signalStop);
+    setlimit(100000);
+    errno = 0;
+    ClientSimulator simulator(BASE_PORT);
     loop.runforever();
 
     return 0;

@@ -8,6 +8,7 @@ using namespace std;
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 namespace utils
 {
@@ -117,6 +118,21 @@ inline string to_escaped_string(const void *data, int length)
         }
     }
     return out;
+}
+
+inline bool is_int(const string & s)
+{
+    if(s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false ;
+
+    char * p ;
+    strtol(s.c_str(), &p, 10) ;
+
+    return (*p == 0) ;
+}
+
+inline int to_int(string str)
+{
+    return atoi( str.c_str() );
 }
 
 };

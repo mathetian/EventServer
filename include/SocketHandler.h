@@ -1,14 +1,7 @@
 #ifndef _EVENT_HANDLER_H
 #define _EVENT_HANDLER_H
 
-#include "Log.h"
-#include "TimeStamp.h"
-using namespace utils;
-
 #include "Socket.h"
-
-namespace sealedServer
-{
 
 class EventLoop;
 
@@ -21,9 +14,9 @@ protected:
     int         m_delflag;
 
 public:
-    SocketHandler(EventLoop& loop) : m_loop(&loop)
+    SocketHandler(EventLoop* loop) : m_loop(loop)
     {
-        m_status = 0;
+        m_status  = 0;
         m_delflag = 0;
     }
 
@@ -33,20 +26,12 @@ public:
 public:
     virtual void onReceiveMsg()  = 0;
     virtual void onSendMsg()     = 0;
-    virtual void TimerEvent()    = 0;
-    virtual void onCloseSocket() = 0;
+    virtual void onCloseSocket(int st) = 0;
 
     void registerRead();
     void registerWrite();
     void unRegisterRead();
     void unRegisterWrite();
-
-    void waitTimer(int);
-    void waitTimer(const TimeStamp &tms);
-    void setSock(Socket sock)
-    {
-        m_sock = sock;
-    }
 
     Socket getSocket()
     {
@@ -77,11 +62,6 @@ public:
     {
         if(m_delflag == 1) return;
 
-        if((m_status & val) != 0)
-        {
-            INFO << "updateStatus: " << m_status << " " << val;
-        }
-
         assert((m_status & val) == 0);
         m_status |= val;
     }
@@ -90,10 +70,6 @@ public:
     {
         if(m_delflag == 1) return;
 
-        if((m_status & val) == 0)
-        {
-            INFO << "removeStatus: " << m_status << " " << val;
-        }
         assert((m_status & val) != 0);
         m_status ^= val;
     }
@@ -103,8 +79,6 @@ protected:
     void detach();
 
     friend class EventLoop;
-};
-
 };
 
 #endif
