@@ -4,9 +4,14 @@
 #include <map>
 using namespace std;
 
+#include "../utils/Thread.h"
+using namespace utils;
+
 #include "SocketHandler.h"
 #include "Acceptor.h"
 #include "Selector.h"
+
+class EventPool;
 
 class EventLoop
 {
@@ -15,8 +20,11 @@ class EventLoop
     Selector *m_selector;
 
     vector<SocketHandler*> m_del;
+    EventPool *m_pool;
+
+    Mutex     m_mutex;
 public:
-    EventLoop() : m_quitFlag(false), m_selector(new Selector(this))
+    EventLoop(EventPool *pool) : m_quitFlag(false), m_selector(new Selector(this)), m_pool(pool)
     { }
 
     ~EventLoop()
@@ -64,12 +72,16 @@ public:
 
     void attachHandler(int fd, SocketHandler *p)
     {
+        ScopeMutex scope(&m_mutex);
+
         assert(m_map.find(fd) == m_map.end());
         m_map[fd] = p;
     }
 
     void detachHandler(int fd, SocketHandler *p)
     {
+        ScopeMutex scope(&m_mutex);
+        
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
         assert(m_map.erase(fd) == 1);

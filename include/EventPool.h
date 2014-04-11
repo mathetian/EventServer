@@ -4,14 +4,14 @@
 #include <vector>
 using namespace std;
 
-#include "Log.h"
-#include "Thread.h"
-#include "SafeQueue.h"
-#include "Callback.h"
+#include "../utils/Log.h"
+#include "../utils/Thread.h"
+#include "../utils/SafeQueue.h"
+#include "../utils/Callback.h"
 using namespace utils;
 
-namespace sealedServer
-{
+#include "EventLoop.h"
+#include "Acceptor.h"
 
 class EventPool
 {
@@ -22,20 +22,22 @@ class EventPool
         int id;
     };
 
-    int m_thrnum;
     vector<Thread*> threads;
     typedef struct ThreadArg_t ThreadArg;
     vector<ThreadArg> thrargs;
 
-    SafeQueue<Callback<void> > m_squeue;
-    Mutex m_mutex;
 public:
-    EventPool(int thrnum = 2) : m_thrnum(thrnum)
-    {
-        threads = vector<Thread*>(thrnum);
-        thrargs   = vector<ThreadArg>(thrnum);
+    static vector<EventLoop*> loops;
+    static int m_thrnum;
 
-        for(int i=0; i<thrnum; i++)
+public:
+    EventPool(int thrnum = 2) 
+    {
+        m_thrnum = thrnum;
+        threads  = vector<Thread*>(m_thrnum);
+        thrargs  = vector<ThreadArg>(m_thrnum);
+
+        for(int i=0; i<m_thrnum; i++)
         {
             thrargs[i].ep   = this;
             thrargs[i].func = &EventPool::ThreadBody;
@@ -43,42 +45,41 @@ public:
             threads[i] = new Thread(ThreadFunc, &(thrargs[i]));
         }
 
-        for(int i=0; i<thrnum; i++) threads[i]->run();
-    }
+        loops = vector<EventLoop*>(m_thrnum, NULL);
+        for(int i=0; i<m_thrnum ; i++)
+            loops[i] = new EventLoop(this);
 
-    ~EventPool()
-    {
-        for(int i=0; i<m_thrnum; i++)
-        {
-            threads[i]->join();
-            delete threads[i];
-        }
+        for(int i=0; i<m_thrnum; i++) threads[i]->run();
     }
 
     void* ThreadBody(int thrID)
     {
-        INFO << "Enter Thread: " << thrID;
-        Callback<void> call;
-        while(true)
-        {
-            m_squeue.wait(call);
-            if(call) call();
-        }
+        INFO << "Thread " << thrID << " Running";
+        loops[thrID]->runforever();
     }
 
-    static void* ThreadFunc(void*arg)
+    static void* ThreadFunc(void *arg)
     {
         ThreadArg targ = *(ThreadArg*)arg;
         ((targ.ep)->*(targ.func))(targ.id);
     }
 
-    void insert(Callback<void> call)
+    static EventLoop* getRandomLoop()
     {
-        ScopeMutex scope(&m_mutex);
-        m_squeue.push(call);
+        return loops.at(rand()%m_thrnum);
+    }
+
+    void  runforever()
+    {
+        for(int i=0; i<m_thrnum;i++)
+            threads[i]->join();
     }
 };
 
-};
+inline EventLoop* SocketHandler::getLoop2()
+{
+    int id = rand()%EventPool::m_thrnum;
+    return EventPool::loops.at(id);
+}
 
 #endif

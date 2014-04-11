@@ -5,7 +5,7 @@ using namespace std;
 #include <sys/time.h>
 #include <sys/resource.h>
 
-
+#include "../include/EventPool.h"
 #include "../include/EventLoop.h"
 #include "../include/MsgHandler.h"
 #include "../include/Socket.h"
@@ -13,14 +13,13 @@ using namespace std;
 
 #define BASE_PORT 10000
 
-EventLoop loop;
+EventPool pool(4);
 
 class EchoServer : public MSGHandler
 {
 public:
     EchoServer(EventLoop *loop, Socket sock) : MSGHandler(loop, sock,1)
-    { 
-    }
+    { }
 
     ~EchoServer()
     { }
@@ -52,7 +51,7 @@ private:
 void signalStop(int)
 {
     INFO << "Stop running...by manually";
-    loop.stop();
+  //  loop.stop();
 }
 
 int setlimit(int num_pipes)
@@ -69,14 +68,13 @@ int setlimit(int num_pipes)
 int main()
 {
     ::signal(SIGINT, signalStop);
-    setlimit(100000);
-    errno = 0;
+    setlimit(100000); errno = 0;
     TCPAcceptor<EchoServer> acceptors[10];
 
     for(int i = 0;i < 10;i++)
-        acceptors[i] = TCPAcceptor<EchoServer>(&loop, BASE_PORT+i);
+        acceptors[i] = TCPAcceptor<EchoServer>(EventPool::getRandomLoop(), BASE_PORT+i);
 
-    loop.runforever();
+    pool.runforever();
 
     return 0;
 }

@@ -6,6 +6,7 @@ using namespace std;
 #include <sys/time.h>
 #include <sys/resource.h>
 
+#include "../include/EventPool.h"
 #include "../include/EventLoop.h"
 #include "../include/MsgHandler.h"
 #include "../include/Socket.h"
@@ -15,7 +16,7 @@ using namespace std;
 
 #define CLIENT_NUM 10000
 
-EventLoop loop;
+EventPool pool(1);
 
 class EchoClient : public MSGHandler
 {
@@ -89,7 +90,7 @@ private:
             Socket sock(AF_INET, SOCK_STREAM);
             sock.cliConnect(&svrAddr);
             assert(sock.get_fd() >= 0);
-            EchoClient *client = new EchoClient(&loop, sock);
+            EchoClient *client = new EchoClient(EventPool::getRandomLoop(), sock);
             if(i%10000==0) 
             {   
                 printf("press Enter to continue: ");
@@ -103,7 +104,7 @@ private:
 void signalStop(int)
 {
     INFO << "Stop running...by manually";
-    loop.stop();
+  //  loop.stop();
 }
 
 int setlimit(int num_pipes)
@@ -123,7 +124,7 @@ int main()
     setlimit(100000);
     errno = 0;
     ClientSimulator simulator(BASE_PORT);
-    loop.runforever();
+    pool.runforever();
 
     return 0;
 }

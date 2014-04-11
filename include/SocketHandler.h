@@ -43,6 +43,8 @@ public:
         return m_loop;
     }
 
+    EventLoop *getLoop2();
+
     int getStatus()
     {
         return m_status;

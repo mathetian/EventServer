@@ -1,0 +1,27 @@
+# Common make definitions
+
+CLEAN = \
+		include/Address include/EventLoop \
+		include/Acceptor include/MSGHandler \
+		include/Socket include/EventPool \
+		include/SocketHandler \
+		include/TimeEventSet \
+		include/Status \
+		include/TCPAcceptor \
+		include/Selector  MsgHandler\
+		tests/echo_client \
+		tests/echo_server \
+		tests/test_log \
+		utils/Log \
+		utils/Slice \
+		utils/Utils \
+		utils/TimeStamp \
+		client \
+		server \
+		tests/test_callback \
+		utils/Bind \
+		utils/Callback \
+		utils/SafeQueue \
+		utils/Atomic \
+		utils/Buffer \
+		utils/Thread

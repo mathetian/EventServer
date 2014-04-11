@@ -1,3 +1,5 @@
+include Make.defines
+
 CXX     = g++
 AR	    = ar
 LIBMISC	= libcustomserver.a
@@ -14,11 +16,11 @@ PROGS = server client ${tests}
 
 all: clean prepare ${PROGS}
 	
-server: tests/echo_server.cpp utils/Log.cpp
+server: tests/echo_server.cpp utils/Log.cpp include/EventPool.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-client: tests/echo_client.cpp utils/Log.cpp
+client: tests/echo_client.cpp utils/Log.cpp include/EventPool.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
@@ -50,4 +52,4 @@ prepare:
 	mkdir bin
 
 clean: 
-	-rm -rf bin
+	-rm -rf bin ${CLEAN}

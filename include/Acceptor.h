@@ -52,7 +52,9 @@ private:
         TCPSocket sock = m_sock.accept(&a);
         DEBUG << "New Connection: " << sock.get_fd() << " " << sock.getpeername();
         if (sock.get_fd() >= 0)
-            T* t = new T(getLoop(), sock);
+        {
+            T* t = new T(getLoop2(), sock);
+        }
     }
 
     void onSendMsg() { }

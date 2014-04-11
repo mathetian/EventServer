@@ -1,5 +1,9 @@
+bin/
+
+include/Acceptor
 include/Address
 include/EventLoop
+include/EventPool
 include/MSGHandler
 include/Socket
 include/SocketHandler
