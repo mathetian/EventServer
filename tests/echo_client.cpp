@@ -11,10 +11,10 @@ using namespace std;
 #include "../include/MsgHandler.h"
 #include "../include/Socket.h"
 
-#define BASE_PORT 9000
-#define PORT_NUM  10
+#define BASE_PORT 10000
+#define PORT_NUM  1
 
-#define CLIENT_NUM 10000
+#define CLIENT_NUM 100
 
 EventPool pool(1);
 

@@ -27,7 +27,7 @@ public:
         handler->updateStatus(event);
         events = handler->getStatus();
 
-        events |= EPOLLET;
+        //events |= EPOLLET;
 
         struct epoll_event epev = {0, {0}};
         epev.events   = events;
@@ -76,7 +76,7 @@ public:
         events = handler->getStatus();
         if(events != 0) delflag = 0;
 
-        events |= EPOLLET;
+        //events |= EPOLLET;
 
         if(delflag == 0)
         {

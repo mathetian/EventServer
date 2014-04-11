@@ -89,6 +89,7 @@ public:
 inline EventLoop* SocketHandler::getLoop2()
 {
     int id = rand()%(m_loop->m_pool->getNum());
+    INFO << "getLoop2: " << id;
     return m_loop->m_pool->getLoop(id);
 }
 

@@ -4,6 +4,7 @@
 #include "../utils/Log.h"
 using namespace utils;
 
+#include "EventLoop.h"
 #include "SocketHandler.h"
 
 template<class T>
@@ -16,30 +17,30 @@ public:
     {
         NetAddress addr = NetAddress(localport);
         m_sock = TCPSocket(&addr);
-        attach();
-        registerRead();
-        assert(m_sock.get_fd() >= 0);
-        INFO << "TCPAcceptor Initialization" ;
-        INFO << m_sock.getsockname() ;
+        onProceed();
     }
 
     TCPAcceptor(EventLoop* _loop, string ip, int localport) : SocketHandler(_loop), ip(""), port(localport)
     {
         NetAddress addr = NetAddress(ip,localport);
         m_sock = TCPSocket(&addr);
-        attach();
-        registerRead();
-        assert(m_sock.get_fd() >= 0);
-        INFO << "TCPAcceptor Initialization" ;
-        INFO << m_sock.getsockname() ;
+        onProceed();
     }
 
-    TCPAcceptor<T> & operator=(const TCPAcceptor<T> acceptor)
-    {
-        m_loop = acceptor.m_loop; 
-        NetAddress addr = (acceptor.ip.size() == 0) ? NetAddress(acceptor.port) : NetAddress(acceptor.ip, acceptor.port);
+    // TCPAcceptor<T> & operator=(const TCPAcceptor<T> acceptor)
+    // {
+    //     m_loop = acceptor.m_loop; 
+    //     NetAddress addr = (acceptor.ip.size() == 0) ? NetAddress(acceptor.port) : NetAddress(acceptor.ip, acceptor.port);
       
-        m_sock = TCPSocket(&addr);
+    //     m_sock = TCPSocket(&addr);
+    //     attach(); registerRead();
+    //     assert(m_sock.get_fd() >= 0);
+    //     INFO << "TCPAcceptor Initialization" ;
+    //     INFO << m_sock.getsockname() ;
+    // }
+
+    void onProceed()
+    {
         attach(); registerRead();
         assert(m_sock.get_fd() >= 0);
         INFO << "TCPAcceptor Initialization" ;

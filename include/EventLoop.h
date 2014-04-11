@@ -8,6 +8,8 @@ using namespace std;
 using namespace utils;
 
 #include "SocketHandler.h"
+#include "MsgHandler.h"
+
 #include "Acceptor.h"
 #include "Selector.h"
 
@@ -16,13 +18,15 @@ class EventPool;
 class EventLoop
 {
     map<int, SocketHandler*> m_map;
-    int   m_quitFlag;
+    int       m_quitFlag;
     Selector *m_selector;
 
     vector<SocketHandler*> m_del;
     EventPool *m_pool;
 
     Mutex     m_mutex;
+
+    vector<SocketHandler*>  m_needProceed;
 public:
     EventLoop(EventPool *pool) : m_quitFlag(false), m_selector(new Selector(this)), m_pool(pool)
     { }
@@ -47,7 +51,9 @@ public:
         while (!m_quitFlag) run_once();
 
         if(m_quitFlag==2) return; // add for benchmark
+        
         map<int,SocketHandler*>::iterator iter = m_map.begin();
+        
         for(; iter!=m_map.end(); iter++)
         {
             SocketHandler *handler = (*iter).second;
@@ -62,6 +68,14 @@ public:
     void run_once()
     {
         m_selector->dispatch();
+        
+        ScopeMutex scope(&m_mutex);
+        
+        for(int i=0;i<m_needProceed.size();i++)
+            m_needProceed[i]->onProceed();
+        
+        vector<SocketHandler*> tmp;
+        swap(tmp, m_needProceed);
     }
 
     void stop(int flag=1)
@@ -72,20 +86,22 @@ public:
 
     void attachHandler(int fd, SocketHandler *p)
     {
-        ScopeMutex scope(&m_mutex);
-
         assert(m_map.find(fd) == m_map.end());
         m_map[fd] = p;
     }
 
     void detachHandler(int fd, SocketHandler *p)
-    {
-        ScopeMutex scope(&m_mutex);
-        
+    {        
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
         assert(m_map.erase(fd) == 1);
         m_selector->unRegisterEvent(p, -1);
+    }
+
+    void insert(SocketHandler *handler)
+    {
+        ScopeMutex scope(&m_mutex);
+        m_needProceed.push_back(handler);
     }
 
 private:
@@ -211,6 +227,7 @@ inline int Selector::dispatch()
     int timeout = 5*1000; //5s
 
     num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, timeout);
+    INFO << "dispatch: " << num ;
     for(int i = 0; i < num; i++)
     {
         int what = m_events[i].events;
@@ -219,6 +236,24 @@ inline int Selector::dispatch()
     }
 
     m_loop->finDel();
+}
+
+inline MSGHandler::MSGHandler(EventLoop* loop, Socket sock, int first) : SocketHandler(loop), first(first)
+{
+    m_sock = sock;
+    m_loop->insert(this);
+}
+
+inline void MSGHandler::onCloseSocket(int st)
+{
+    if(errno != 0) DEBUG << strerror(errno);
+    DEBUG << "onCloseSocket: " << st << " " << m_sock.get_fd();
+    errno = 0;
+    
+    detach();
+    closedSocket();
+    m_sock.close();
+    m_loop->addDel(this);
 }
 
 #endif

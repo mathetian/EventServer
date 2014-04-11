@@ -4,26 +4,18 @@
 #include <list>
 using namespace std;
 
-#include "SocketHandler.h"
 #include "../utils/Buffer.h"
 #include "../utils/Log.h"
 using namespace utils;
 
-#include "EventLoop.h"
+#include "SocketHandler.h"
 
 #define MSGLEN 1024
 
 class MSGHandler : public SocketHandler
 {
 public:
-    MSGHandler(EventLoop* loop, Socket sock, int first=0) : SocketHandler(loop), first(first)
-    {
-        m_sock = sock;
-        attach();
-        registerRead();
-        if(first==0)
-        registerWrite();
-    }
+    MSGHandler(EventLoop* loop, Socket sock, int first=0);
 
 public:
     int write(const Buffer& buf)
@@ -101,19 +93,15 @@ private:
         }
     }
 
-public:
-    virtual void onCloseSocket(int st)
+    virtual void onProceed()
     {
-        if(errno != 0) DEBUG << strerror(errno);
-        DEBUG << "onCloseSocket: " << st << " " << m_sock.get_fd();
-        errno = 0;
-        
-        detach();
-        closedSocket();
-        m_sock.close();
-        m_loop->addDel(this);
+        attach(); registerRead();
+        if(first==0) registerWrite();
     }
 
+public:
+    virtual void onCloseSocket(int st);
+    
 public:
     virtual void receivedMsg(STATUS status, Buffer &buf) { }
     virtual void sendedMsg(STATUS status, int len, int targetLen) { }

@@ -24,4 +24,5 @@ CLEAN = \
 		utils/SafeQueue \
 		utils/Atomic \
 		utils/Buffer \
-		utils/Thread
+		utils/Thread \
+		include/MsgHandler
