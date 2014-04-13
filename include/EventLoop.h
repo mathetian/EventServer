@@ -227,7 +227,7 @@ inline int Selector::dispatch()
 {
     int num;
 
-    int timeout = 1; //5s
+    int timeout = 5*1000; //5s
 
     num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, timeout);
     INFO << "dispatch: " << num ;
@@ -245,6 +245,7 @@ inline MSGHandler::MSGHandler(EventLoop* loop, Socket sock, int first) : SocketH
 {
     m_sock = sock;
     m_loop->insert(this);
+    //onProceed();
 }
 
 inline void MSGHandler::onCloseSocket(int st)

@@ -10,9 +10,9 @@ PTHRFLAGS = -lpthread -pthread
 
 SOURCES = cache/*.cpp core/*.cpp helpers/*.cpp dbimpl/*/*.cpp utils/*.cpp
 
-tests = test_squeue test_buffer test_callback test_log test_slice test_tostring
+tests = test_squeue test_buffer test_callback test_log test_slice test_tostring test_thread
 
-PROGS = server client ${tests}
+PROGS = server client bench_library ${tests}
 
 all: clean prepare ${PROGS}
 
@@ -56,6 +56,7 @@ test_tostring: tests/test_tostring.cpp utils/Log.cpp
 
 test_thread: tests/test_thread.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
+	mv $@ bin
 	
 prepare:
 	mkdir bin

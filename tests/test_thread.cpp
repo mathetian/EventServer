@@ -62,7 +62,7 @@ void RunTest()
 {
 	INFO << "Begin of RunTest" ;
 	Thread thread(Func1,NULL);
-	thread.reRun();
+	thread.run();
 	
 	thread.join();
 	INFO << "End of RunTest";

@@ -12,7 +12,7 @@ using namespace std;
 #include "../include/Acceptor.h"
 
 #define BASE_PORT 10000
-#define PORT_NUM  1
+#define PORT_NUM  10
 
 EventPool pool(4);
 
@@ -33,7 +33,6 @@ private:
             INFO << "Received: " << (string)buf << " through fd " << m_sock.get_fd();
             write(buf);
         }
-
     }
 
     virtual void sendedMsg(STATUS status, int len, int targetLen)
@@ -52,7 +51,7 @@ private:
 void signalStop(int)
 {
     INFO << "Stop running...by manually";
-  //  loop.stop();
+    pool.closeAllLoop();
 }
 
 int setlimit(int num_pipes)
@@ -68,15 +67,17 @@ int setlimit(int num_pipes)
 
 int main()
 {
-    //::signal(SIGINT, signalStop);
+    ::signal(SIGINT, signalStop);
     setlimit(100000); errno = 0;
-    // TCPAcceptor<EchoServer> acceptors[PORT_NUM];
+    vector<TCPAcceptor<EchoServer>*> acceptors(PORT_NUM, NULL);
 
-    // for(int i = 0;i < PORT_NUM;i++)
-    //     acceptors[i] = TCPAcceptor<EchoServer>(pool.getRandomLoop(), BASE_PORT+i);
-    TCPAcceptor<EchoServer> acceptors(pool.getRandomLoop(), BASE_PORT);
+    for(int i = 0;i < PORT_NUM;i++)
+        acceptors[i] = new TCPAcceptor<EchoServer>(pool.getRandomLoop(), BASE_PORT+i);
 
     pool.runforever();
+    INFO << "End of Main" ;
+
+    for(int i = 0;i < PORT_NUM;i++) delete acceptors[i];
 
     return 0;
 }

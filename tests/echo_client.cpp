@@ -12,7 +12,7 @@ using namespace std;
 #include "../include/Socket.h"
 
 #define BASE_PORT 10000
-#define PORT_NUM  1
+#define PORT_NUM  10
 
 #define CLIENT_NUM 100
 
@@ -104,7 +104,7 @@ private:
 void signalStop(int)
 {
     INFO << "Stop running...by manually";
-  //  loop.stop();
+    pool.closeAllLoop();
 }
 
 int setlimit(int num_pipes)
@@ -120,11 +120,12 @@ int setlimit(int num_pipes)
 
 int main()
 {
-    //::signal(SIGINT, signalStop);
-    setlimit(100000);
-    errno = 0;
+    ::signal(SIGINT, signalStop);
+    setlimit(100000); errno = 0;
     ClientSimulator simulator(BASE_PORT);
     pool.runforever();
+
+    INFO << "End of Main";
 
     return 0;
 }

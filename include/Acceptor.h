@@ -27,18 +27,6 @@ public:
         onProceed();
     }
 
-    TCPAcceptor<T> & operator=(const TCPAcceptor<T> acceptor)
-    {
-        m_loop = acceptor.m_loop; 
-        NetAddress addr = (acceptor.ip.size() == 0) ? NetAddress(acceptor.port) : NetAddress(acceptor.ip, acceptor.port);
-      
-        m_sock = TCPSocket(&addr);
-        attach(); registerRead();
-        assert(m_sock.get_fd() >= 0);
-        INFO << "TCPAcceptor Initialization" ;
-        INFO << m_sock.getsockname() ;
-    }
-
     void onProceed()
     {
         attach(); registerRead();
