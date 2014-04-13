@@ -22,7 +22,7 @@ The benchmark program used was test/bench_library.c, taken from the libevent dis
 
 ```
 SealedServer:   version 1.0
-Date        :   Wed Feb 13 16:14:09 2014
+Date        :   Sunday April 13 16:14:09 2014
 CPU         :   4 * Intel(R) Core(TM) i5-3317U CPU @ 1.70GHz
 CPUCache    :   3072 KB
 G++         :   4.8.1
