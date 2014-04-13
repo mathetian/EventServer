@@ -56,13 +56,21 @@ private:
                 writes--; fired++;
             }
 
-            if(count % 20000 == 0)  WARN << count << " " << writes;
-            if(count % num_pipes == 0)
+            if(count % 10000 == 0)  
             {
+                //WARN << count << " " << writes;
                 TimeStamp end1 = TimeStamp::now();     
                 fprintf(stdout, "%8ld %8ld\n", end1.to_usecs() - before.to_usecs(), end1.to_usecs() - start.to_usecs());
                 fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
+
             }
+               
+            // if(count % num_pipes == 0)
+            // {
+            //     TimeStamp end1 = TimeStamp::now();     
+            //     fprintf(stdout, "%8ld %8ld\n", end1.to_usecs() - before.to_usecs(), end1.to_usecs() - start.to_usecs());
+            //     fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
+            // }
         }
         else
             INFO << "BAD" ;
@@ -122,6 +130,25 @@ int main(int argc, char* argv[])
     num_writes = num_pipes*25;
 
    //setlimit(num_pipes);
+    int c;
+    while ((c = getopt(argc, argv, "n:a:w:")) != -1) {
+        switch (c) 
+        {
+          case 'n':
+            num_pipes = atoi(optarg);
+            break;
+          case 'a':
+            num_active = atoi(optarg);
+            break;
+          case 'w':
+            num_writes = atoi(optarg);
+            break;
+          default:
+            fprintf(stderr, "Illegal argument `%c`\n", c);
+            return 1;
+        }
+    }
+    num_writes*=25;
 
     pipes = vector<Socket>(num_pipes*2,-1);
 

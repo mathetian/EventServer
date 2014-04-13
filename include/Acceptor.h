@@ -10,6 +10,7 @@ using namespace utils;
 template<class T>
 class TCPAcceptor : public SocketHandler
 {
+    TCPAcceptor& operator=(const TCPAcceptor<T>&acceptor);
 public:
     TCPAcceptor() : SocketHandler(NULL) { }
     
