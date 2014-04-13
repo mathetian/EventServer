@@ -8,6 +8,7 @@
 #endif
 
 #include <assert.h>
+#include <stdio.h>
 
 namespace utils
 {
@@ -36,6 +37,13 @@ public:
         return m_tid;
     }
 
+    id_type reRun()
+    {
+        pthread_create(&m_tid, NULL, m_task, m_args);
+        
+        return m_tid;
+    }
+    
     void     join()
     {
         if(m_tid != -1)
@@ -55,6 +63,7 @@ public:
 
 private:
     id_type  m_tid;
+    id_type  aaa;
     Task   m_task;
     void * m_args;
 };

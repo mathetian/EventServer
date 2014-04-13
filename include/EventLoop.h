@@ -28,7 +28,7 @@ class EventLoop
 
     vector<SocketHandler*>  m_needProceed;
 public:
-    EventLoop(EventPool *pool) : m_quitFlag(false), m_selector(new Selector(this)), m_pool(pool)
+    EventLoop(EventPool *pool) : m_quitFlag(0), m_selector(new Selector(this)), m_pool(pool)
     { }
 
     ~EventLoop()
@@ -50,6 +50,8 @@ public:
         m_quitFlag = 0; 
         while (!m_quitFlag) run_once();
 
+        INFO << "runforever: " << m_quitFlag ;
+        WARN << "End runforever" ;
         if(m_quitFlag==2) return; // add for benchmark
         
         map<int,SocketHandler*>::iterator iter = m_map.begin();
@@ -67,6 +69,7 @@ public:
 
     void run_once()
     {
+        if(m_quitFlag) printf("%d\n", m_quitFlag);
         m_selector->dispatch();
         
         ScopeMutex scope(&m_mutex);
@@ -224,7 +227,7 @@ inline int Selector::dispatch()
 {
     int num;
 
-    int timeout = 5*1000; //5s
+    int timeout = 1; //5s
 
     num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, timeout);
     INFO << "dispatch: " << num ;

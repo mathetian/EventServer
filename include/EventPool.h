@@ -48,31 +48,42 @@ public:
         for(int i=0; i<m_thrnum ; i++)
             loops[i] = new EventLoop(this);
 
-        for(int i=0; i<m_thrnum; i++) threads[i]->run();
+        run();
     }
 
     void* ThreadBody(int thrID)
     {
         INFO << "Thread " << thrID << " Running";
         loops[thrID]->runforever();
+        WARN << "Thread " << thrID << " Finished";
     }
 
     static void* ThreadFunc(void *arg)
     {
         ThreadArg targ = *(ThreadArg*)arg;
         ((targ.ep)->*(targ.func))(targ.id);
+        WARN << "ThreadFunc Finished" ;
+        pthread_exit(NULL);
     }
 
     EventLoop* getRandomLoop()
     {
-        INFO << "getRandomLoop: " << m_thrnum << ", loops: " << loops.size();
         return loops.at(rand()%m_thrnum);
     }
 
     void  runforever()
     {
+        // loops[m_thrnum-1]->runforever();
+        // for(int i=0; i<m_thrnum-1;i++)
+        //     threads[i]->cancel();
         for(int i=0; i<m_thrnum;i++)
             threads[i]->join();
+    }
+
+    void run()
+    {
+        for(int i=0; i<m_thrnum; i++) 
+            threads[i]->run();
     }
 
     int getNum() const 
@@ -83,6 +94,13 @@ public:
     EventLoop* getLoop(int id)
     {
         return loops.at(id);
+    }
+
+    void closeAllLoop()
+    {
+        for(int i=0; i<m_thrnum;i++)
+            loops[i]->stop(2);
+        WARN << "End closeAllLoop" ;
     }
 };
 

@@ -16,13 +16,17 @@ PROGS = server client ${tests}
 
 all: clean prepare ${PROGS}
 
-echo: clean prepare server client
+echo: clean prepare server client bench_library
 	
 server: tests/echo_server.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
 client: tests/echo_client.cpp utils/Log.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
+	mv $@ bin
+
+bench_library: tests/bench_library.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
@@ -50,6 +54,9 @@ test_tostring: tests/test_tostring.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
+test_thread: tests/test_thread.cpp utils/Log.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
+	
 prepare:
 	mkdir bin
 
