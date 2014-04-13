@@ -28,7 +28,7 @@ class EchoServer : public MSGHandler
 public:
     EchoServer(EventLoop *loop, Socket sock, int idx) : MSGHandler(loop, sock, 1), idx(idx)
     { 
-        //printf("EchoServer %d %d\n",sock.get_fd(), idx);
+        DEBUG << "EchoServer: " << sock.get_fd() << " " << idx;
     } 
 
     void clear()
@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
     num_active = 1000;
     num_writes = num_pipes*25;
 
-   // setlimit(num_pipes);
+   //setlimit(num_pipes);
 
     pipes = vector<Socket>(num_pipes*2,-1);
 
