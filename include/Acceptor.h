@@ -13,7 +13,7 @@ class TCPAcceptor : public SocketHandler
     TCPAcceptor& operator=(const TCPAcceptor<T>&acceptor);
 public:
     TCPAcceptor() : SocketHandler(NULL) { }
-    
+
     TCPAcceptor(EventLoop* _loop, int localport) : SocketHandler(_loop), ip(""), port(localport)
     {
         NetAddress addr = NetAddress(localport);
@@ -30,7 +30,8 @@ public:
 
     void onProceed()
     {
-        attach(); registerRead();
+        attach();
+        registerRead();
         assert(m_sock.get_fd() >= 0);
         INFO << "TCPAcceptor Initialization" ;
         INFO << m_sock.getsockname() ;
@@ -59,7 +60,8 @@ private:
     }
 
 private:
-    string ip; int port;
+    string ip;
+    int port;
 };
 
 #endif

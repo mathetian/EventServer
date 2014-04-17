@@ -53,23 +53,23 @@ using namespace std;
 
 void* Func1(void*arg)
 {
-	INFO << "Begin Func1" ;
-	usleep(10*100000);
-	INFO << "End   Func1";
+    INFO << "Begin Func1" ;
+    usleep(10*100000);
+    INFO << "End   Func1";
 }
 
 void RunTest()
 {
-	INFO << "Begin of RunTest" ;
-	Thread thread(Func1,NULL);
-	thread.run();
-	
-	thread.join();
-	INFO << "End of RunTest";
+    INFO << "Begin of RunTest" ;
+    Thread thread(Func1,NULL);
+    thread.run();
+
+    thread.join();
+    INFO << "End of RunTest";
 }
 
 int main()
 {
-	RunTest();
-	return 0;
+    RunTest();
+    return 0;
 }

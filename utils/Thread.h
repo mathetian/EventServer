@@ -36,7 +36,7 @@ public:
         pthread_create(&m_tid, NULL, m_task, m_args);
         return m_tid;
     }
-    
+
     void     join()
     {
         if(m_tid != -1)

@@ -27,13 +27,14 @@ class EchoServer : public MSGHandler
 {
 public:
     EchoServer(EventLoop *loop, Socket sock, int idx) : MSGHandler(loop, sock, 1), idx(idx)
-    { 
+    {
         DEBUG << "EchoServer: " << sock.get_fd() << " " << idx;
-    } 
+    }
 
     void clear()
     {
-        m_status = 0; m_delflag = 0;
+        m_status = 0;
+        m_delflag = 0;
     }
 
 private:
@@ -44,30 +45,32 @@ private:
             INFO << "Received: " << (string)buf << " through fd " << m_sock.get_fd();
             count += buf.length();
 
-            if (writes > 0) 
+            if (writes > 0)
             {
-                int widx = idx + 1; if (widx >= num_pipes) widx -= num_pipes;
+                int widx = idx + 1;
+                if (widx >= num_pipes) widx -= num_pipes;
                 INFO << "widx: " << widx ;
                 if(::write(pipes[2 * widx + 1].get_fd(), "m", 1)!=1)
                 {
                     INFO << strerror(errno) ;
                     assert(0);
                 }
-                writes--; fired++;
+                writes--;
+                fired++;
             }
 
-            if(count % 10000 == 0)  
+            if(count % 10000 == 0)
             {
                 //WARN << count << " " << writes;
-                TimeStamp end1 = TimeStamp::now();     
+                TimeStamp end1 = TimeStamp::now();
                 fprintf(stdout, "%8ld %8ld\n", end1.to_usecs() - before.to_usecs(), end1.to_usecs() - start.to_usecs());
                 fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
 
             }
-               
+
             // if(count % num_pipes == 0)
             // {
-            //     TimeStamp end1 = TimeStamp::now();     
+            //     TimeStamp end1 = TimeStamp::now();
             //     fprintf(stdout, "%8ld %8ld\n", end1.to_usecs() - before.to_usecs(), end1.to_usecs() - start.to_usecs());
             //     fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
             // }
@@ -78,9 +81,9 @@ private:
 
     virtual void onCloseSocket(int st)
     {
-        if(errno != 0) 
+        if(errno != 0)
             DEBUG << strerror(errno);
-        errno = 0;    
+        errno = 0;
         DEBUG << "onCloseSocket: " << st << " " << m_sock.get_fd();
     }
 
@@ -88,8 +91,8 @@ private:
     int idx;
 };
 
-void run_once() 
-{    
+void run_once()
+{
     start = TimeStamp::now();
 
     int space = num_pipes / num_active;
@@ -98,7 +101,7 @@ void run_once()
         ::write(pipes[i*space+1].get_fd(),"m",1);
 
     if(errno != 0) printf("error: %s\n",strerror(errno));
-    
+
     fired  = num_active;
     count  = 0;
     writes = num_writes;
@@ -123,27 +126,28 @@ int setlimit(int num_pipes)
     }
 }
 
-int main(int argc, char* argv[]) 
+int main(int argc, char* argv[])
 {
     num_pipes  = 150000;
     num_active = 1000;
     num_writes = num_pipes*25;
 
-   //setlimit(num_pipes);
+    //setlimit(num_pipes);
     int c;
-    while ((c = getopt(argc, argv, "n:a:w:")) != -1) {
-        switch (c) 
+    while ((c = getopt(argc, argv, "n:a:w:")) != -1)
+    {
+        switch (c)
         {
-          case 'n':
+        case 'n':
             num_pipes = atoi(optarg);
             break;
-          case 'a':
+        case 'a':
             num_active = atoi(optarg);
             break;
-          case 'w':
+        case 'w':
             num_writes = atoi(optarg);
             break;
-          default:
+        default:
             fprintf(stderr, "Illegal argument `%c`\n", c);
             return 1;
         }
@@ -152,19 +156,20 @@ int main(int argc, char* argv[])
 
     pipes = vector<Socket>(num_pipes*2,-1);
 
-    for (int i = 0; i < num_pipes; i++) 
+    for (int i = 0; i < num_pipes; i++)
     {
         pair<Socket, Socket> ss = Socket::pipe();
-        pipes[i*2]=ss.first;pipes[i*2+1]=ss.second;
+        pipes[i*2]=ss.first;
+        pipes[i*2+1]=ss.second;
     }
 
     for (int i = 0; i < num_pipes; i++)
         servers.push_back(new EchoServer(pool.getRandomLoop(), pipes[i*2],i));
 
-    for (int i = 0; i < 1; i++) 
+    for (int i = 0; i < 1; i++)
     {
         run_once();
         fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
-        for(int i=0;i<num_pipes;i++) servers[i]->clear();
+        for(int i=0; i<num_pipes; i++) servers[i]->clear();
     }
 }

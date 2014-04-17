@@ -68,16 +68,17 @@ int setlimit(int num_pipes)
 int main()
 {
     ::signal(SIGINT, signalStop);
-    setlimit(100000); errno = 0;
+    setlimit(100000);
+    errno = 0;
     vector<TCPAcceptor<EchoServer>*> acceptors(PORT_NUM, NULL);
 
-    for(int i = 0;i < PORT_NUM;i++)
+    for(int i = 0; i < PORT_NUM; i++)
         acceptors[i] = new TCPAcceptor<EchoServer>(pool.getRandomLoop(), BASE_PORT+i);
 
     pool.runforever();
     INFO << "End of Main" ;
 
-    for(int i = 0;i < PORT_NUM;i++) delete acceptors[i];
+    for(int i = 0; i < PORT_NUM; i++) delete acceptors[i];
 
     return 0;
 }

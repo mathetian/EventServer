@@ -28,7 +28,7 @@ public:
     virtual void onSendMsg()     = 0;
     virtual void onCloseSocket(int st) = 0;
     virtual void onProceed() = 0;
-    
+
     void registerRead();
     void registerWrite();
     void unRegisterRead();

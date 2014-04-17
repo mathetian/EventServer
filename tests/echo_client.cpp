@@ -91,8 +91,8 @@ private:
             sock.cliConnect(&svrAddr);
             assert(sock.get_fd() >= 0);
             EchoClient *client = new EchoClient(pool.getRandomLoop(), sock);
-            if(i%10000==0) 
-            {   
+            if(i%10000==0)
+            {
                 printf("press Enter to continue: ");
                 getchar();
             }
@@ -121,7 +121,8 @@ int setlimit(int num_pipes)
 int main()
 {
     ::signal(SIGINT, signalStop);
-    setlimit(100000); errno = 0;
+    setlimit(100000);
+    errno = 0;
     ClientSimulator simulator(BASE_PORT);
     pool.runforever();
 

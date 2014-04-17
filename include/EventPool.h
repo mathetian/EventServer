@@ -76,17 +76,17 @@ public:
         // loops[m_thrnum-1]->runforever();
         // for(int i=0; i<m_thrnum-1;i++)
         //     threads[i]->cancel();
-        for(int i=0; i<m_thrnum;i++)
+        for(int i=0; i<m_thrnum; i++)
             threads[i]->join();
     }
 
     void run()
     {
-        for(int i=0; i<m_thrnum; i++) 
+        for(int i=0; i<m_thrnum; i++)
             threads[i]->run();
     }
 
-    int getNum() const 
+    int getNum() const
     {
         return m_thrnum;
     }
@@ -98,7 +98,7 @@ public:
 
     void closeAllLoop()
     {
-        for(int i=0; i<m_thrnum;i++)
+        for(int i=0; i<m_thrnum; i++)
             loops[i]->stop(2);
         WARN << "End closeAllLoop" ;
     }

@@ -47,15 +47,15 @@ public:
 
     void runforever()
     {
-        m_quitFlag = 0; 
+        m_quitFlag = 0;
         while (!m_quitFlag) run_once();
 
         INFO << "runforever: " << m_quitFlag ;
         WARN << "End runforever" ;
         if(m_quitFlag==2) return; // add for benchmark
-        
+
         map<int,SocketHandler*>::iterator iter = m_map.begin();
-        
+
         for(; iter!=m_map.end(); iter++)
         {
             SocketHandler *handler = (*iter).second;
@@ -71,12 +71,12 @@ public:
     {
         if(m_quitFlag) printf("%d\n", m_quitFlag);
         m_selector->dispatch();
-        
+
         ScopeMutex scope(&m_mutex);
-        
-        for(int i=0;i<m_needProceed.size();i++)
+
+        for(int i=0; i<m_needProceed.size(); i++)
             m_needProceed[i]->onProceed();
-        
+
         vector<SocketHandler*> tmp;
         swap(tmp, m_needProceed);
     }
@@ -94,7 +94,7 @@ public:
     }
 
     void detachHandler(int fd, SocketHandler *p)
-    {        
+    {
         assert(m_map.find(fd) != m_map.end());
         assert(m_map[fd] == p);
         assert(m_map.erase(fd) == 1);
@@ -176,10 +176,10 @@ public:
     {
         DEBUG << "Need Destory " << m_del.size() << " Objects";
 
-        for(int i=0;i<m_del.size();i++)
+        for(int i=0; i<m_del.size(); i++)
         {
             SocketHandler *handler = m_del[i];
-            if(handler) delete handler; 
+            if(handler) delete handler;
             handler = NULL;
         }
         vector<SocketHandler*> handlers;
@@ -253,7 +253,7 @@ inline void MSGHandler::onCloseSocket(int st)
     if(errno != 0) DEBUG << strerror(errno);
     DEBUG << "onCloseSocket: " << st << " " << m_sock.get_fd();
     errno = 0;
-    
+
     detach();
     closedSocket();
     m_sock.close();
