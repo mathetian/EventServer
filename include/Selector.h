@@ -17,7 +17,7 @@ public:
         m_scknum = 0;
     }
 
-    virtual void registerEvent(SocketHandler *handler, short event)
+    void registerEvent(SocketHandler *handler, short event)
     {
         Socket sock = handler->getSocket();
         int fd = sock.get_fd(), events = event, addFlag = 1;
@@ -42,7 +42,7 @@ public:
             assert(epoll_ctl(m_epollfd, EPOLL_CTL_MOD, fd, &epev) == 0);
     }
 
-    virtual void unRegisterEvent(SocketHandler *handler, short event)
+    void unRegisterEvent(SocketHandler *handler, short event)
     {
         Socket sock = handler->getSocket();
         int fd = sock.get_fd(), events = 0, delflag = 1;
@@ -92,7 +92,7 @@ public:
         }
     }
 
-    virtual int dispatch();
+    int dispatch();
 
 private:
     int m_epollfd;

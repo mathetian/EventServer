@@ -33,7 +33,7 @@ public:
     typedef enum  { EXCEED, SOCKERR, BLOCKED, SUCC} STATUS;
 
 private:
-    virtual void onReceiveMsg()
+    void onReceiveMsg()
     {
         Buffer buf(MSGLEN);
         int len = m_sock.read(buf.data(), MSGLEN);
@@ -49,7 +49,7 @@ private:
         }
     }
 
-    virtual void onSendMsg()
+    void onSendMsg()
     {
         if(first == 0)
         {
@@ -93,10 +93,9 @@ private:
         }
     }
 
-    virtual void onProceed()
+    void onProceed()
     {
-        attach();
-        registerRead();
+        attach(); registerRead();
         if(first==0) registerWrite();
     }
 

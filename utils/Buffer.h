@@ -59,7 +59,7 @@ public:
     InnerBuffer(const void *dat, unsigned int len, unsigned int maxlen) :
         ConstBuffer(dat, len), maxlen(maxlen) { }
 
-    char *data()
+    char *data() const
     {
         return dat;
     }

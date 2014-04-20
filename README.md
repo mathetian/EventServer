@@ -32,8 +32,8 @@ Demux       :   EPoll
 
 Each run of the benchmark program consists of two iterations outputting the total time per iteration as well as the time used in handling the requests only. The program will be run in different atomsphere, especially, use different number of threads.
 
-![100](tests/bench100.png)
-![1000](tests/bench1000.png)
+![100](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/bench100.png)
+![1000](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/bench1000.png)
 
 In the above graph, the X of SealedServer-X means the number of threads created by bench_library.
 
@@ -50,3 +50,7 @@ How to use it? I have written a simple echo server-client in directory `tests`.
 
 1. Design by manually. Don't use any advanced library directly. So thread library, atomic, callback, garbage collection and many others has been provided.
 2. ...
+
+## SealedServer UML Graph
+
+![SealedServer UML Graph](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/SealedServer.png)

@@ -25,8 +25,6 @@ class EventPool
     vector<Thread*> threads;
     typedef struct ThreadArg_t ThreadArg;
     vector<ThreadArg> thrargs;
-
-private:
     vector<EventLoop*> loops;
     int m_thrnum;
 

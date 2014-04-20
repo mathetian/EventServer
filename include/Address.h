@@ -101,7 +101,7 @@ public:
         return ntohs(inetAddr()->sin_port);
     }
 
-    virtual string as_string() const
+    string as_string() const
     {
         string out = getIP();
 

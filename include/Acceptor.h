@@ -14,14 +14,14 @@ class TCPAcceptor : public SocketHandler
 public:
     TCPAcceptor() : SocketHandler(NULL) { }
 
-    TCPAcceptor(EventLoop* _loop, int localport) : SocketHandler(_loop), ip(""), port(localport)
+    TCPAcceptor(EventLoop* _loop, int localport) : SocketHandler(_loop)
     {
         NetAddress addr = NetAddress(localport);
         m_sock = TCPSocket(&addr);
         onProceed();
     }
 
-    TCPAcceptor(EventLoop* _loop, string ip, int localport) : SocketHandler(_loop), ip(""), port(localport)
+    TCPAcceptor(EventLoop* _loop, string ip, int localport) : SocketHandler(_loop)
     {
         NetAddress addr = NetAddress(ip,localport);
         m_sock = TCPSocket(&addr);
@@ -58,10 +58,6 @@ private:
         detach();
         m_sock.close();
     }
-
-private:
-    string ip;
-    int port;
 };
 
 #endif

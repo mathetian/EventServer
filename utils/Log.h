@@ -42,6 +42,7 @@ public:
     {
         return m_log;
     }
+    
     static int getLevel()
     {
         return m_level;

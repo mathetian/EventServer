@@ -20,9 +20,6 @@ public:
         m_delflag = 0;
     }
 
-    virtual ~SocketHandler()
-    { }
-
 public:
     virtual void onReceiveMsg()  = 0;
     virtual void onSendMsg()     = 0;
@@ -39,14 +36,14 @@ public:
         return m_sock;
     }
 
-    EventLoop *getLoop()
+    EventLoop *getLoop() const
     {
         return m_loop;
     }
 
     EventLoop *getLoop2();
 
-    int getStatus()
+    int getStatus() const
     {
         return m_status;
     }
@@ -56,7 +53,7 @@ public:
         m_delflag = 1;
     }
 
-    int getdelflag()
+    int getdelflag() const 
     {
         return m_delflag;
     }
