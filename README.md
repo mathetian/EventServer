@@ -1,5 +1,6 @@
 SealedServer
 ======
+
 SealedServer is A light-weight network programming framework, and supports time and I/O events. I will also provide support for signal event `in near future`. I have used this framework to build the [CComet](https://github.com/mathetian/CComet).
 
 ## Features
@@ -39,7 +40,7 @@ In the above graph, the X of SealedServer-X means the number of threads created 
 
 The two graphs above show the overall time spent for different atomsphere. The top row represents 100 active clients (clients doing I/O), the bottom row uses 1000. All graphs have a logarithmic fd-axis to sensibly display the large range of file descriptor numbers of 10000 to 200000 (in reality, its actually socket pairs, thus there are actually twice the number of file descriptors in the process).
 
-<h3>Discussion</h3>
+### Discussion
 
 The total time of our framework will be better than libevent when we use at least two threads. In my computer, we can achieve a 40% performance boost at most.
 
@@ -54,3 +55,11 @@ How to use it? I have written a simple echo server-client in directory `tests`.
 ## SealedServer UML Graph
 
 ![SealedServer UML Graph](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/SealedServer.png)
+
+
+## Todo List
+
+1. Add support for unlimited file descriptor
+2. Add timer & signal event
+3. Add support of asynchronous event and thread-pool(Edge Trigger & Thread affinity)
+4. Unit Test and Feature Test
