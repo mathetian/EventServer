@@ -29,6 +29,10 @@ utils/SQueue
 utils/Atomic
 utils/Buffer
 utils/Thread
+utils/C
+utils/Header
+utils/Noncopyable
+utils/Tester
 
 *.orig
 *.log

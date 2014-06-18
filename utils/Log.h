@@ -5,7 +5,7 @@
 #ifndef _LOG_H
 #define _LOG_H
 
-#include "Utils.h"
+#include "C.h"
 
 /**
 ** Log.h: The logging framework.

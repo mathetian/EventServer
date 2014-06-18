@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include "TestUtils.h"
+#include "Tester.h"
 
 namespace utils
 {
@@ -32,7 +32,7 @@ bool RegisterTest(const char* base, const char* name, void (*func)())
 
 int RunAllTests()
 {
-    const char* matcher = getenv("CUSTOMDB_TESTS");
+    const char* matcher = getenv("SERVER_TESTS");
 
     int num = 0;
     if (tests != NULL)

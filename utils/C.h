@@ -5,6 +5,8 @@
 #ifndef _C_H
 #define _C_H
 
+#include "Header.h"
+
 /**
 ** C.h provides some C-like helper functions
 **

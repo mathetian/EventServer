@@ -1,19 +1,66 @@
-#include <string>
-#include <iostream>
-using namespace std;
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "Buffer.h"
+#include "Tester.h"
 using namespace utils;
 
-void TestBuffer(const Buffer buf)
+class A 
+{ 
+	Buffer buf;
+public:
+	A() : buf("hello world") { }
+
+	int size() { return buf.size(); }
+};
+
+/**
+** Test for size
+**/
+TEST(A, Size)
 {
-    cout<<"len2:"<<buf.length()<<endl;
-}
+	ASSERT_EQ(size(), 11);
+};
+
+/**
+** Test for counter
+** Expect behavior: release/output/release/release
+**/
+TEST(A, Counter)
+{
+	Buffer buff;
+	
+	{
+		Buffer buff1("hello world");
+		buff = buff1;
+	}
+
+	cout << (string)buff << endl;
+};
+
+/**
+** Test for counter
+** Expect behavior: release/output/release/release
+**/
+TEST(A, SelfAlloc)
+{
+	Buffer buff;
+	
+	{
+		char * str = new char[10];
+		memset(str, 0, 10);
+		strncpy(str, "great day", 9);
+
+		Buffer buff1(str, true);
+		buff = buff1;
+	}
+
+	cout << (string)buff << endl;
+};
 
 int main()
 {
-    Buffer buf("hello world");
-    cout<<"len1:"<<buf.length()<<endl;
-    TestBuffer(buf);
+	RunAllTests();
     return 0;
 }

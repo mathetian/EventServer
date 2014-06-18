@@ -5,10 +5,10 @@
 #ifndef _TEST_UTIL_H
 #define _TEST_UTIL_H
 
-#include "CommonHeader.h"
+#include "Header.h"
 
 /**
-** TestUtils is the Unit Test Module
+** Tester is the Unit Test Module
 **
 ** It is taken from leveldb and supports ASSERT* and TEST(*,*)
 **/

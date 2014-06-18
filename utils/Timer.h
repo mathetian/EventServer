@@ -5,6 +5,8 @@
 #ifndef _TIME_STAMP_H
 #define _TIME_STAMP_H
 
+#include "Header.h"
+
 namespace utils
 {
 

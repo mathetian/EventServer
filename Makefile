@@ -2,19 +2,26 @@ include Make.defines
 
 CXX     = g++
 AR	    = ar
-LIBMISC	= libcustomserver.a
+LIBMISC	= libsealedserver.a
 RANLIB  = ranlib
-HEADER  = -I./include -I. -I./utils
+HEADER  = -I. -I./include -I./utils
 CXXFLAGS = -g -O0
 PTHRFLAGS = -lpthread -pthread
 
-SOURCES = cache/*.cpp core/*.cpp helpers/*.cpp dbimpl/*/*.cpp utils/*.cpp
+SOURCES = utils/*.cpp
+LDLIBS  = -L. -lsealedserver
 
 tests = test_squeue test_buffer test_callback test_log test_slice test_tostring test_thread
 
 PROGS = server client bench_library ${tests}
 
-all: clean prepare ${PROGS}
+lib: clean prepare compile
+	${AR} rv ${LIBMISC} *.o
+	${RANLIB} ${LIBMISC}
+	rm *.o
+
+compile:
+	${CXX} ${CXXFLAGS} ${HEADER} -lpthread -c ${SOURCES} 
 
 echo: clean prepare server client bench_library
 	
@@ -35,11 +42,11 @@ test_squeue: tests/test_squeue.cpp
 	mv $@ bin
 
 test_buffer: tests/test_buffer.cpp
-	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
 test_callback: tests/test_callback.cpp
-	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
 test_log: tests/test_log.cpp utils/Log.cpp

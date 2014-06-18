@@ -5,7 +5,7 @@
 #ifndef _MULTI_THREAD_H
 #define _MULTI_THREAD_H
 
-#include "CommonHeader.h"
+#include "Header.h"
 
 #include "Noncopyable.h"
 

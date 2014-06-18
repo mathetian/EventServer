@@ -16,6 +16,10 @@ CLEAN = \
 		utils/Slice \
 		utils/Utils \
 		utils/Timer \
+		utils/C \
+		utils/Header \
+		utils/Noncopyable \
+		utils/Tester \
 		client \
 		server \
 		tests/test_callback \
@@ -25,4 +29,5 @@ CLEAN = \
 		utils/Atomic \
 		utils/Buffer \
 		utils/Thread \
-		include/MsgHandler
+		include/MsgHandler \
+		*.a

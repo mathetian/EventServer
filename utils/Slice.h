@@ -5,7 +5,7 @@
 #ifndef _SLICE_H
 #define _SLICE_H
 
-#include "Utils.h"
+#include "C.h"
 
 namespace utils
 {

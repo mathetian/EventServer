@@ -35,6 +35,11 @@ public:
         return len;
     }
 
+    unsigned int size() const
+    {
+        return length();
+    }
+
     operator const void *() const
     {
         return dat;
@@ -109,7 +114,7 @@ public:
 class Buffer : public MutableBuff
 {
     Atomic *ref;
-    int self_alloc;
+    bool self_alloc;
 
 private:
     void acquire()
@@ -119,7 +124,7 @@ private:
 
     void release()
     {
-        if(self_alloc == 0) return;
+        if(self_alloc == false) return;
         if (ref && (ref->addAndGet(-1)) == 0)
         {
             delete[] dat;
@@ -130,10 +135,9 @@ private:
 
 public:
     /// Null constructor.
-    Buffer() : MutableBuff(), ref(0)
+    Buffer() : MutableBuff(), ref(0), self_alloc(false)
     {
         acquire();
-        self_alloc = 0;
     }
 
     /// Dynamically allocates a data buffer whose current length is
@@ -141,17 +145,16 @@ public:
     /// The underlying storage will be deallocate when the last
     /// Buffer referring to that storage is destructed.
     Buffer(unsigned int maxlen) : MutableBuff(new char[maxlen], 0, maxlen), \
-        ref(new Atomic(0)), self_alloc(1)
+        ref(new Atomic(0)), self_alloc(true)
     {
         acquire();
         zeros();
     }
 
-    Buffer(const char* str, int self_alloc = 0) : MutableBuff(str, strlen(str), strlen(str) + 1), \
+    Buffer(const char* str, bool self_alloc = false) : MutableBuff(str, strlen(str), strlen(str)), \
         ref(new Atomic(0)), self_alloc(self_alloc)
     {
         acquire();
-        if(self_alloc == 1) zeros();
     }
 
     Buffer(const string &str) : MutableBuff(str.data(), str.size(), str.size()), ref(new Atomic(0)), self_alloc(0)
