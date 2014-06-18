@@ -95,7 +95,8 @@ private:
 
     void onProceed()
     {
-        attach(); registerRead();
+        attach();
+        registerRead();
         if(first==0) registerWrite();
     }
 

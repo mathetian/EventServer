@@ -6,7 +6,7 @@ using namespace std;
 
 #include "../utils/Log.h"
 #include "../utils/Thread.h"
-#include "../utils/SafeQueue.h"
+#include "../utils/SQueue.h"
 #include "../utils/Callback.h"
 using namespace utils;
 

@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "SafeQueue.h"
+#include "SQueue.h"
 #include "Callback.h"
 using namespace utils;
 
@@ -24,7 +24,7 @@ public:
 
 int main()
 {
-    SafeQueue<Callback<void> * > squeue;
+    SQueue<Callback<void> * > squeue;
 
     A a1;
     B b1;

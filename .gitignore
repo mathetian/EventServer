@@ -19,13 +19,13 @@ tests/test_log
 utils/Log
 utils/Slice
 utils/Utils
-utils/TimeStamp
+utils/Timer
 client
 server
 tests/test_callback
 utils/Bind
 utils/Callback
-utils/SafeQueue
+utils/SQueue
 utils/Atomic
 utils/Buffer
 utils/Thread

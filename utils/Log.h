@@ -1,17 +1,22 @@
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+
 #ifndef _LOG_H
 #define _LOG_H
 
-#include <iostream>
-#include <string>
-#include <sstream>
-using namespace std;
-
-#include <string.h>
-
 #include "Utils.h"
+
+/**
+** Log.h: The logging framework.
+*/
 
 namespace utils
 {
+
+/**
+** An internal class used to implement the logging framework.
+**/
 
 class Log
 {
@@ -42,13 +47,19 @@ public:
     {
         return m_log;
     }
-    
+
     static int getLevel()
     {
         return m_level;
     }
     bool operator ^ (const LogMsg& msg);
 };
+
+/**
+** An internal class used to implement the logging framework.  (See
+** the log class for information on the debugging architecture.)
+** Shouldn't use it directly
+*/
 
 class Log::LogMsg
 {
@@ -127,6 +138,32 @@ public:
     }
 };
 
+/**
+** <p>You shouldn't use this class directly.  Instead, use it like this:
+**
+** \code
+** DEBUG << "foo is " << foo
+** INFO << "Accepted connection from " << addr;
+** WARN << "...";
+** ERROR << "...";
+** FATAL << "Assertion failed";  // Also kills program
+** CORE << "Assertion failed";   // Kills program, leaving core dump
+** \endcode
+** You can use feed just about anything, type-safely, as arguments to
+** <code>&lt;&lt;</code> (consider it varargs, C++ style).
+**
+** This prints messages like the following to standard error:
+**
+** \code
+** debug [file.c:30] Foo is bar
+** info  [file.c:31] Accepted connection from 18.7.16.73:9133
+** warn  [file.c:32] ...
+** error [file.c:33] ...
+** fatal [file.c:34] Assertion failed
+** core! [file.c:35] Assertion failed
+** \endcode
+**
+**/
 #define LOG(level) (Log::getLevel() >= Log::level) && Log::get() ^ Log::LogMsg(__FILE__, __LINE__, __PRETTY_FUNCTION__, Log::level)
 
 #define DEBUG    LOG(debug)

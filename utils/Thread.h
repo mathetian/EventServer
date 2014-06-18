@@ -1,75 +1,83 @@
-#ifndef _THREAD_WIN_POS_H
-#define _THREAD_WIN_POS_H
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#ifdef __WIN32
-#include <windows.h>
-#else
-#include <pthread.h>
-#endif
+#ifndef _MULTI_THREAD_H
+#define _MULTI_THREAD_H
 
-#include <assert.h>
-#include <stdio.h>
+#include "CommonHeader.h"
 
+#include "Noncopyable.h"
+
+/**
+** Thread.h is the archive of many sub-module of concurrency.
+**
+** Support: Thread/Mutex/CondVar/SingletonMutex/ScopeMutex/RWLock/ReentrantLock
+**/
 namespace utils
 {
 
-#ifdef __WIN32
-typedef HANDLE id_type;
-typedef unsigned(WINAPI *Task)(void *);
-#define THRINIT NULL
-#else
 typedef pthread_t id_type;
 typedef void *(*Task)(void *);
-#define THRINIT -1
-#endif
+typedef pthread_mutex_t mutex_type;
 
-class Thread
+class Thread : Noncopyable
 {
 public:
-    Thread(Task task = NULL, void * args = NULL) : m_task(task), m_args(args), m_tid(THRINIT) { }
-    Thread(const Thread & thr) : m_task(thr.m_task), m_args(thr.m_args), m_tid(thr.m_tid) { }
+    Thread(Task task, void * args = NULL)
+        : m_task(task), m_args(args), m_tid(-1)
+    {
+
+    }
+
+public:
+    /**
+    ** Forbid being called more than once
+    **/
     id_type  run()
     {
-        if(m_tid != -1)
-            return m_tid;
-
+        assert(m_tid == -1);
         pthread_create(&m_tid, NULL, m_task, m_args);
         return m_tid;
     }
-
+    /**
+    ** Only can be called after `run`
+    **/
     void     join()
     {
-        if(m_tid != -1)
-            pthread_join(m_tid, NULL);
-    }
 
+        assert(m_tid != -1);
+        pthread_join(m_tid, NULL);
+    }
+    /**
+    ** Only can be called after `run`
+    **/
     void     cancel()
     {
-        if(m_tid != -1)
-            pthread_cancel(m_tid);
+        assert(m_tid != -1);
+        pthread_cancel(m_tid);
     }
 
-    static id_type  getIDType()
+    static id_type getIDType()
     {
         return pthread_self();
     }
 
 private:
     id_type  m_tid;
-    Task   m_task;
-    void * m_args;
+    Task     m_task;
+    void    *m_args;
 };
 
-class CondVar;
-
-class Mutex
+class Mutex : Noncopyable
 {
 public:
     Mutex()
     {
         pthread_mutex_init(&m_mutex, 0);
     }
-    virtual ~Mutex()
+
+    ~Mutex()
     {
         pthread_mutex_destroy(&m_mutex);
     }
@@ -85,32 +93,25 @@ public:
         pthread_mutex_unlock(&m_mutex);
     }
 
-    int trylock()
+    bool  trylock()
     {
         return pthread_mutex_trylock(&m_mutex);
     }
 
-
-private:
-#ifdef __WIN32
-    CRITICAL_SECTION m_mutex;
-#else
-    pthread_mutex_t m_mutex;
-#endif
-    friend class CondVar;
-};
-
-class ReentrantLock;
-
-class CondVar
-{
 public:
-    CondVar(Mutex* mutex) : m_mutex(mutex), m_lock(NULL)
+    mutex_type& getMutex()
     {
-        pthread_cond_init(&m_cond, NULL);
+        return m_mutex;
     }
 
-    CondVar(ReentrantLock * lock) : m_mutex(NULL), m_lock(lock)
+private:
+    mutex_type   m_mutex;
+};
+
+class CondVar : Noncopyable
+{
+public:
+    CondVar(Mutex* mutex = NULL): m_mutex(mutex)
     {
         pthread_cond_init(&m_cond, NULL);
     }
@@ -120,7 +121,11 @@ public:
         pthread_cond_destroy(&m_cond);
     }
 
-    void wait();
+public:
+    void wait()
+    {
+        pthread_cond_wait(&m_cond, &m_mutex->getMutex());
+    }
 
     void signal()
     {
@@ -133,26 +138,40 @@ public:
     }
 
 private:
-#ifdef __WIN32
-    HANDLE m_cond;
-#else
     pthread_cond_t m_cond;
-#endif
-    Mutex * m_mutex;
-    ReentrantLock * m_lock;
+    Mutex         *m_mutex;
 };
 
-class Noncopyable
-{
-protected:
-    Noncopyable() { }
-    ~Noncopyable() { }
+/**
+    Two ways for Singleton
 
-private:
-    Noncopyable( const Noncopyable& );
-    Noncopyable& operator=( const Noncopyable& );
-};
+    The first way, not thread_safe
+    class Singleton{
+    public:
+        Singleton * getInstance()
+        {
+            if(s == NULL)
+                s = new Singleton;
+            return s;
+        }
+    private:
+        Singleton() { }
+        static Singleton * s;
+    }
 
+    Singleton * a = Singleton::getInstance();
+    Singleton * b = Singleton::getInstance();
+    assert(a == b);//judge by address
+
+    For the way below,
+    SingletonMutex &a = SingletonMutex::getInstance();
+    SingletonMutex &b = SingletonMutex::getInstance();
+    assert(&a == &b);
+**/
+
+/**
+** SingletonMutex is for a single instance of mutex
+**/
 class SingletonMutex : Noncopyable
 {
 public:
@@ -162,38 +181,54 @@ public:
         return instance;
     }
 
+    Mutex * RMutex()
+    {
+        return &m_mutex;
+    }
+
 private:
     SingletonMutex() {}
-
-public:
-    Mutex m;
+    Mutex m_mutex;
 };
 
+/**
+** A RAII Instance
+**/
 class ScopeMutex : Noncopyable
 {
 public:
-    ScopeMutex(Mutex * pmutex);
-    ScopeMutex(ReentrantLock * lock);
-    ~ScopeMutex();
+    ScopeMutex(Mutex * pmutex)
+        : m_pmutex(pmutex)
+    {
+        m_pmutex -> lock();
+    }
+
+    ~ScopeMutex()
+    {
+        m_pmutex -> unlock();
+    }
 
 private:
     Mutex * m_pmutex;
-    ReentrantLock * m_lock;
 };
 
-/**constructor can't be empty parameter.**/
-class RWLock
+/**
+** We implemented the RWLock with mutex and condition variable
+**
+** We don't provide promote feature
+**/
+class RWLock : Noncopyable
 {
 public:
-    RWLock(Mutex * mutex = NULL) : m_mutex(mutex), m_condRead(m_mutex),
-        m_condWrite(m_mutex), m_nReader(0), m_nWriter(0), m_wReader(0), m_wWriter(0)
+    RWLock(): m_condRead(&m_mutex), m_condWrite(&m_mutex),
+        m_nReader(0), m_nWriter(0), m_wReader(0), m_wWriter(0)
     {
-        if(mutex == NULL) m_mutex = new Mutex;
     }
 
+public:
     void readLock()
     {
-        ScopeMutex scope(m_mutex);
+        ScopeMutex scope(&m_mutex);
         if(m_nWriter || m_wWriter)
         {
             m_wReader++;
@@ -206,7 +241,7 @@ public:
 
     void readUnlock()
     {
-        ScopeMutex scope(m_mutex);
+        ScopeMutex scope(&m_mutex);
         m_nReader--;
 
         if(m_wWriter != 0)
@@ -217,7 +252,7 @@ public:
 
     void writeLock()
     {
-        ScopeMutex scope(m_mutex);
+        ScopeMutex scope(&m_mutex);
         if(m_nReader || m_nWriter)
         {
             m_wWriter++;
@@ -230,7 +265,7 @@ public:
 
     void writeUnlock()
     {
-        ScopeMutex scope(m_mutex);
+        ScopeMutex scope(&m_mutex);
         m_nWriter--;
 
         if(m_wWriter != 0)
@@ -239,7 +274,6 @@ public:
             m_condRead.signal();
     }
 
-
 private:
     int  m_nReader;
     int  m_nWriter;
@@ -247,18 +281,24 @@ private:
     int  m_wWriter;
 
 private:
-    Mutex * m_mutex;
+    Mutex   m_mutex;
     CondVar m_condRead;
     CondVar m_condWrite;
 };
 
-/**Todo list**/
-class ReentrantLock
+/**
+** ReentrantLock means that in single thread, it can be called more than once
+**/
+class ReentrantLock : Noncopyable
 {
 public:
-    ReentrantLock() : m_id(-1), m_cond(&m_tmplock), m_time(0) { }
+    ReentrantLock()
+        : m_id(-1), m_cond(&m_tmplock), m_time(0)
+    {
 
-    void lock()
+    }
+
+    void  lock()
     {
         m_tmplock.lock();
 
@@ -283,7 +323,7 @@ public:
         m_tmplock.unlock();
     }
 
-    void unlock()
+    void  unlock()
     {
         m_tmplock.lock();
 
@@ -299,7 +339,7 @@ public:
             m_tmplock.unlock();
     }
 
-    bool trylock()
+    bool  trylock()
     {
         m_tmplock.lock();
         if(m_id != -1)
@@ -318,40 +358,12 @@ public:
     }
 
 private:
-    Mutex m_lock;
+    Mutex   m_lock;
     id_type m_id;
-    Mutex m_tmplock;
+    Mutex   m_tmplock;
     CondVar m_cond;
-    int   m_time;
-
-    friend class CondVar;
-    friend class ScopeMutex;
+    int     m_time;
 };
-
-inline void CondVar::wait()
-{
-    if(m_mutex)
-        pthread_cond_wait(&m_cond, &m_mutex->m_mutex);
-    else
-        pthread_cond_wait(&m_cond, &m_lock->m_lock.m_mutex);
-}
-
-inline ScopeMutex::ScopeMutex(Mutex * pmutex) :\
-    m_pmutex(pmutex), m_lock(NULL)
-{
-    m_pmutex -> lock();
-}
-
-inline ScopeMutex::ScopeMutex(ReentrantLock *lock):\
-    m_pmutex(NULL), m_lock(lock)
-{
-    m_lock -> lock();
-}
-
-inline ScopeMutex::~ScopeMutex()
-{
-    m_pmutex -> unlock();
-}
 
 };
 

@@ -1,15 +1,17 @@
-#ifndef _UTILS_H
-#define _UTILS_H
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include <string>
-#include <sstream>
-using namespace std;
+#ifndef _C_H
+#define _C_H
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
+/**
+** C.h provides some C-like helper functions
+**
+** It mainly provides `to_string` and `to_escaped_string`
+** `to_string` is used to convert any object into human-readable string
+** `to_escape_string` is used to convert string to escape_string(\t -> \\t).
+**/
 namespace utils
 {
 

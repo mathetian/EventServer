@@ -53,7 +53,7 @@ public:
         m_delflag = 1;
     }
 
-    int getdelflag() const 
+    int getdelflag() const
     {
         return m_delflag;
     }

@@ -4,7 +4,7 @@
 #include <list>
 using namespace std;
 
-#include "TimeStamp.h"
+#include "Timer.h"
 using namespace utils;
 
 #include "SocketHandler.h"
@@ -15,8 +15,8 @@ namespace sealedServer
 struct TimeEventItem
 {
     SocketHandler *ptr;
-    TimeStamp      timer;
-    TimeEventItem(SocketHandler *ptr, TimeStamp timer) :\
+    Timer      timer;
+    TimeEventItem(SocketHandler *ptr, Timer timer) :\
         ptr(ptr), timer(timer) { }
 };
 

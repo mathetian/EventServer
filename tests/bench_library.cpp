@@ -8,7 +8,7 @@ using namespace std;
 #include "../include/EventPool.h"
 #include "../include/EventLoop.h"
 #include "../include/MsgHandler.h"
-#include "../utils/TimeStamp.h"
+#include "../utils/Timer.h"
 
 Atomic count, writes, fired;
 int num_pipes, num_active, num_writes;
@@ -21,7 +21,7 @@ vector<EchoServer*> servers;
 int thrnum = 4;
 EventPool pool(thrnum);
 
-TimeStamp start, before, end;
+Timer start, before, end;
 
 class EchoServer : public MSGHandler
 {
@@ -62,7 +62,7 @@ private:
             if(count % 10000 == 0)
             {
                 //WARN << count << " " << writes;
-                TimeStamp end1 = TimeStamp::now();
+                Timer end1 = Timer::now();
                 fprintf(stdout, "%8ld %8ld\n", end1.to_usecs() - before.to_usecs(), end1.to_usecs() - start.to_usecs());
                 fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
 
@@ -70,7 +70,7 @@ private:
 
             // if(count % num_pipes == 0)
             // {
-            //     TimeStamp end1 = TimeStamp::now();
+            //     Timer end1 = Timer::now();
             //     fprintf(stdout, "%8ld %8ld\n", end1.to_usecs() - before.to_usecs(), end1.to_usecs() - start.to_usecs());
             //     fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
             // }
@@ -93,7 +93,7 @@ private:
 
 void run_once()
 {
-    start = TimeStamp::now();
+    start = Timer::now();
 
     int space = num_pipes / num_active;
     space *= 2;
@@ -106,11 +106,11 @@ void run_once()
     count  = 0;
     writes = num_writes;
 
-    before = TimeStamp::now();
+    before = Timer::now();
     WARN << "Begin runforever" ;
     pool.runforever();
     WARN << "End runforever" ;
-    end = TimeStamp::now();
+    end = Timer::now();
 
     fprintf(stdout, "%8ld %8ld\n", end.to_usecs() - before.to_usecs(), end.to_usecs() - start.to_usecs());
 }
