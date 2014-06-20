@@ -6,106 +6,79 @@
 #define _ADDRESS_H
 
 #include "C.h"
+#include "Noncopyable.h"
 using namespace utils;
 
+/**
+** 
+**/
 namespace sealedserver
 {
 
-class Address
+/**
+** A network address.  Addresses, like STL strings, may be
+** passed and copied by value.
+**/
+class Address 
 {
+public:
+    /// Constructs an empty address.
+    Address();
+
+    /// Constructs an address from a block of data.
+    Address(const void *addr, socklen_t len);
+
+public:
+    /// Returns a pointer to the data as a sockaddr.
+    const sockaddr *data() const;
+
+    /// Returns the length of the address structure.
+    socklen_t       length() const;
+
 protected:
     string m_addr;
-
-public:
-    Address() {}
-
-    Address(const void *addr, socklen_t len) : m_addr(static_cast<const char*>(addr), len)
-    { }
-
-    const sockaddr *data() const
-    {
-        return static_cast<const sockaddr *>(static_cast<const void *>(m_addr.data()));
-    }
-
-    socklen_t length() const
-    {
-        return m_addr.length();
-    }
-
-    void   setAddr(const void *addr, socklen_t len)
-    {
-        m_addr = string(static_cast<const char *>(addr), len);
-    }
 };
 
-class NetAddress : public Address
+/**
+** An IP address and port.  
+** IPv4 addresses are supported
+**/
+class NetAddress : public Address, public Noncopyable
 {
 public:
-    typedef uint32_t port;
+    /// Constructs an empty address.
+    NetAddress();
 
-private:
-    NetAddress(const Address& other);
-    NetAddress& operator = (const NetAddress &);
+    /// Constructs an address from a port(used by server)
+    NetAddress(port pt);
 
-private:
-    void init(string ip, port pt)
-    {
-        sockaddr_in a;
-        hostent *ent;
-
-        a.sin_family = AF_INET;
-        a.sin_port   = htons(pt);
-
-        if ((ent = gethostbyname(ip.c_str())) != NULL)
-        {
-            memcpy(&a.sin_addr.s_addr, ent->h_addr, ent->h_length);
-            m_addr = string(static_cast<const char *>(static_cast<const void *>(&a)), sizeof a);
-        }
-    }
-
-    const sockaddr_in *inetAddr() const
-    {
-        return static_cast<const sockaddr_in *>\
-               (static_cast<const void *>(data()));
-    }
+    /// Constructs an address from a host name and port. 
+    /// Convert ip/pt to data to sockaddr_in
+    /// later converted to string
+    NetAddress(string ip, port pt)
+    
+    NetAddress(const void *addr, socklen_t len);
 
 public:
-    NetAddress() { }
-    NetAddress(port pt)
-    {
-        sockaddr_in a;
-        a.sin_family = AF_INET;
-        a.sin_port   = htons(pt);
-        a.sin_addr.s_addr = INADDR_ANY;
+    /// Returns the corresponding ip 
+    string IP() const;
+    
+    /// Returns the corresponding port 
+    port   Port() const;
 
-        m_addr = string(static_cast<const char *>(static_cast<const void *>(&a)), sizeof a);
-    }
+    /// Returns a human-readable version of this address.
+    string as_string() const;
 
-    NetAddress(string ip, port pt)
-    {
-        init(ip, pt);
-    }
+private:
+    void init(string ip, port pt);
+    
+    /**
+    ** Convert data to sockaddr_in
+    **/
+    const sockaddr_in *inetAddr() const;
 
-    NetAddress(const void *addr, socklen_t len) : Address(addr, len) { }
-
-    string getIP() const
-    {
-        return inet_ntoa(inetAddr()->sin_addr);
-    }
-
-    port getPort() const
-    {
-        return ntohs(inetAddr()->sin_port);
-    }
-
-    string as_string() const
-    {
-        string out = getIP();
-
-        out += ":" + to_string(getPort());
-
-        return out;
-    }
+private:
+    typedef uint32_t port;
 };
 
 TO_STRING(NetAddress);

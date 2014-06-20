@@ -9,6 +9,7 @@
 #include "Thread.h"
 #include "SQueue.h"
 #include "Callback.h"
+#include "Noncopyable.h"
 using namespace utils;
 
 #include "EventLoop.h"
@@ -17,101 +18,51 @@ using namespace utils;
 namespace sealedserver
 {
 
-class EventPool
+/**
+** The pool of loops
+**/
+class EventPool : public Noncopyable
 {
-    struct ThreadArg_t
-    {
-        EventPool *ep;
-        void* (EventPool::*func)(int);
-        int id;
-    };
+public:
+    /// Constructor, the default number of loops would be 2
+    EventPool(int loopNum = 2);
 
-    vector<Thread*> threads;
-    typedef struct ThreadArg_t ThreadArg;
-    vector<ThreadArg> thrargs;
-    vector<EventLoop*> loops;
-    int m_thrnum;
+    /// Destructor, deallocate heap
+    ~EventLoop();
 
 public:
-    EventPool(int thrnum = 2) : m_thrnum(thrnum)
-    {
-        threads  = vector<Thread*>(m_thrnum);
-        thrargs  = vector<ThreadArg>(m_thrnum);
+    /// start the loop and wait in here
+    void       run();
 
-        for(int i=0; i<m_thrnum; i++)
-        {
-            thrargs[i].ep   = this;
-            thrargs[i].func = &EventPool::ThreadBody;
-            thrargs[i].id   = i;
-            threads[i] = new Thread(ThreadFunc, &(thrargs[i]));
-        }
+    /// stop(or kill) all loops
+    void       stop();
 
-        loops = vector<EventLoop*>(m_thrnum, NULL);
-        for(int i=0; i<m_thrnum ; i++)
-            loops[i] = new EventLoop(this);
+    /// get RandomLoop(), to find a suitable loop
+    EventLoop* getRandomLoop();
 
-        run();
-    }
+    /// get Loop by Index(or ID)
+    EventLoop* getLoopByID(int id);
 
-    void* ThreadBody(int thrID)
-    {
-        INFO << "Thread " << thrID << " Running";
-        loops[thrID]->runforever();
-        WARN << "Thread " << thrID << " Finished";
-    }
+    /// get the Number of Loops
+    int        getLoopNum() const;
 
-    static void* ThreadFunc(void *arg)
-    {
-        ThreadArg targ = *(ThreadArg*)arg;
-        ((targ.ep)->*(targ.func))(targ.id);
-        WARN << "ThreadFunc Finished" ;
-        pthread_exit(NULL);
-    }
+private:
+    /// Threadxxxx is used to assist the `run`
+    void*        ThreadBody(int id);
+    static void* ThreadFunc(void *arg);
 
-    EventLoop* getRandomLoop()
-    {
-        return loops.at(rand()%m_thrnum);
-    }
+private:
+    struct ThreadArg_t;
+    typedef struct ThreadArg_t ThreadArg;
 
-    void  runforever()
-    {
-        // loops[m_thrnum-1]->runforever();
-        // for(int i=0; i<m_thrnum-1;i++)
-        //     threads[i]->cancel();
-        for(int i=0; i<m_thrnum; i++)
-            threads[i]->join();
-    }
-
-    void run()
-    {
-        for(int i=0; i<m_thrnum; i++)
-            threads[i]->run();
-    }
-
-    int getNum() const
-    {
-        return m_thrnum;
-    }
-
-    EventLoop* getLoop(int id)
-    {
-        return loops.at(id);
-    }
-
-    void closeAllLoop()
-    {
-        for(int i=0; i<m_thrnum; i++)
-            loops[i]->stop(2);
-        WARN << "End closeAllLoop" ;
-    }
+private:
+    Thread           **m_threads;
+    ThreadArgs       * m_args;
+    EventLoop        * m_loops;
+    int                m_loopNum;
 };
 
-inline EventLoop* SocketHandler::getLoop2()
-{
-    int id = rand()%(m_loop->m_pool->getNum());
-    INFO << "getLoop2: " << id;
-    return m_loop->m_pool->getLoop(id);
-}
+
 
 };
 
