@@ -27,8 +27,9 @@ public:
     static int m_level;
 
     class LogMsg;
+
 public:
-    enum
+    enum LOG_TYPE
     {
         fatal = 0,
         error = 1,
@@ -52,6 +53,26 @@ public:
     {
         return m_level;
     }
+
+    /**
+    ** set the information of level
+    **/
+    static void setLevel(LOG_TYPE level)
+    {
+        m_level = level;
+    }
+
+    /**
+    ** set the information of stream
+    **/
+    static void setStream(ostream *os)
+    {
+        m_out = os;
+    }
+
+    /**
+    ** invoke by each Write, operator priority
+    **/
     bool operator ^ (const LogMsg& msg);
 };
 
@@ -115,7 +136,7 @@ public:
         str += s;
         return *this;
     }
-    void write(ostream &o) const
+    void write(ostream& o) const
     {
         string out;
 
