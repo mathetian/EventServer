@@ -30,6 +30,11 @@ public:
         return dat;
     }
 
+    const char *str()
+    {
+        return dat;
+    }
+
     uint32_t length() const
     {
         return len;
@@ -43,13 +48,14 @@ public:
 
     operator string() const
     {
-        return string(dat, len);
+        return string(dat);
     }
 
     string as_string() const
     {
         return dat ? "\"" + to_escaped_string(dat, len) + "\"" : "\"\"";
     }
+
 };
 
 TO_STRING(Slice);

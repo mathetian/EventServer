@@ -54,7 +54,11 @@ test_log: tests/test_log.cpp
 	mv $@ bin
 
 test_slice: tests/test_slice.cpp
-	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
+	mv $@ bin
+
+test_tester: tests/test_tester.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
 test_tostring: tests/test_tostring.cpp utils/Log.cpp
