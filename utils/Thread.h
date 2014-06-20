@@ -21,7 +21,7 @@ typedef pthread_t id_type;
 typedef void *(*Task)(void *);
 typedef pthread_mutex_t mutex_type;
 
-class Thread : Noncopyable
+class Thread : public Noncopyable
 {
 public:
     Thread(Task task, void * args = NULL)
@@ -69,7 +69,7 @@ private:
     void    *m_args;
 };
 
-class Mutex : Noncopyable
+class Mutex : public Noncopyable
 {
 public:
     Mutex()
@@ -77,29 +77,29 @@ public:
         pthread_mutex_init(&m_mutex, 0);
     }
 
-    ~Mutex()
+    virtual ~Mutex()
     {
         pthread_mutex_destroy(&m_mutex);
     }
 
 public:
-    void lock()
+    virtual void lock()
     {
         pthread_mutex_lock(&m_mutex);
     }
 
-    void unlock()
+    virtual void unlock()
     {
         pthread_mutex_unlock(&m_mutex);
     }
 
-    bool  trylock()
+    virtual bool  trylock()
     {
         return pthread_mutex_trylock(&m_mutex);
     }
 
 public:
-    mutex_type& getMutex()
+    virtual mutex_type& getMutex()
     {
         return m_mutex;
     }
@@ -108,7 +108,7 @@ private:
     mutex_type   m_mutex;
 };
 
-class CondVar : Noncopyable
+class CondVar : public Noncopyable
 {
 public:
     CondVar(Mutex* mutex = NULL): m_mutex(mutex)
@@ -172,7 +172,7 @@ private:
 /**
 ** SingletonMutex is for a single instance of mutex
 **/
-class SingletonMutex : Noncopyable
+class SingletonMutex : public Noncopyable
 {
 public:
     static SingletonMutex& getInstance()
@@ -217,7 +217,7 @@ private:
 **
 ** We don't provide promote feature
 **/
-class RWLock : Noncopyable
+class RWLock : public Noncopyable
 {
 public:
     RWLock(): m_condRead(&m_mutex), m_condWrite(&m_mutex),
@@ -289,13 +289,12 @@ private:
 /**
 ** ReentrantLock means that in single thread, it can be called more than once
 **/
-class ReentrantLock : Noncopyable
+class ReentrantLock : public Mutex
 {
 public:
     ReentrantLock()
         : m_id(-1), m_cond(&m_tmplock), m_time(0)
     {
-
     }
 
     void  lock()

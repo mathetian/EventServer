@@ -1,41 +1,44 @@
-#include <stdio.h>
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "SQueue.h"
+#include "Tester.h"
 #include "Callback.h"
 using namespace utils;
 
 class A
 {
 public:
-    void a()
-    {
-        printf("hello, enter function a\n");
-    }
+    const char* a() { return "A::a"; }
 };
 
 class B
 {
 public:
-    void b()
-    {
-        printf("hello, enter function b\n");
-    }
+    const char* b() { return "B::b"; }
 };
 
-int main()
+TEST(A, Plain)
 {
-    SQueue<Callback<void> * > squeue;
+    SQueue<Callback<const char*> * > squeue;
 
     A a1;
     B b1;
-    Callback<void> call1(a1, &A::a);
-    Callback<void> call2(b1, &B::b);
+    Callback<const char*> call1(&a1, &A::a);
+    Callback<const char*> call2(&b1, &B::b);
     squeue.push(&call1);
     squeue.push(&call2);
 
-    Callback<void> *call3 = squeue.get();
-    Callback<void> *call4 = squeue.get();
+    Callback<const char*> *call3 = squeue.get();
+    Callback<const char*> *call4 = squeue.get();
 
-    (*call3)();
-    (*call4)();
+    ASSERT_EQ((*call3)(), "A::a");
+    ASSERT_EQ((*call4)(), "B::b");
+}
+
+int main()
+{
+    RunAllTests();
+    return 0;
 }

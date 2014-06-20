@@ -11,7 +11,7 @@ PTHRFLAGS = -lpthread -pthread
 SOURCES = utils/*.cpp
 LDLIBS  = -L. -lsealedserver
 
-tests = test_squeue test_buffer test_callback test_log test_slice test_tostring test_thread
+tests = test_buffer test_c test_callback test_log test_slice test_squeue test_tester test_thread
 
 PROGS = server client bench_library ${tests}
 
@@ -33,15 +33,17 @@ client: tests/echo_client.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-bench_library: tests/bench_library.cpp utils/Log.cpp
+bench_library: tests/bench_library.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
 	mv $@ bin
 
-test_squeue: tests/test_squeue.cpp
-	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
-	mv $@ bin
-
+tests: ${tests}
+	
 test_buffer: tests/test_buffer.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
+	mv $@ bin
+
+test_c: tests/test_c.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
@@ -57,16 +59,16 @@ test_slice: tests/test_slice.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
+test_squeue: tests/test_squeue.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
+	mv $@ bin
+
 test_tester: tests/test_tester.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
-test_tostring: tests/test_tostring.cpp utils/Log.cpp
-	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
-	mv $@ bin
-
-test_thread: tests/test_thread.cpp utils/Log.cpp
-	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ 
+test_thread: tests/test_thread.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 	
 prepare:

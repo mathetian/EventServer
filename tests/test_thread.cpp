@@ -1,75 +1,67 @@
-#include "../utils/Log.h"
-#include "../utils/Thread.h"
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+
+#include "Tester.h"
+#include "Thread.h"
 using namespace utils;
 
-#include <vector>
-using namespace std;
+class A 
+{ 
+public:
+    void Func1()
+    {
+        ScopeMutex scope(&lock);
+        printf("Enter Func1, %lld\n", (long long)Thread::getIDType());
+        sleep(1);
+        Func2();
+    }
 
-#include <unistd.h>
+    void Func2()
+    {
+        ScopeMutex scope(&lock);
+        printf("Enter Func2, %lld\n", (long long)Thread::getIDType());
+        sleep(1);
+        Func3();
+    }
 
-// class B
-// {
+    void Func3()
+    {
+        ScopeMutex scope(&lock);
+        printf("Enter Func3, %lld\n", (long long)Thread::getIDType());
+    }
 
-// };
+private:
+    ReentrantLock lock;
+};
 
-// class A
-// {
-// 	struct ThreadArg_t
-//     {
-//         A *ep;
-//         void* (A::*func)(int);
-//         int id;
-//     };
-
-//     vector<Thread*> threads;
-//     typedef struct ThreadArg_t ThreadArg;
-//     vector<ThreadArg> thrargs;
-
-// private:
-//     vector<EventLoop*> loops;
-//     int m_thrnum;
-
-// public:
-// 	A(int thrnum=3) : m_thrnum(thrnum)
-// 	{
-// 		 threads  = vector<Thread*>(m_thrnum);
-//         thrargs  = vector<ThreadArg>(m_thrnum);
-
-//         for(int i=0; i<m_thrnum; i++)
-//         {
-//             thrargs[i].ep   = this;
-//             thrargs[i].func = &EventPool::ThreadBody;
-//             thrargs[i].id   = i;
-//             threads[i] = new Thread(ThreadFunc, &(thrargs[i]));
-//         }
-
-//         loops = vector<B*>(m_thrnum, NULL);
-//         for(int i=0; i<m_thrnum ; i++)
-//             loops[i] = new B(this);
-
-//         reRun();
-// 	}
-// };
-
-void* Func1(void*arg)
+TEST(A, ReentrantLock)
 {
-    INFO << "Begin Func1" ;
-    usleep(10*100000);
-    INFO << "End   Func1";
+    Func1();
 }
 
-void RunTest()
-{
-    INFO << "Begin of RunTest" ;
-    Thread thread(Func1,NULL);
-    thread.run();
+A a;
 
-    thread.join();
-    INFO << "End of RunTest";
+void* Call(void *data)
+{
+    a.Func1();
+}
+
+/**
+** The target is that there are three consective number
+**/
+TEST(A, MultiReentrantLock)
+{
+    A a;
+    Thread ** threads = new Thread*[4];
+    for(int i=0;i<4;i++)
+        threads[i] = new Thread(Call, NULL);
+    for(int i=0;i<4;i++) threads[i]->run();
+    for(int i=0;i<4;i++) threads[i]->join();
 }
 
 int main()
 {
-    RunTest();
+    RunAllTests();
     return 0;
 }

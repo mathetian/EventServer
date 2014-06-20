@@ -19,8 +19,8 @@ class SQueue : public Noncopyable
 {
 private:
     queue<T> m_queue;
-    mutable Mutex    m_mutex;
-    mutable CondVar  m_cond;
+    mutable ReentrantLock  m_mutex;
+    mutable CondVar        m_cond;
 
     /// The type of datum stored in the queue.
     typedef typename queue<T>::value_type value_type;
@@ -31,18 +31,20 @@ public:
     /// Constructor.
     SQueue() : m_cond(&m_mutex) { }
 
-private:
+public:
     /// Returns true if the queue is empty.
     bool empty() const
     {
+        ScopeMutex scope(&m_mutex);
+        
         return m_queue.empty();
     }
 
-public:
     /// Returns the number of items in the queue.
     size_type size() const
     {
         ScopeMutex scope(&m_mutex);
+
         return m_queue.size();
     }
 
@@ -50,6 +52,7 @@ public:
     value_type& front()
     {
         ScopeMutex scope(&m_mutex);
+
         return m_queue.front();
     }
 
@@ -57,6 +60,7 @@ public:
     const value_type& front() const
     {
         ScopeMutex scope(&m_mutex);
+
         return m_queue.front();
     }
 
@@ -102,9 +106,8 @@ public:
         if (empty())
             return T();
 
-        T ret = front();
-        pop();
-        printf("get a\n");
+        T ret = front(); pop();
+
         return ret;
     }
 
@@ -112,7 +115,7 @@ public:
     /// Wait utils valid item is found
     bool wait(T& out)
     {
-        m_mutex.lock();
+        ScopeMutex scope(&m_mutex);
 
         if(!empty())
         {
