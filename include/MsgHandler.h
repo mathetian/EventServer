@@ -1,16 +1,22 @@
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+
 #ifndef _MSG_HANDLER_H
 #define _MSG_HANDLER_H
 
-#include <list>
 using namespace std;
 
-#include "../utils/Buffer.h"
-#include "../utils/Log.h"
+#include "Log.h"
+#include "Buffer.h"
 using namespace utils;
 
 #include "SocketHandler.h"
 
 #define MSGLEN 1024
+
+namespace sealedserver
+{
 
 class MSGHandler : public SocketHandler
 {
@@ -112,6 +118,8 @@ public:
 private:
     list<Buffer>   m_Bufs;
     int            first;
+};
+
 };
 
 #endif

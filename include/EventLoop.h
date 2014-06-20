@@ -1,17 +1,21 @@
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+
 #ifndef _EVENT_LOOP_H
 #define _EVENT_LOOP_H
 
-#include <map>
-using namespace std;
-
-#include "../utils/Thread.h"
+#include "Thread.h"
 using namespace utils;
-
-#include "SocketHandler.h"
-#include "MsgHandler.h"
 
 #include "Acceptor.h"
 #include "Selector.h"
+
+#include "MsgHandler.h"
+#include "SocketHandler.h"
+
+namespace sealedserver
+{
 
 class EventPool;
 
@@ -259,5 +263,7 @@ inline void MSGHandler::onCloseSocket(int st)
     m_sock.close();
     m_loop->addDel(this);
 }
+
+};
 
 #endif

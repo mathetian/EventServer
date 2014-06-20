@@ -5,16 +5,23 @@
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/un.h>
 #include <sys/time.h>
+#include <arpa/inet.h>
+#include <sys/epoll.h>
 
 #include <set>
+#include <map>
+#include <list>
 #include <queue>
 #include <string>
+#include <vector>
 #include <sstream>
 #include <iostream>
 using namespace std;

@@ -1,17 +1,21 @@
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+
 #ifndef _EVENT_POOL_H
 #define _EVENT_POOL_H
 
-#include <vector>
-using namespace std;
-
-#include "../utils/Log.h"
-#include "../utils/Thread.h"
-#include "../utils/SQueue.h"
-#include "../utils/Callback.h"
+#include "Log.h"
+#include "Thread.h"
+#include "SQueue.h"
+#include "Callback.h"
 using namespace utils;
 
 #include "EventLoop.h"
 #include "Acceptor.h"
+
+namespace sealedserver
+{
 
 class EventPool
 {
@@ -108,5 +112,7 @@ inline EventLoop* SocketHandler::getLoop2()
     INFO << "getLoop2: " << id;
     return m_loop->m_pool->getLoop(id);
 }
+
+};
 
 #endif

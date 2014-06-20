@@ -1,10 +1,16 @@
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+
 #ifndef _RECTOR_EPOLL_H
 #define _RECTOR_EPOLL_H
 
-#include <sys/epoll.h>
 #include "SocketHandler.h"
 
 #define MAX_NEVENTS 1000000
+
+namespace sealedserver
+{
 
 class Selector
 {
@@ -99,6 +105,8 @@ private:
     struct epoll_event *m_events;
     int m_scknum;
     EventLoop *m_loop;
+};
+
 };
 
 #endif

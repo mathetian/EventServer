@@ -1,16 +1,24 @@
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+
 #ifndef _ACCEPTOR_H
 #define _ACCEPTOR_H
 
-#include "../utils/Log.h"
+#include "Log.h"
 using namespace utils;
 
 #include "EventLoop.h"
 #include "SocketHandler.h"
 
+namespace sealedserver
+{
+
 template<class T>
 class TCPAcceptor : public SocketHandler
 {
     TCPAcceptor& operator=(const TCPAcceptor<T>&acceptor);
+    
 public:
     TCPAcceptor() : SocketHandler(NULL) { }
 
@@ -58,6 +66,8 @@ private:
         detach();
         m_sock.close();
     }
+};
+
 };
 
 #endif

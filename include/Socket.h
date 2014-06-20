@@ -1,17 +1,11 @@
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
+
 #ifndef _SOCKET_H
 #define _SOCKET_H
 
-#include <sys/un.h>
-#include <assert.h>
-#include <errno.h>
-#include <string.h>
-
-#include <vector>
-#include <iostream>
-#include <sstream>
-using namespace std;
-
-#include "../utils/Log.h"
+#include "Log.h"
 using namespace utils;
 
 #include "Address.h"
@@ -23,6 +17,9 @@ using namespace utils;
 #define CLSWRR 4
 #define CLSMAN 5
 #define CLSHTP 6
+
+namespace sealedserver
+{
 
 class Socket
 {
@@ -183,6 +180,8 @@ public:
         bindlisten(paddr);
     }
     TCPSocket(const Socket& sock) : Socket(sock) {}
+};
+
 };
 
 #endif
