@@ -4,7 +4,7 @@ CLEAN = \
 		include/Address include/EventLoop \
 		include/Acceptor include/MSGHandler \
 		include/Socket include/EventPool \
-		include/SocketHandler \
+		include/Handler \
 		include/TimeEventSet \
 		include/Status \
 		include/TCPAcceptor \

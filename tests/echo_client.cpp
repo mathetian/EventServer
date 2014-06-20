@@ -23,7 +23,7 @@ class EchoClient : public MSGHandler
 public:
     EchoClient(EventLoop *loop, Socket sock) : MSGHandler(loop, sock)
     {
-        DEBUG << m_sock.getsockname() << " " << sock.get_fd();
+        DEBUG << m_sock.getsockname() << " " << sock.fd();
     }
 
     ~EchoClient()
@@ -34,7 +34,7 @@ protected:
     {
         if(status == SUCC)
         {
-            INFO << "ReceivedMsg: " << (string)buf << " through fd " << m_sock.get_fd();
+            INFO << "ReceivedMsg: " << (string)buf << " through fd " << m_sock.fd();
         }
     }
 
@@ -42,7 +42,7 @@ protected:
     {
         if(status == SUCC)
         {
-            INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.get_fd();
+            INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.fd();
         }
     }
 
@@ -89,7 +89,7 @@ private:
             NetAddress svrAddr(BASE_PORT+(i%PORT_NUM));
             Socket sock(AF_INET, SOCK_STREAM);
             sock.cliConnect(&svrAddr);
-            assert(sock.get_fd() >= 0);
+            assert(sock.fd() >= 0);
             EchoClient *client = new EchoClient(pool.getRandomLoop(), sock);
             if(i%10000==0)
             {

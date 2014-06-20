@@ -11,113 +11,70 @@ using namespace std;
 #include "Buffer.h"
 using namespace utils;
 
-#include "SocketHandler.h"
+#include "Handler.h"
 
 #define MSGLEN 1024
 
 namespace sealedserver
 {
 
-class MSGHandler : public SocketHandler
+/**
+** A handler which reads and writes messages
+** Handlers should override connected (inherited from NetHandler);
+** incoming_message(const Header&, databuf) to read messages; and
+** end_messages(unsigned int) to be notified of stream closure.
+**/
+class MSGHandler : public Handler
 {
 public:
-    MSGHandler(EventLoop* loop, Socket sock, int first=0);
+    /// Constructor
+    ///
+    /// @param loop, EventLoop it belongs
+    /// @param sock, the socket
+    /// @param first, ?
+    MSGHandler(EventLoop* loop, Socket sock, int first = 0);
+    
+    /// Destructor
+    virtual ~MSGHandler();
 
 public:
-    int write(const Buffer& buf)
-    {
-        m_Bufs.push_back(buf);
-        //registerWrite();
-        onSendMsg();
-    }
+    /// writes a message, put it into a queue
+    ///
+    /// @param buf, the buffer needed to be written
+    int write(const Buffer& buf);
 
-    int close()
-    {
-        onCloseSocket(CLSMAN);
-    }
+    /// close the socket manually
+    int close();
 
+    /// status enumeration
     typedef enum  { EXCEED, SOCKERR, BLOCKED, SUCC} STATUS;
 
 private:
-    void onReceiveMsg()
-    {
-        Buffer buf(MSGLEN);
-        int len = m_sock.read(buf.data(), MSGLEN);
+    /// Invoked when a written event happens(callback)
+    void onReceiveEvent();
 
-        if(len == 0)  onCloseSocket(CLSEOF);
-        else if(len < 0 && errno != EAGAIN) onCloseSocket(CLSERR);
-        else if(len == MSGLEN) receivedMsg(EXCEED, buf);
-        else if(len < 0) receivedMsg(BLOCKED, buf);
-        else
-        {
-            buf.set_length(len);
-            receivedMsg(SUCC, buf);
-        }
-    }
+    /// Invoked when a read event happens(callback)
+    void onSendEvent();
 
-    void onSendMsg()
-    {
-        if(first == 0)
-        {
-            int       error = 0;
-            socklen_t errlen = sizeof(error);
-            assert(getsockopt(m_sock.get_fd(), SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0);
-            if(error != 0)
-            {
-                DEBUG << strerror(error);
-                onCloseSocket(CLSWRR);
-            }
-            else
-            {
-                first = 1;
-                onConnected(SUCC);
-            }
-            return;
-        }
-
-        while(m_Bufs.size() > 0)
-        {
-            Buffer buf = m_Bufs.front();
-            m_Bufs.pop_front();
-
-            const void *data = buf;
-            uint32_t length  = buf.length();
-
-            int len = m_sock.write(data, length);
-            if(len < 0 && errno == EAGAIN)
-            {
-                m_Bufs.push_back(buf);
-                registerWrite();
-                break;
-            }
-            else if(len < 0)
-            {
-                onCloseSocket(CLSWRR);
-                break;
-            }
-            else sendedMsg(SUCC, len, length);
-        }
-    }
-
-    void onProceed()
-    {
-        attach();
-        registerRead();
-        if(first==0) registerWrite();
-    }
+    /// Invoked when a close event happens(callback)
+    void onCloseEvent();
 
 public:
-    virtual void onCloseSocket(int st);
-
-public:
+    /// Invoke when a message has been received
     virtual void receivedMsg(STATUS status, Buffer &buf) { }
+    
+    /// Invoke when a message has been sent
     virtual void sendedMsg(STATUS status, int len, int targetLen) { }
+    
+    /// Invoke when a socket has been closed
     virtual void closedSocket()              { }
+    
+    /// Invoke when has connected to the server
     virtual void onConnected(STATUS status)  { }
 
 private:
-    list<Buffer>   m_Bufs;
-    int            first;
+    /// Buffer list, which wait for write
+    list <Buffer>  m_Bufs;
 };
 
 };

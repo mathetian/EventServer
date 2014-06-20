@@ -10,176 +10,112 @@ using namespace utils;
 
 #include "Address.h"
 
-#define CLSSIG 0
-#define CLSEVT 1
-#define CLSEOF 2
-#define CLSERR 3
-#define CLSWRR 4
-#define CLSMAN 5
-#define CLSHTP 6
-
 namespace sealedserver
 {
 
+/**
+** Close Method
+**
+** CLSSIG, by signal
+** CLSEOF, by EOF
+** CLSERR, by event(Close Event)
+** CLSMAN, by manual
+**/
+enum {CLSSIG = 0, CLSEOF, CLSERR, CLSMAN} ClsMtd;
+
+/**
+** A network socket descriptor.  This class will be expanded
+** to include socket-specific I/O methods.
+**/
 class Socket
 {
+public:
+    /// Default constructor
+    Socket(int fd = -1);
+
+    /// Constructor
+    ///
+    /// @param family, protocal family
+    /// @param type  , protocal type
+    Socket(int family, int type);
+
+public:
+    /// Returns the file descriptor.
+    int fd() const;
+
+    /// Bind and Listen(for server)
+    ///
+    /// @param paddr, the address of localhost(for server), without any check
+    bool bindListen(const Address *paddr);
+
+    /// Connect to the server(for client)
+    ///
+    /// @param paddr, the address of server, without any check
+    bool clientConnect(const Address *paddr);
+
+public:
+    /// Attempts to bind the socket.
+    bool bind(const Address *paddr);
+
+    /// Listens on the socket.
+    bool listen(int backlog = 5);
+
+    /// Attempts to accept a connection on the socket.
+    Socket accept(Address *pa);
+
+     /// Attempts to connect the socket.
+    bool connect(const Address *paddr);
+
+public:
+    /// Close the file descriptor
+    void close();
+
+    /// Attempts to read bytes into a buffer. 
+    ///
+    /// @return the number of bytes actually read, or -1 if no bytes are
+    /// available or an error occurs, or 0 on end-of-stream.
+    int read(void *buf, uint32_t count);
+
+    /// Attempts to write bytes from a data buffer.
+    ///
+    /// @return the number of bytes actually written, or -1 if no bytes can
+    ///  be written or an error occurs, or 0 on end-of-stream.
+    int write(const void *buf, int count);
+
+    /// Returns the peer name of the socket, if any.
+    NetAddress getpeername();
+
+    /// Returns the local name of the socket, if any.
+    NetAddress getsockname();
+
+    /// Create a pipe of sockets
+    static pair<Socket, Socket> pipe();
+
 private:
+    /// Sets a handle into blocking or non-blocking mode.
+    ///
+    /// @return true if successful.
+    bool setUnblocking(bool block);
+
+private:
+    /// file descriptor
     int    m_fd;
-
-public:
-    Socket(int fd = -1) : m_fd(fd) { }
-
-    Socket(int family, int type) :
-        m_fd(::socket(family, type, 0))
-    {
-        set_blocking(false);
-        int optval = 1;
-        setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-        assert(m_fd >= 0);
-    }
-
-    Socket(Socket const& sock) : m_fd(sock.m_fd) { }
-
-    int get_fd() const
-    {
-        return m_fd;
-    }
-
-    bool bindlisten(const Address *paddr)
-    {
-        bind(paddr);
-        listen();
-        if(errno != 0) return false;
-        return true;
-    }
-
-    bool cliConnect(const Address *paddr)
-    {
-        connect(paddr);
-        if(errno != 0)
-            return false;
-        return true;
-    }
-
-public:
-    bool bind(const Address *paddr)
-    {
-        if (::bind(get_fd(), paddr->data(), paddr->length()) != 0)
-            return false;
-        return true;
-    }
-
-    bool listen(int backlog = 5)
-    {
-        if (::listen(get_fd(), backlog) != 0)
-            return false;
-        return true;
-    }
-
-    Socket accept(Address *pa)
-    {
-        sockaddr addr;
-        socklen_t addrlen = sizeof(addr);
-        int new_fd;
-        while(true)
-        {
-            new_fd = ::accept(get_fd(), &addr, &addrlen);
-            if (new_fd < 0)
-            {
-                if (errno == EAGAIN || errno == ECONNABORTED)
-                    continue;
-                return Socket();
-            }
-            else break;
-        }
-
-        pa->setAddr(&addr, addrlen);
-        return Socket(new_fd);
-    }
-
-
-public:
-    void close()
-    {
-        ::close(m_fd);
-    }
-
-    int read(void *buf, uint32_t count)
-    {
-        count = ::read(m_fd, buf, count);
-
-        return count;
-    }
-
-    int write(const void *buf, int count)
-    {
-        count = ::write(m_fd, buf, count);
-
-        return count;
-    }
-
-    NetAddress getpeername()
-    {
-        char buf[sizeof(sockaddr_in) + 1];
-        memset(buf, 0, sizeof(buf));
-
-        socklen_t len = sizeof(buf);
-
-        int ret = ::getpeername(get_fd(), (sockaddr*)&buf, &len);
-
-        return NetAddress(buf, len);
-    }
-
-    NetAddress getsockname()
-    {
-        char buf[sizeof(sockaddr_in) + 1];
-        memset(buf, 0, sizeof(buf));
-        socklen_t len = sizeof(buf);
-
-        int ret = ::getsockname(get_fd(), (sockaddr*)buf, &len);
-
-        assert(ret == 0 && len != sizeof(buf));
-
-        return NetAddress(buf, len);
-    }
-
-    static pair<Socket, Socket> pipe()
-    {
-        int fds[2];
-        ::pipe(fds);
-        return pair<Socket, Socket>(Socket(fds[0]), Socket(fds[1]));
-    }
-
-private:
-    bool connect(const Address *paddr)
-    {
-        if (::connect(get_fd(), paddr->data(), paddr->length()) != 0)
-        {
-            if (errno != EINPROGRESS) return false;
-            return true;
-        }
-        return true;
-    }
-
-    bool set_blocking(bool block)
-    {
-        int flags = fcntl(get_fd(), F_GETFL);
-        flags = block ? flags & ~O_NONBLOCK : flags | O_NONBLOCK;
-        assert(fcntl(get_fd(), F_SETFL, flags) >= 0);
-
-        return true;
-    }
 };
 
+/// A TCP socket descriptor. 
 class TCPSocket : public Socket
 {
 public:
-    TCPSocket() : Socket() {}
+    /// Constructor
+    TCPSocket() : Socket() { }
+    
+    /// Constructor, passed by a address
+    /// Try to instance the socket(by bind and listen)
     TCPSocket(Address *paddr) : Socket(AF_INET, SOCK_STREAM)
+        : Socket(AF_INET, SOCK_STREAM)
     {
-        bindlisten(paddr);
+        bindListen(paddr);
     }
-    TCPSocket(const Socket& sock) : Socket(sock) {}
 };
 
 };

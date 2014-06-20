@@ -12,11 +12,11 @@ EventLoop::EventLoop(EventPool *pool) : m_stop(false),
 
 EventLoop::~EventLoop()
 {
-    map<int, SocketHandler*>::iterator iter = m_map.begin();
+    map<int, Handler*>::iterator iter = m_map.begin();
     
     for(; iter != m_map.end(); iter++)
     {
-        SocketHandler *tmpHandler = iter->second;
+        Handler *tmpHandler = iter->second;
         
         delete tmpHandler;
         tmpHandler = NULL;
@@ -37,13 +37,13 @@ void EventLoop::runForever()
 
     WARN << "EventLoop Stopped" ;
    
-    map<int, SocketHandler*>::iterator iter = m_map.begin();
+    map<int, Handler*>::iterator iter = m_map.begin();
 
     for(; iter!=m_map.end(); iter++)
     {
-        SocketHandler *handler = (*iter).second;
+        Handler *handler = (*iter).second;
 
-        INFO << handler->getSocket().get_fd();
+        INFO << handler->getSocket().fd();
         
         m_selector->unRegisterEvent(handler, -1);
         
@@ -62,7 +62,7 @@ void EventLoop::runOnce()
     for(int i=0; i < m_active.size(); i++)
         m_active[i]->onProceed();
 
-    vector<SocketHandler*> tmp;
+    vector<Handler*> tmp;
     swap(tmp, m_active);
 }
 
@@ -72,14 +72,14 @@ void EventLoop::stop()
 }
 
 /// won't allow attach duplicate
-void EventLoop::attachHandler(int fd, SocketHandler *p)
+void EventLoop::attachHandler(int fd, Handler *p)
 {
     assert(m_map.find(fd) == m_map.end());
     
     m_map[fd] = p;
 }
 
-void EventLoop::detachHandler(int fd, SocketHandler *p)
+void EventLoop::detachHandler(int fd, Handler *p)
 {
     assert(m_map.find(fd) != m_map.end() && m_map[fd] == p);
     assert(m_map.erase(fd) == 1);
@@ -119,7 +119,7 @@ void EventLoop::addActive(int fd, int type)
 {
     assert(m_map.find(fd) != m_map.end());
 
-    SocketHandler *handler = m_map[fd];
+    Handler *handler = m_map[fd];
     
     if((type & EPOLLRDHUP) || (type & EPOLLERR) || (type & EPOLLHUP))
     {
@@ -159,7 +159,7 @@ void EventLoop::addActive(int fd, int type)
         handler -> onReceiveMsg();
 }
 
-void EventLoop::addDel(SocketHandler* handler)
+void EventLoop::addDel(Handler* handler)
 {
     m_del.push_back(handler);
 }
@@ -170,7 +170,7 @@ void EventLoop::finDel()
 
     for(int i=0; i < m_del.size(); i++)
     {
-        SocketHandler *handler = m_del[i];
+        Handler *handler = m_del[i];
         
         if(handler) 
             delete handler;
@@ -178,7 +178,7 @@ void EventLoop::finDel()
         handler = NULL;
     }
 
-    vector<SocketHandler*> handlers;
+    vector<Handler*> handlers;
     
     swap(handlers, m_del);
 }

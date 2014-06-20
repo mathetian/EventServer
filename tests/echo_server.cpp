@@ -30,7 +30,7 @@ private:
     {
         if(status == SUCC)
         {
-            INFO << "Received: " << (string)buf << " through fd " << m_sock.get_fd();
+            INFO << "Received: " << (string)buf << " through fd " << m_sock.fd();
             write(buf);
         }
     }
@@ -39,7 +39,7 @@ private:
     {
         if(status == SUCC)
         {
-            INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.get_fd();
+            INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.fd();
         }
         else { }
     }

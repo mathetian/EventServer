@@ -13,7 +13,7 @@ using namespace utils;
 #include "Selector.h"
 
 #include "MsgHandler.h"
-#include "SocketHandler.h"
+#include "Handler.h"
 
 namespace sealedserver
 {
@@ -46,10 +46,10 @@ public:
 
 public:
     /// Attach handler to pool
-    void attachHandler(int fd, SocketHandler *p);
+    void attachHandler(int fd, Handler *p);
 
     /// Detach handler from pool
-    void detachHandler(int fd, SocketHandler *p);
+    void detachHandler(int fd, Handler *p);
 
 public:
     /// Register Read Event of fd
@@ -65,14 +65,14 @@ public:
     void unRegisterWrite(int fd)
 
     /// Need to be removed
-    void waitRemoved(SocketHandler *handler);
+    void waitRemoved(Handler *handler);
 
 public:
     /// Add active event to `m_active`
     void addActive(int fd, int type);
 
     /// Add handler to `m_closed`
-    void addClosed(SocketHandler* handler);
+    void addClosed(Handler* handler);
 
     /// Process the handlers need to be delete
     void EventLoop::finDel()
@@ -91,9 +91,9 @@ private:
     Mutex     m_mutex;
 
     /// list or map
-    vector<SocketHandler*>   m_active;
-    vector<SocketHandler*>   m_del;
-    map<int, SocketHandler*> m_map;
+    vector<Handler*>   m_active;
+    vector<Handler*>   m_del;
+    map<int, Handler*> m_map;
 
 };
 

@@ -9,27 +9,27 @@
 using namespace utils;
 
 #include "EventLoop.h"
-#include "SocketHandler.h"
+#include "Handler.h"
 
 namespace sealedserver
 {
 
 template<class T>
-class TCPAcceptor : public SocketHandler
+class TCPAcceptor : public Handler
 {
     TCPAcceptor& operator=(const TCPAcceptor<T>&acceptor);
     
 public:
-    TCPAcceptor() : SocketHandler(NULL) { }
+    TCPAcceptor() : Handler(NULL) { }
 
-    TCPAcceptor(EventLoop* _loop, int localport) : SocketHandler(_loop)
+    TCPAcceptor(EventLoop* _loop, int localport) : Handler(_loop)
     {
         NetAddress addr = NetAddress(localport);
         m_sock = TCPSocket(&addr);
         onProceed();
     }
 
-    TCPAcceptor(EventLoop* _loop, string ip, int localport) : SocketHandler(_loop)
+    TCPAcceptor(EventLoop* _loop, string ip, int localport) : Handler(_loop)
     {
         NetAddress addr = NetAddress(ip,localport);
         m_sock = TCPSocket(&addr);
@@ -40,7 +40,7 @@ public:
     {
         attach();
         registerRead();
-        assert(m_sock.get_fd() >= 0);
+        assert(m_sock.fd() >= 0);
         INFO << "TCPAcceptor Initialization" ;
         INFO << m_sock.getsockname() ;
     }
@@ -50,8 +50,8 @@ private:
     {
         NetAddress a;
         TCPSocket sock = m_sock.accept(&a);
-        DEBUG << "New Connection: " << sock.get_fd() << " " << sock.getpeername();
-        if (sock.get_fd() >= 0)
+        DEBUG << "New Connection: " << sock.fd() << " " << sock.getpeername();
+        if (sock.fd() >= 0)
         {
             T* t = new T(getLoop2(), sock);
         }
@@ -61,7 +61,7 @@ private:
     void onCloseSocket(int st)
     {
         assert(st == 0);
-        DEBUG << "close listen socket fd: " << m_sock.get_fd();
+        DEBUG << "close listen socket fd: " << m_sock.fd();
 
         detach();
         m_sock.close();

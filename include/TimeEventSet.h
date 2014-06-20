@@ -11,16 +11,16 @@ using namespace std;
 #include "Timer.h"
 using namespace utils;
 
-#include "SocketHandler.h"
+#include "Handler.h"
 
 namespace sealedServer
 {
 
 struct TimeEventItem
 {
-    SocketHandler *ptr;
+    Handler *ptr;
     Timer      timer;
-    TimeEventItem(SocketHandler *ptr, Timer timer) :\
+    TimeEventItem(Handler *ptr, Timer timer) :\
         ptr(ptr), timer(timer) { }
 };
 
@@ -67,7 +67,7 @@ public:
         return true;
     }
 
-    bool exist(SocketHandler *phandler)
+    bool exist(Handler *phandler)
     {
         list<TimeEventItem>::iterator iter = lists.begin();
         for(; iter != lists.end(); iter++)
@@ -78,7 +78,7 @@ public:
         return false;
     }
 
-    bool remove(SocketHandler *phandler)
+    bool remove(Handler *phandler)
     {
         list<TimeEventItem>::iterator iter = lists.begin();
         for(; iter != lists.end(); iter++)

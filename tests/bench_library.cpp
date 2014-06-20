@@ -28,7 +28,7 @@ class EchoServer : public MSGHandler
 public:
     EchoServer(EventLoop *loop, Socket sock, int idx) : MSGHandler(loop, sock, 1), idx(idx)
     {
-        DEBUG << "EchoServer: " << sock.get_fd() << " " << idx;
+        DEBUG << "EchoServer: " << sock.fd() << " " << idx;
     }
 
     void clear()
@@ -42,7 +42,7 @@ private:
     {
         if(status == SUCC)
         {
-            INFO << "Received: " << (string)buf << " through fd " << m_sock.get_fd();
+            INFO << "Received: " << (string)buf << " through fd " << m_sock.fd();
             count += buf.length();
 
             if (writes > 0)
@@ -50,7 +50,7 @@ private:
                 int widx = idx + 1;
                 if (widx >= num_pipes) widx -= num_pipes;
                 INFO << "widx: " << widx ;
-                if(::write(pipes[2 * widx + 1].get_fd(), "m", 1)!=1)
+                if(::write(pipes[2 * widx + 1].fd(), "m", 1)!=1)
                 {
                     INFO << strerror(errno) ;
                     assert(0);
@@ -84,7 +84,7 @@ private:
         if(errno != 0)
             DEBUG << strerror(errno);
         errno = 0;
-        DEBUG << "onCloseSocket: " << st << " " << m_sock.get_fd();
+        DEBUG << "onCloseSocket: " << st << " " << m_sock.fd();
     }
 
 private:
@@ -98,7 +98,7 @@ void run_once()
     int space = num_pipes / num_active;
     space *= 2;
     for (int i = 0; i < num_active; i++)
-        ::write(pipes[i*space+1].get_fd(),"m",1);
+        ::write(pipes[i*space+1].fd(),"m",1);
 
     if(errno != 0) printf("error: %s\n",strerror(errno));
 
