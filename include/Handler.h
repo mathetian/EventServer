@@ -12,79 +12,94 @@ namespace sealedserver
 
 class EventLoop;
 
+/**
+** A handler that receives notifications on events on a file descriptor.
+** The subclass may call registerxxxx/unRegisterxxx to enable/disable 
+** read/write events
+** Handlers are only active when attached to both an event loop
+** and callback(io schedule)
+ */
+
 class Handler
 {
 public:
+    /// Constructor.
     Handler(EventLoop* loop) : m_loop(loop)
     {
         m_status  = 0;
         m_delflag = 0;
     }
 
-public:
-    virtual void onReceiveMsg()  = 0;
-    virtual void onSendMsg()     = 0;
-    virtual void onCloseSocket(int st) = 0;
-    virtual void onProceed() = 0;
+    /// Destructor
+    virtual ~Handler();
 
+public:
+    /// Register Read/Write Events
     void registerRead();
     void registerWrite();
+
+    // Unregister Read/Write Events
     void unRegisterRead();
     void unRegisterWrite();
 
-    Socket getSocket()
-    {
-        return m_sock;
-    }
 
-    EventLoop *getLoop() const
-    {
-        return m_loop;
-    }
+public:
+    /// Called by the event loop when bytes are available on the file
+    /// descriptor (if read event happens).
+    virtual void onReceiveMsg()  = 0;
 
-    EventLoop *getLoop2();
+    /// Called by the event loop when there are bytes need to be written
+    /// and written is enable
+    virtual void onSendMsg()     = 0;
 
-    int getStatus() const
-    {
-        return m_status;
-    }
+    /// Called by the event loop when there close events happens
+    virtual void onCloseSocket(int st) = 0;
 
-    int setdelflag()
-    {
-        m_delflag = 1;
-    }
+public:
+    /// Helper functions
 
-    int getdelflag() const
-    {
-        return m_delflag;
-    }
+    /// Return the socket
+    Socket getSocket() const;
 
-    void updateStatus(int val)
-    {
-        if(m_delflag == 1) return;
+    /// Return the loop it registers with
+    EventLoop *getLoop() const;
 
-        assert((m_status & val) == 0);
-        m_status |= val;
-    }
+    /// Return the status
+    int getStatus() const;
 
-    void removeStatus(int val)
-    {
-        if(m_delflag == 1) return;
+    /// Get the delete flag;
+    int getDelflag() const;
 
-        assert((m_status & val) != 0);
-        m_status ^= val;
-    }
+    /// Set the delete flag
+    /// Later it will be removed from memory
+    int setDelflag();
+
+    /// Update the registered event status
+    ///
+    /// @param val, the event need to be registered with
+    void updateStatus(int val);
+
+    /// Remove the status `val`
+    ///
+    /// @param val, the event need to be unregistered with
+    void removeStatus(int val);
 
 protected:
+    /// Attach `this` to loop
     void attach();
+
+    /// Detach `this` from loop
     void detach();
 
-    friend class EventLoop;
-
 protected:
+    
     EventLoop*  m_loop;
     Socket      m_sock;
+
+    /// Socket status
     int         m_status;
+    
+    /// Delete flag
     int         m_delflag;
 };
 

@@ -10,6 +10,8 @@ namespace sealedserver
 MSGHandler::MSGHandler(EventLoop* loop, Socket sock, int first) : \
     Handler(loop), first(first)
 {
+    m_sock = sock;
+    m_loop->insert(this);
 }
 
 MSGHandler::~MSGHandler()
@@ -86,7 +88,5 @@ void MSGHandler::onCloseEvent(int st)
     m_sock.close();
     m_loop->addDel(this);
 }
-
-
 
 };

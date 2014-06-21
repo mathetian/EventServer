@@ -7,148 +7,89 @@
 namespace sealedserver
 {
 
-class EventLoop;
-
-class Handler
+Handler::Handler(EventLoop* loop) : m_loop(loop)
 {
-protected:
-    EventLoop*  m_loop;
-    Socket      m_sock;
-    int         m_status;
-    int         m_delflag;
-
-public:
-    Handler(EventLoop* loop) : m_loop(loop)
-    {
-        m_status  = 0;
-        m_delflag = 0;
-    }
-
-public:
-    virtual void onReceiveMsg()  = 0;
-    virtual void onSendMsg()     = 0;
-    virtual void onCloseSocket(int st) = 0;
-    virtual void onProceed() = 0;
-
-    void registerRead();
-    void registerWrite();
-    void unRegisterRead();
-    void unRegisterWrite();
-
-    Socket getSocket()
-    {
-        return m_sock;
-    }
-
-    EventLoop *getLoop() const
-    {
-        return m_loop;
-    }
-
-    EventLoop *getLoop2();
-
-    int getStatus() const
-    {
-        return m_status;
-    }
-
-    int setdelflag()
-    {
-        m_delflag = 1;
-    }
-
-    int getdelflag() const
-    {
-        return m_delflag;
-    }
-
-    void updateStatus(int val)
-    {
-        if(m_delflag == 1) return;
-
-        assert((m_status & val) == 0);
-        m_status |= val;
-    }
-
-    void removeStatus(int val)
-    {
-        if(m_delflag == 1) return;
-
-        assert((m_status & val) != 0);
-        m_status ^= val;
-    }
-
-protected:
-    void attach();
-    void detach();
-
-    friend class EventLoop;
-};
-
-};
-
-namespace sealedserver
-{
-inline void Handler::attach()
-{
-    assert(m_loop && m_sock.fd() >= 0);
-    m_loop->attachHandler(m_sock.fd(), this);
+    m_status  = 0;
+    m_delflag = 0;
 }
 
-inline void Handler::detach()
-{
-    assert(m_loop && m_sock.fd() >= 0);
-    m_loop->detachHandler(m_sock.fd(), this);
-}
-
-inline void Handler::registerRead()
+void Handler::registerRead()
 {
     assert(m_loop && m_sock.fd() >= 0);
     m_loop->registerRead(m_sock.fd());
 }
 
-inline void Handler::registerWrite()
+void Handler::registerWrite()
 {
     assert(m_loop && m_sock.fd() >= 0);
     m_loop->registerWrite(m_sock.fd());
 }
 
-inline void Handler::unRegisterRead()
+void Handler::unRegisterRead()
 {
     assert(m_loop && m_sock.fd() >= 0);
     m_loop->unRegisterRead(m_sock.fd());
 }
 
-inline void Handler::unRegisterWrite()
+void Handler::unRegisterWrite()
 {
     assert(m_loop && m_sock.fd() >= 0);
     m_loop->unRegisterWrite(m_sock.fd());
 }
 
-inline MSGHandler::MSGHandler(EventLoop* loop, Socket sock, int first) : Handler(loop), first(first)
+Socket Handler::getSocket()
 {
-    m_sock = sock;
-    m_loop->insert(this);
-    //onProceed();
+    return m_sock;
 }
 
-inline void MSGHandler::onCloseSocket(int st)
+EventLoop *Handler::getLoop() const
 {
-    if(errno != 0) DEBUG << strerror(errno);
-    DEBUG << "onCloseSocket: " << st << " " << m_sock.fd();
-    errno = 0;
-
-    detach();
-    closedSocket();
-    m_sock.close();
-    m_loop->addDel(this);
+    return m_loop;
 }
 
-inline EventLoop* Handler::getLoop2()
+int Handler::getStatus() const
 {
-    int id = rand()%(m_loop->m_pool->getNum());
-    INFO << "getLoop2: " << id;
-    return m_loop->m_pool->getLoop(id);
+    return m_status;
+}
+
+int Handler::getDelflag() const
+{
+    return m_delflag;
+}
+
+int Handler::setDelflag()
+{
+    m_delflag = 1;
+}
+
+void Handler::updateStatus(int val)
+{
+    if(m_delflag == 1) return;
+
+    assert((m_status & val) == 0);
+    m_status |= val;
+}
+
+void Handler::removeStatus(int val)
+{
+    if(m_delflag == 1) return;
+
+    assert((m_status & val) != 0);
+    m_status ^= val;
+}
+
+void Handler::attach()
+{
+    assert(m_loop && m_sock.fd() >= 0);
+
+    m_loop->attachHandler(m_sock.fd(), this);
+}
+
+void Handler::detach()
+{
+    assert(m_loop && m_sock.fd() >= 0);
+    
+    m_loop->detachHandler(m_sock.fd(), this);
 }
 
 };
