@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include "EventLoop.h"
 #include "MsgHandler.h"
 
 namespace sealedserver
 {
 
-MSGHandler::MSGHandler(EventLoop* loop, Socket sock, int first) : \
-    Handler(loop), first(first)
+MSGHandler::MSGHandler(EventLoop* loop, Socket sock, int first) : Handler(loop)
 {
     m_sock = sock;
     m_loop->insert(this);
@@ -68,7 +68,7 @@ void MSGHandler::onSendEvent()
         }
         else if(len < 0)
         {
-            onCloseSocket(CLSWRR);
+            onCloseSocket(CLSERR);
             break;
         }
         else 
@@ -76,7 +76,7 @@ void MSGHandler::onSendEvent()
     }
 }
 
-void MSGHandler::onCloseEvent(int st)
+void MSGHandler::onCloseEvent(ClsMtd st)
 {
     if(errno != 0) 
         DEBUG << strerror(errno);
@@ -86,7 +86,7 @@ void MSGHandler::onCloseEvent(int st)
     detach();
     closedSocket();
     m_sock.close();
-    m_loop->addDel(this);
+    m_loop->addClosed(this);
 }
 
 };

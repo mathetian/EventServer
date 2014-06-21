@@ -5,19 +5,17 @@
 #ifndef _TIME_EVENT_SET_H
 #define _TIME_EVENT_SET_H
 
-#include <list>
-using namespace std;
-
 #include "Timer.h"
 using namespace utils;
 
 #include "Handler.h"
 
-namespace sealedServer
+namespace sealedserver
 {
 
 class TimeEventSet : public Noncopyable
 {
+    struct TimeEventItem;
 public:
     /// Constructor
     TimeEventSet() { }
@@ -47,31 +45,13 @@ public:
     /// @param pHandler, need to be removed
     /// @return true, successful
     ///        false, failed(not exist)
-    bool remove(Handler *pHandler)
-    {
-        list<TimeEventItem>::iterator iter = lists.begin();
-        for(; iter != lists.end(); iter++)
-        {
-            if(phandler == (*iter).ptr)
-            {
-                lists.erase(iter);
-                return true;
-            }
-        }
-        return false;
-    }
+    bool remove(Handler *pHandler);
 
     /// Return the status of the set
-    bool empty()
-    {
-        return lists.begin() == lists.end();
-    }
+    bool empty();
 
     /// Return the set by list
-    const list<TimeEventItem>* getlist() const
-    {
-        return &lists;
-    }
+    const list<TimeEventItem>* getlist() const;
 
     /// Internal Iterator
     class Iterator
@@ -107,7 +87,6 @@ public:
     };
 
 private:
-    struct TimeEventItem;
     list<TimeEventItem> lists;
 };
 

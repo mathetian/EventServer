@@ -3,7 +3,7 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "Selector.h"
-
+#include "EventLoop.h"
 namespace sealedserver
 {
 
@@ -22,7 +22,7 @@ void Selector::registerEvent(Handler *handler, short event)
     Socket sock = handler->getSocket();
 
     int fd       = sock.fd();
-    int events   = event
+    int events   = event;
    	bool addFlag = true;
 
     if(handler->getStatus() != 0) 
@@ -51,7 +51,7 @@ void Selector::unRegisterEvent(Handler *handler, short event)
     Socket sock = handler->getSocket();
     int fd = sock.fd(), events = 0, delflag = 1;
 
-    if(handler->getdelflag() == 1) return;
+    if(handler->getDelflag() == 1) return;
 
     if(event == -1)
     {
@@ -61,7 +61,7 @@ void Selector::unRegisterEvent(Handler *handler, short event)
             printf("error = %s, %d\n", strerror(errno), fd);
             assert(0);
         }
-        handler->setdelflag();
+        handler->setDelflag();
         return;
     }
     else if((event & EPOLLRDHUP) || (event & EPOLLERR) || (event & EPOLLHUP))
@@ -72,7 +72,7 @@ void Selector::unRegisterEvent(Handler *handler, short event)
             DEBUG << "found EPOLLERR for fd: " << fd;
 
         assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
-        handler->setdelflag();
+        handler->setDelflag();
         return;
     }
 
@@ -90,7 +90,7 @@ void Selector::unRegisterEvent(Handler *handler, short event)
     else if(delflag == 1)
     {
         assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
-        m_scknum--;
+        m_socknum--;
     }
 }
 

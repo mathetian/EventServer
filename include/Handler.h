@@ -24,11 +24,7 @@ class Handler
 {
 public:
     /// Constructor.
-    Handler(EventLoop* loop) : m_loop(loop)
-    {
-        m_status  = 0;
-        m_delflag = 0;
-    }
+    Handler(EventLoop* loop);
 
     /// Destructor
     virtual ~Handler();
@@ -84,6 +80,8 @@ public:
     /// @param val, the event need to be unregistered with
     void removeStatus(int val);
 
+    /// Get random loop
+    EventLoop* getRandomLoop();
 protected:
     /// Attach `this` to loop
     void attach();

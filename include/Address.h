@@ -35,6 +35,9 @@ public:
     /// Returns the length of the address structure.
     socklen_t       length() const;
 
+    /// Accept will return a address, set it manually
+    void   setAddr(const void *addr, socklen_t len);
+
 protected:
     string m_addr;
 };
@@ -43,8 +46,11 @@ protected:
 ** An IP address and port.  
 ** IPv4 addresses are supported
 **/
-class NetAddress : public Address, public Noncopyable
+class NetAddress : public Address
 {
+private:
+    typedef uint32_t port;
+
 public:
     /// Constructs an empty address.
     NetAddress();
@@ -55,7 +61,7 @@ public:
     /// Constructs an address from a host name and port. 
     /// Convert ip/pt to data to sockaddr_in
     /// later converted to string
-    NetAddress(string ip, port pt)
+    NetAddress(string ip, port pt);
     
     NetAddress(const void *addr, socklen_t len);
 
@@ -76,9 +82,6 @@ private:
     ** Convert data to sockaddr_in
     **/
     const sockaddr_in *inetAddr() const;
-
-private:
-    typedef uint32_t port;
 };
 
 TO_STRING(NetAddress);

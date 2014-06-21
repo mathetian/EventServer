@@ -4,7 +4,7 @@
 
 #include "TimeEvents.h"
 
-namespace sealedServer
+namespace sealedserver
 {
 
 struct TimeEventSet::TimeEventItem
@@ -14,7 +14,6 @@ struct TimeEventSet::TimeEventItem
     TimeEventItem(Handler *ptr, Timer timer) :\
         ptr(ptr), timer(timer) { }
 };
-
 
 void TimeEventSet::insert(const TimeEventItem &item)
 {
@@ -84,26 +83,25 @@ bool TimeEventSet::empty()
     return lists.begin() == lists.end();
 }
 
-const list<TimeEventItem>* TimeEventSet::getlist() const
+const list<TimeEventSet::TimeEventItem>* TimeEventSet::getlist() const
 {
     return &lists;
 }
 
 
-Iterator(TimeEventSet * pset) : \
-    m_pset(pset)
+TimeEventSet::Iterator::Iterator(TimeEventSet * pset) : m_pset(pset)
 {
     seekToFirst();
 }
 
-const TimeEventSet::Iterator::TimeEventItem * next()
+const TimeEventSet::TimeEventItem * TimeEventSet::Iterator::next()
 {
     assert(iter != m_pset->lists.end());
     iter++;
     return &(*iter);
 }
 
-const TimeEventSet::Iterator::TimeEventItem * prev()
+const TimeEventSet::TimeEventItem * TimeEventSet::Iterator::prev()
 {
     assert(iter != m_pset->lists.begin());
     iter--;
@@ -120,17 +118,17 @@ void TimeEventSet::Iterator::seekToEnd()
     iter = m_pset->lists.end();
 }
 
-const TimeEventItem * TimeEventSet::Iterator::first()
+const TimeEventSet::TimeEventItem * TimeEventSet::Iterator::first()
 {
     return &(*(m_pset->lists.begin()));
 }
 
-const TimeEventItem * TimeEventSet::Iterator::end()
+const TimeEventSet::TimeEventItem * TimeEventSet::Iterator::end()
 {
     return &(*(m_pset->lists.end()));
 }
 
-list<TimeEventItem>::iterator TimeEventSet::Iterator::getiter()
+list<TimeEventSet::TimeEventItem>::iterator TimeEventSet::Iterator::getiter()
 {
     return iter;
 }

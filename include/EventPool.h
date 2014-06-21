@@ -28,7 +28,7 @@ public:
     EventPool(int loopNum = 2);
 
     /// Destructor, deallocate heap
-    ~EventLoop();
+    ~EventPool();
 
 public:
     /// start the loop and wait in here
@@ -57,8 +57,8 @@ private:
 
 private:
     Thread           **m_threads;
-    ThreadArgs       * m_args;
-    EventLoop        * m_loops;
+    ThreadArg        * m_args;
+    EventLoop        **m_loops;
     int                m_loopNum;
 };
 

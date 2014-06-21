@@ -7,7 +7,7 @@
 namespace sealedserver
 {
 
-Socket::Socket(int fd = -1) : m_fd(fd) { }
+Socket::Socket(int fd) : m_fd(fd) { }
 
 Socket::Socket(int family, int type) : 
     m_fd(::socket(family, type, 0))
@@ -56,6 +56,7 @@ bool Socket::listen(int backlog)
 {
     if (::listen(fd(), backlog) != 0)
         return false;
+
     return true;
 }
 
@@ -134,7 +135,7 @@ NetAddress Socket::getsockname()
     return NetAddress(buf, len);
 }
 
-static pair<Socket, Socket> Socket::pipe()
+pair<Socket, Socket> Socket::pipe()
 {
     int fds[2];
     ::pipe(fds);

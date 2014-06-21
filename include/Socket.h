@@ -21,7 +21,7 @@ namespace sealedserver
 ** CLSERR, by event(Close Event)
 ** CLSMAN, by manual
 **/
-enum {CLSSIG = 0, CLSEOF, CLSERR, CLSMAN} ClsMtd;
+enum ClsMtd {CLSSIG = 0, CLSEOF, CLSERR, CLSMAN};
 
 /**
 ** A network socket descriptor.  This class will be expanded
@@ -95,7 +95,7 @@ private:
     /// Sets a handle into blocking or non-blocking mode.
     ///
     /// @return true if successful.
-    bool setUnblocking(bool block);
+    bool setUnblocking();
 
 private:
     /// file descriptor
@@ -112,7 +112,6 @@ public:
     /// Constructor, passed by a address
     /// Try to instance the socket(by bind and listen)
     TCPSocket(Address *paddr) : Socket(AF_INET, SOCK_STREAM)
-        : Socket(AF_INET, SOCK_STREAM)
     {
         bindListen(paddr);
     }

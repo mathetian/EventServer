@@ -8,8 +8,8 @@
 #include "Log.h"
 using namespace utils;
 
-#include "EventLoop.h"
 #include "Handler.h"
+#include "EventLoop.h"
 
 namespace sealedserver
 {
@@ -44,7 +44,6 @@ public:
         INFO << "TCPAcceptor Initialization" ;
         INFO << m_sock.getsockname() ;
     }
-
 private:
     void onReceiveMsg()
     {
@@ -53,7 +52,7 @@ private:
         DEBUG << "New Connection: " << sock.fd() << " " << sock.getpeername();
         if (sock.fd() >= 0)
         {
-            T* t = new T(getLoop2(), sock);
+            T* t = new T(getRandomLoop(), sock);
         }
     }
 

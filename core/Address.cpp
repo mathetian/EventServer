@@ -23,6 +23,11 @@ socklen_t Address::length() const
     return m_addr.length();
 }
 
+void   Address::setAddr(const void *addr, socklen_t len)
+{
+    m_addr = string(static_cast<const char *>(addr), len);
+}
+    
 NetAddress::NetAddress() { }
 
 NetAddress::NetAddress(port pt)
@@ -63,7 +68,7 @@ string NetAddress::IP() const
     return inet_ntoa(inetAddr()->sin_addr);
 }
 
-port NetAddress::Port() const
+uint32_t NetAddress::Port() const
 {
     return ntohs(inetAddr()->sin_port);
 }
@@ -76,9 +81,5 @@ string NetAddress::as_string() const
 
     return out;
 }
-
-};
-
-TO_STRING(NetAddress);
 
 };

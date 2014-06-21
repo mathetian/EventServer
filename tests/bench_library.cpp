@@ -4,11 +4,11 @@ using namespace std;
 #include <sys/socket.h>
 #include <sys/resource.h>
 
-#include "../include/Socket.h"
-#include "../include/EventPool.h"
-#include "../include/EventLoop.h"
-#include "../include/MsgHandler.h"
-#include "../utils/Timer.h"
+#include "Socket.h"
+#include "EventPool.h"
+#include "EventLoop.h"
+#include "MsgHandler.h"
+#include "Timer.h"
 
 Atomic count, writes, fired;
 int num_pipes, num_active, num_writes;

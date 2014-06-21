@@ -5,11 +5,11 @@ using namespace std;
 #include <sys/time.h>
 #include <sys/resource.h>
 
-#include "../include/EventPool.h"
-#include "../include/EventLoop.h"
-#include "../include/MsgHandler.h"
-#include "../include/Socket.h"
-#include "../include/Acceptor.h"
+#include "EventPool.h"
+#include "EventLoop.h"
+#include "MsgHandler.h"
+#include "Socket.h"
+#include "Acceptor.h"
 
 #define BASE_PORT 10000
 #define PORT_NUM  10

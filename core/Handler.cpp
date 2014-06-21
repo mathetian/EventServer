@@ -3,6 +3,7 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "Handler.h"
+#include "EventLoop.h"
 
 namespace sealedserver
 {
@@ -37,7 +38,7 @@ void Handler::unRegisterWrite()
     m_loop->unRegisterWrite(m_sock.fd());
 }
 
-Socket Handler::getSocket()
+Socket Handler::getSocket() const
 {
     return m_sock;
 }

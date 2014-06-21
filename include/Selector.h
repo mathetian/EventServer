@@ -25,7 +25,7 @@ public:
 
 public:
     /// Register Special Event of handler
-    void registerEvent(Handler *handler, short event)
+    void registerEvent(Handler *handler, short event);
 
     /// Unregister Speical Event of handler
     void unRegisterEvent(Handler *handler, short event);

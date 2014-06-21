@@ -62,7 +62,7 @@ public:
     void unRegisterRead(int fd);
 
     /// Unregister Write Event of fd
-    void unRegisterWrite(int fd)
+    void unRegisterWrite(int fd);
 
     /// Need to be removed
     void waitRemoved(Handler *handler);
@@ -75,7 +75,9 @@ public:
     void addClosed(Handler* handler);
 
     /// Process the handlers need to be delete
-    void EventLoop::finDel()
+    void finDel();
+
+    void insert(Handler *handler);
 
 private:
     /// m_stop, status of whether need to be stopped
@@ -95,6 +97,7 @@ private:
     vector<Handler*>   m_del;
     map<int, Handler*> m_map;
 
+    friend class Acceptor;
 };
 
 };

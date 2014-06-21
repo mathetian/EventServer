@@ -57,7 +57,7 @@ private:
     void onSendEvent();
 
     /// Invoked when a close event happens(callback)
-    void onCloseEvent();
+    void onCloseEvent(ClsMtd st);
 
 public:
     /// Invoke when a message has been received

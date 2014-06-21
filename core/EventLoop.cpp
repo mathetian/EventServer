@@ -59,8 +59,8 @@ void EventLoop::runOnce()
 
     ScopeMutex scope(&m_mutex);
 
-    for(int i=0; i < m_active.size(); i++)
-        m_active[i]->onProceed();
+    // for(int i=0; i < m_active.size(); i++)
+    //     m_active[i]->onProceed();
 
     vector<Handler*> tmp;
     swap(tmp, m_active);
@@ -135,15 +135,15 @@ void EventLoop::addActive(int fd, int type)
         
         if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
         {
-            INFO <<  "error = " << strerror(error));
+            INFO <<  "error = " << strerror(error);
         }
 
-        handler->onCloseSocket(CLSEVT);
+        handler->onCloseSocket(CLSMAN);
 
         return;
     }
     
-    if(handler -> getdelflag() == 1) 
+    if(handler -> getDelflag() == 1) 
         return;
     
     if((type & EPOLLOUT) != 0)
@@ -152,14 +152,14 @@ void EventLoop::addActive(int fd, int type)
         handler->onSendMsg();
     }
     
-    if(handler->getdelflag() == 1) 
+    if(handler->getDelflag() == 1) 
         return;
     
     if((type & EPOLLIN) != 0)
         handler -> onReceiveMsg();
 }
 
-void EventLoop::addDel(Handler* handler)
+void EventLoop::addClosed(Handler* handler)
 {
     m_del.push_back(handler);
 }

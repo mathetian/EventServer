@@ -8,7 +8,7 @@ HEADER  = -I. -I./include -I./utils
 CXXFLAGS = -g -O0
 PTHRFLAGS = -lpthread -pthread
 
-SOURCES = utils/*.cpp
+SOURCES = utils/*.cpp core/*.cpp
 LDLIBS  = -L. -lsealedserver
 
 tests = test_buffer test_c test_callback test_log test_slice test_squeue test_tester test_thread
