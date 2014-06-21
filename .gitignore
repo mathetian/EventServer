@@ -36,4 +36,4 @@ utils/Tester
 
 *.orig
 *.log
-
+*.a

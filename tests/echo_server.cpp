@@ -1,59 +1,79 @@
-#include <iostream>
-using namespace std;
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-
+#include "Socket.h"
+#include "Acceptor.h"
 #include "EventPool.h"
 #include "EventLoop.h"
 #include "MsgHandler.h"
-#include "Socket.h"
-#include "Acceptor.h"
 
 #define BASE_PORT 10000
 #define PORT_NUM  10
 
 EventPool pool(4);
 
+/**
+** A handler for a single connection to a client.
+**
+** In this application, EchoServers are created
+** by the TCPAcceptor<EchoServer> handler 
+** see the main() function below.
+**
+** We subclass MSGHandler and override a few of its virtual methods:
+**
+** - receivedMsg()  is invoked when a message is received
+** - sentMsg()      is invoked when a msg has been sent
+** - closed()       is invoked when the socket has been closed
+ */
 class EchoServer : public MSGHandler
 {
 public:
-    EchoServer(EventLoop *loop, Socket sock) : MSGHandler(loop, sock,1)
+    EchoServer(EventLoop *loop, Socket sock) : MSGHandler(loop, sock)
     { }
 
-    ~EchoServer()
+    virtual ~EchoServer()
     { }
 
 private:
-    virtual void receivedMsg(STATUS status, Buffer &buf)
+    /// Invoked when a message is received.
+    virtual void receivedMsg(STATUS status, Buffer &receivedBuff)
     {
-        if(status == SUCC)
+        if(status == MSGHandler::SUCC)
         {
-            INFO << "Received: " << (string)buf << " through fd " << m_sock.fd();
-            write(buf);
+            INFO << "Received: " << (string)receivedBuff << " through fd " << m_sock.fd();
+            write(receivedBuff);
         }
+        else 
+            assert(0);
     }
 
-    virtual void sendedMsg(STATUS status, int len, int targetLen)
+    // Invoked when a msg has been sent
+    virtual void sentMsg(STATUS status, int len, int targetLen)
     {
-        if(status == SUCC)
+        if(status == MSGHandler::SUCC)
         {
             INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.fd();
         }
         else { }
     }
-
-    virtual void closedSocket()
-    { }
+    
+    // Invoked when the socket has been closed
+    virtual void closed(ClsMtd st) 
+    { 
+        DEBUG << "onCloseSocket: " << st << " " << m_sock.fd() << strerror(errno);
+        errno = 0;
+    }
 };
 
+/// Signal Stop the server
 void signalStop(int)
 {
-    INFO << "Stop running...by manually";
-    pool.closeAllLoop();
+    INFO << "Stop running...by manual";
+    pool.stop();
 }
 
+/// Change the configure
 int setlimit(int num_pipes)
 {
     struct rlimit rl;
@@ -68,17 +88,19 @@ int setlimit(int num_pipes)
 int main()
 {
     ::signal(SIGINT, signalStop);
-    setlimit(100000);
-    errno = 0;
+
+    setlimit(100000); errno = 0;
+
     vector<TCPAcceptor<EchoServer>*> acceptors(PORT_NUM, NULL);
 
     for(int i = 0; i < PORT_NUM; i++)
-        acceptors[i] = new TCPAcceptor<EchoServer>(pool.getRandomLoop(), BASE_PORT+i);
+        acceptors[i] = new TCPAcceptor<EchoServer>(pool.getRandomLoop(), BASE_PORT + i);
 
-    pool.runforever();
-    INFO << "End of Main" ;
+    pool.run();
 
     for(int i = 0; i < PORT_NUM; i++) delete acceptors[i];
+
+    INFO << "End of Main" ;
 
     return 0;
 }

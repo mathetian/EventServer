@@ -32,7 +32,7 @@ public:
     /// @param loop, EventLoop it belongs
     /// @param sock, the socket
     /// @param first, ?
-    MSGHandler(EventLoop* loop, Socket sock, int first = 0);
+    MSGHandler(EventLoop* loop, Socket sock);
     
     /// Destructor
     virtual ~MSGHandler();
@@ -60,17 +60,18 @@ private:
     void onCloseEvent(ClsMtd st);
 
 public:
+    /// Invoke when has connected to the server
+    /// Should override if and only if client
+    virtual void connected()  { }
+
     /// Invoke when a message has been received
     virtual void receivedMsg(STATUS status, Buffer &buf) { }
     
     /// Invoke when a message has been sent
-    virtual void sendedMsg(STATUS status, int len, int targetLen) { }
+    virtual void sentMsg(STATUS status, int len, int targetLen) { }
     
     /// Invoke when a socket has been closed
-    virtual void closedSocket()              { }
-    
-    /// Invoke when has connected to the server
-    virtual void onConnected(STATUS status)  { }
+    virtual void closed()              { }
 
 private:
     /// Buffer list, which wait for write

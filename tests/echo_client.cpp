@@ -1,15 +1,11 @@
-#include <iostream>
-using namespace std;
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include <stdio.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-
+#include "Socket.h"
 #include "EventPool.h"
 #include "EventLoop.h"
 #include "MsgHandler.h"
-#include "Socket.h"
 
 #define BASE_PORT 10000
 #define PORT_NUM  10
@@ -18,6 +14,16 @@ using namespace std;
 
 EventPool pool(1);
 
+/**
+** A handler for a single connection to the server
+**
+** We subclass MSGHandler and override a few of its virtual methods:
+**
+**   - connected()    is invoked when a connection we try either succeeds or fails.
+**   - receivedMsg()  is invoked when a message is received
+**   - sentMsg()      is invoked when a msg has been sent
+**   - closed()       is invoked when the socket has been closed
+**/
 class EchoClient : public MSGHandler
 {
 public:
@@ -26,10 +32,22 @@ public:
         DEBUG << m_sock.getsockname() << " " << sock.fd();
     }
 
-    ~EchoClient()
+    virtual ~EchoClient()
     { }
 
 protected:
+    /// Invoked when a connection we try either succeeds or fails.
+    virtual void connected()
+    {
+        INFO << "Connected Successful" << m_sock;
+
+        char * buff = new char[20]; memset(buff, 0, 20);
+        sprintf(buf, "wait for me, I am %d", m_sock.fd());
+        
+        write(Buffer(buff, true));
+    }
+
+    /// Invoked when a message is received
     virtual void receivedMsg(STATUS status, Buffer &buf)
     {
         if(status == SUCC)
@@ -38,7 +56,8 @@ protected:
         }
     }
 
-    virtual void sendedMsg(STATUS status, int len, int targetLen)
+    /// Invoked when a msg has been sent
+    virtual void sentMsg(STATUS status, int len, int targetLen)
     {
         if(status == SUCC)
         {
@@ -46,15 +65,17 @@ protected:
         }
     }
 
-    virtual void closedSocket()
-    { }
-
-    virtual void onConnected(STATUS status)
-    {
-        INFO << "Connected Successful";
-        write("wait for me");
+    // Invoke when the socket has been closed
+    virtual void closed(ClsMtd st) 
+    { 
+        DEBUG << "onCloseSocket: " << st << " " << m_sock.fd() << strerror(errno);
+        errno = 0;
     }
 };
+
+/// Simulator of clients
+/// In it, we will try to create `CLIENT_NUM`s clients (EchoClient)
+/// Then, try to create `EchoClient` to bind the socket with this client
 
 class ClientSimulator
 {
@@ -71,42 +92,48 @@ public:
 
     void Initialize(int port)
     {
-        NetAddress svrAddr(port);
-        createClients(&svrAddr, CLIENT_NUM);
+        createClients("127.0.0.1", port)
     }
 
     void Initialize(string ip, int port)
     {
-        NetAddress svrAddr(ip, port);
-        createClients(&svrAddr, CLIENT_NUM);
+        createClients(ip, port);
     }
 
 private:
-    void createClients(Address *psvrAddr, int size)
+    void createClients(string ip, int port)
     {
         for(int i = 0; i < size; i++)
         {
-            NetAddress svrAddr(BASE_PORT+(i%PORT_NUM));
+            NetAddress svrAddr(ip, port + (i%PORT_NUM));
+
             Socket sock(AF_INET, SOCK_STREAM);
-            sock.cliConnect(&svrAddr);
-            assert(sock.fd() >= 0);
+            sock.connect(&svrAddr);
+
+            /// Check status of socket
+            /// TBD
+
             EchoClient *client = new EchoClient(pool.getRandomLoop(), sock);
+            
             if(i%10000==0)
             {
                 printf("press Enter to continue: ");
                 getchar();
             }
+            
             usleep(1 * 1000);
         }
     }
 };
 
+/// Signal Stop the server
 void signalStop(int)
 {
     INFO << "Stop running...by manually";
-    pool.closeAllLoop();
+    pool.stop();
 }
 
+/// Change the configure
 int setlimit(int num_pipes)
 {
     struct rlimit rl;
@@ -121,10 +148,11 @@ int setlimit(int num_pipes)
 int main()
 {
     ::signal(SIGINT, signalStop);
-    setlimit(100000);
-    errno = 0;
+    setlimit(100000); errno = 0;
+
     ClientSimulator simulator(BASE_PORT);
-    pool.runforever();
+    
+    pool.run();
 
     INFO << "End of Main";
 

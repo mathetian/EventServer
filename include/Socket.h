@@ -49,9 +49,10 @@ public:
     bool bindListen(const Address *paddr);
 
     /// Connect to the server(for client)
+    /// Attempts to connect the socket.
     ///
     /// @param paddr, the address of server, without any check
-    bool clientConnect(const Address *paddr);
+    bool connect(const Address *paddr);
 
 public:
     /// Attempts to bind the socket.
@@ -63,23 +64,18 @@ public:
     /// Attempts to accept a connection on the socket.
     Socket accept(Address *pa);
 
-     /// Attempts to connect the socket.
-    bool connect(const Address *paddr);
-
 public:
     /// Close the file descriptor
     void close();
 
     /// Attempts to read bytes into a buffer. 
     ///
-    /// @return the number of bytes actually read, or -1 if no bytes are
-    /// available or an error occurs, or 0 on end-of-stream.
+    /// @return the number of bytes actually read
     int read(void *buf, uint32_t count);
 
     /// Attempts to write bytes from a data buffer.
     ///
-    /// @return the number of bytes actually written, or -1 if no bytes can
-    ///  be written or an error occurs, or 0 on end-of-stream.
+    /// @return the number of bytes actually written
     int write(const void *buf, int count);
 
     /// Returns the peer name of the socket, if any.

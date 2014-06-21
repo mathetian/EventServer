@@ -35,14 +35,16 @@ bool Socket::bindListen(const Address *paddr)
     return true;
 }
 
-bool Socket::clientConnect(const Address *paddr)
+bool Socket::connect(const Address *paddr)
 {
-    connect(paddr);
-    
-    if(errno != 0)
-        return false;
+    if (::connect(fd(), paddr->data(), paddr->length()) != 0)
+    {
+        if (errno != EINPROGRESS) return false;
+        return true;
+    }
     return true;
 }
+
 
 bool Socket::bind(const Address *paddr)
 {
@@ -79,16 +81,6 @@ Socket Socket::accept(Address *pa)
 
     pa->setAddr(&addr, addrlen);
     return Socket(new_fd);
-}
-
-bool Socket::connect(const Address *paddr)
-{
-    if (::connect(fd(), paddr->data(), paddr->length()) != 0)
-    {
-        if (errno != EINPROGRESS) return false;
-        return true;
-    }
-    return true;
 }
 
 void Socket::close()
