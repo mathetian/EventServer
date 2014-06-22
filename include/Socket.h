@@ -88,6 +88,7 @@ public:
     /// Create a pipe of sockets
     static pair<Socket, Socket> pipe();
 
+    Status status();
 private:
     /// Sets a handle into blocking or non-blocking mode.
     ///

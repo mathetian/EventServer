@@ -9,8 +9,11 @@ namespace sealedserver
 {
 
 MSGHandler::MSGHandler(EventLoop* loop, Socket sock) 
-    : Handler(loop), m_sock(sock), m_global(true)
+    : Handler(loop), m_global(true)
 {
+    /// Must be written here
+    /// Don't allow after `:`
+    m_sock = sock;
     attach(); registerRead();
     assert(sock.status());
 }
@@ -23,16 +26,20 @@ MSGHandler::~MSGHandler()
 
 int MSGHandler::write(const Buffer& buf)
 {
-    if(m_global == false) return;
+    if(m_global == false) return 0;
 
     m_Bufs.push_back(buf);
     registerWrite();
+
+    return 0;
 }
 
 int MSGHandler::close()
 {
     onCloseEvent(CLSMAN);
     m_global = false;
+
+    return 0;
 }
 
 void MSGHandler::onReceiveEvent()
@@ -53,7 +60,7 @@ void MSGHandler::onReceiveEvent()
         flag = false;
 
         if(len == 0)  
-            onCloseSocket(CLSEOF);
+            onCloseEvent(CLSEOF);
         else if(len < 0 && errno == EAGAIN) 
         { 
             /// omit, shouldn't happen in the first `read`

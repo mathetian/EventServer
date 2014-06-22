@@ -3,6 +3,7 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "EventLoop.h"
+#include "EventPool.h"
 
 namespace sealedserver
 {
@@ -47,7 +48,7 @@ void EventLoop::runForever()
         
         m_selector->unRegisterEvent(handler, -1);
         
-        handler->onCloseSocket(CLSSIG);
+        handler->onCloseEvent(CLSSIG);
     }
 
     m_map.clear();
@@ -150,10 +151,15 @@ void EventLoop::runAllActives()
 
         assert(m_map.find(fd) != m_map.end());
 
-        m_map[fd] -> proceed();
+        m_map[fd] -> proceed(event);
     }
 
     m_active.clear();
+}
+
+EventLoop* EventLoop::getRandomLoop()
+{
+    m_pool -> getRandomLoop();
 }
 
 };

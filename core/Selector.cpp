@@ -56,7 +56,7 @@ void Selector::registerEvent(Handler *handler, short event)
 void Selector::unRegisterEvent(Handler *handler, short event)
 {
     Socket sock = handler -> getSocket();
-    int fd       = sock.fd()
+    int fd       = sock.fd();
     int events   = 0;
     bool delflag = true;
 

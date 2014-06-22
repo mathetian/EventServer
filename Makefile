@@ -63,6 +63,10 @@ test_squeue: tests/test_squeue.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
+test_status: tests/test_status.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
+	mv $@ bin
+
 test_tester: tests/test_tester.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin

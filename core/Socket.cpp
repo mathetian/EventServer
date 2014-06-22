@@ -7,7 +7,7 @@
 namespace sealedserver
 {
 
-Socket::Socket(int fd) : fd(-1) { }
+Socket::Socket(int fd) : m_fd(-1) { }
 
 Socket::Socket(int family, int type) : 
     m_fd(::socket(family, type, 0))
@@ -42,7 +42,7 @@ bool Socket::connect(const Address *paddr)
     }
 
     errno = 0;
-    return status == true ? true : false;
+    return m_status == true ? true : false;
 }
 
 
@@ -158,7 +158,12 @@ bool Socket::setStatus()
         m_status = Status(strerror(errno));
 
     errno = 0;
-    return status == true ? true : false;
+    return m_status == true ? true : false;
+}
+
+Status Socket::status()
+{
+    return m_status;
 }
 
 };

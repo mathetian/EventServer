@@ -21,7 +21,7 @@ class Status
 
 public:
     /// Constructor.  Uses a default success or failure string if err is empty.
-    Status(bool ok, string err = string()) : ok(ok), err(err)
+    Status(bool ok = true, string err = string()) : ok(ok), err(err)
     { }
 
     /// Constructor for failure state.

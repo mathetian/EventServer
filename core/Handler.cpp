@@ -22,25 +22,25 @@ Handler::~Handler()
 void Handler::registerRead()
 {
     assert(m_loop && m_sock.status());
-    m_loop->registerRead(m_sock);
+    m_loop->registerRead(m_sock.fd());
 }
 
 void Handler::registerWrite()
 {
     assert(m_loop && m_sock.status());
-    m_loop->registerWrite(m_sock);
+    m_loop->registerWrite(m_sock.fd());
 }
 
 void Handler::unRegisterRead()
 {
     assert(m_loop && m_sock.status());
-    m_loop->unRegisterRead(m_sock);
+    m_loop->unRegisterRead(m_sock.fd());
 }
 
 void Handler::unRegisterWrite()
 {
     assert(m_loop && m_sock.status());
-    m_loop->unRegisterWrite(m_sock);
+    m_loop->unRegisterWrite(m_sock.fd());
 }
 
 Socket Handler::getSocket() const
@@ -79,12 +79,12 @@ void Handler::removeStatus(int val)
     m_status ^= val;
 }
 
-int Handler::getDelflag() const
+bool Handler::getDelflag() const
 {
     return m_delflag;
 }
 
-int Handler::setDelflag()
+bool Handler::setDelflag()
 {
     m_delflag = true;
 }
@@ -107,7 +107,7 @@ void Handler::proceed(int event)
     {
         detach();
 
-        INFO << fd << " " << (event&EPOLLRDHUP) << " " << (event&EPOLLERR) << " " << (event&EPOLLHUP);
+        INFO << m_sock.fd() << " " << (event&EPOLLRDHUP) << " " << (event&EPOLLERR) << " " << (event&EPOLLHUP);
 
         /**
         ** get the information for errno
@@ -115,20 +115,20 @@ void Handler::proceed(int event)
         int       error = 0;
         socklen_t errlen = sizeof(error);
         
-        if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
+        if (getsockopt(m_sock.fd(), SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
         {
             INFO <<  "error = " << strerror(error);
         }
 
-        onCloseSocket(CLSERR);
+        onCloseEvent(CLSERR);
     }
     else
     {
         if((event & EPOLLOUT) != 0)
-            onSendMsg();
+            onSendEvent();
 
         if(getDelflag() ==  false && (event & EPOLLIN) != 0)
-            onReceiveMsg();
+            onReceiveEvent();
     }
 }
 

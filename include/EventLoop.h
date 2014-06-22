@@ -77,7 +77,8 @@ public:
     /// Process the handlers need to be delete
     void finishDelete();
 
-    void insert(Handler *handler);
+    /// Return one random loop
+    EventLoop* getRandomLoop();
 
 private:
     /// Run After dispatch(for all active events)

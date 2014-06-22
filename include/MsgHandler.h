@@ -70,7 +70,7 @@ public:
     virtual void sentMsg(STATUS status, int len, int targetLen) { }
     
     /// Invoke when a socket has been closed
-    virtual void closed()              { }
+    virtual void closed(ClsMtd st)              { }
 
 private:
     /// Buffer list, which wait for write
