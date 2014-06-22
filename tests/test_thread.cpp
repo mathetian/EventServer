@@ -6,8 +6,8 @@
 #include "Thread.h"
 using namespace utils;
 
-class A 
-{ 
+class A
+{
 public:
     void Func1()
     {
@@ -54,10 +54,10 @@ TEST(A, MultiReentrantLock)
 {
     A a;
     Thread ** threads = new Thread*[4];
-    for(int i=0;i<4;i++)
+    for(int i=0; i<4; i++)
         threads[i] = new Thread(Call, NULL);
-    for(int i=0;i<4;i++) threads[i]->run();
-    for(int i=0;i<4;i++) threads[i]->join();
+    for(int i=0; i<4; i++) threads[i]->run();
+    for(int i=0; i<4; i++) threads[i]->join();
 }
 
 int main()

@@ -6,8 +6,8 @@
 #include "Callback.h"
 using namespace utils;
 
-class A 
-{ 
+class A
+{
 
 };
 
@@ -27,7 +27,7 @@ public:
 
 TEST(A, callfromb)
 {
-	B b1;
+    B b1;
     Callback<void> call(&b1, &B::b);
     call();
 }
@@ -47,17 +47,17 @@ TEST(A, equal)
 TEST(A, null)
 {
     Callback<void> call;
-    
+
     {
         B b1;
         call =  Callback<void>(&b1, &B::b);
     }
-    
+
     call();
 }
 
 int main()
-{    
-	RunAllTests();
+{
+    RunAllTests();
     return 0;
 }

@@ -8,23 +8,23 @@
 namespace sealedserver
 {
 
-EventLoop::EventLoop(EventPool *pool) : m_stop(false), 
-	m_selector(new Selector(this)), m_pool(pool) { }
+EventLoop::EventLoop(EventPool *pool) : m_stop(false),
+    m_selector(new Selector(this)), m_pool(pool) { }
 
 EventLoop::~EventLoop()
 {
     map<int, Handler*>::iterator iter = m_map.begin();
-    
+
     for(; iter != m_map.end(); iter++)
     {
         Handler *tmpHandler = iter->second;
-        
+
         delete tmpHandler;
         tmpHandler = NULL;
     }
 
     m_map.clear();
-    
+
     delete m_selector;
     m_selector = NULL;
 }
@@ -33,11 +33,11 @@ void EventLoop::runForever()
 {
     m_stop = false;
 
-    while (!m_stop) 
+    while (!m_stop)
         runOnce();
 
     WARN << "Begin EventLoop Stop" ;
-   
+
     map<int, Handler*>::iterator iter = m_map.begin();
 
     for(; iter!=m_map.end(); iter++)
@@ -45,19 +45,19 @@ void EventLoop::runForever()
         Handler *handler = (*iter).second;
 
         DEBUG << handler->getSocket().fd();
-        
+
         m_selector->unRegisterEvent(handler, -1);
-        
+
         handler->onCloseEvent(CLSSIG);
     }
 
     WARN << "End EventLoop Stop" ;
-    
+
     m_map.clear();
 }
 
 void EventLoop::runOnce()
-{   
+{
     m_selector->dispatch();
 
     runAllActives();
@@ -73,7 +73,7 @@ void EventLoop::stop()
 void EventLoop::attachHandler(int fd, Handler *p)
 {
     assert(m_map.find(fd) == m_map.end());
-    
+
     m_map[fd] = p;
 }
 
@@ -81,7 +81,7 @@ void EventLoop::detachHandler(int fd, Handler *p)
 {
     assert(m_map.find(fd) != m_map.end() && m_map[fd] == p);
     assert(m_map.erase(fd) == 1);
-    
+
     m_selector->unRegisterEvent(p, -1);
 }
 
@@ -95,21 +95,21 @@ void EventLoop::registerRead(int fd)
 void EventLoop::registerWrite(int fd)
 {
     assert(m_map.find(fd) != m_map.end());
-    
+
     m_selector->registerEvent(m_map[fd], EPOLLOUT);
 }
 
 void EventLoop::unRegisterRead(int fd)
 {
     assert(m_map.find(fd) != m_map.end());
-    
+
     m_selector->unRegisterEvent(m_map[fd], EPOLLIN);
 }
 
 void EventLoop::unRegisterWrite(int fd)
 {
     assert(m_map.find(fd) != m_map.end());
-    
+
     m_selector->unRegisterEvent(m_map[fd], EPOLLOUT);
 }
 
@@ -126,23 +126,23 @@ void EventLoop::addClosed(Handler* handler)
 
 void EventLoop::finishDelete()
 {
-     if(m_del.size() != 0)
+    if(m_del.size() != 0)
     {
         DEBUG << "Need to Destory " << m_del.size() \
-            << " Objects" << ". Remain " << m_map.size() ;
+              << " Objects" << ". Remain " << m_map.size() ;
     }
 
     for(int i=0; i < m_del.size(); i++)
     {
         Handler *handler = m_del[i];
-        
+
         if(handler) delete handler;
-        
+
         handler = NULL;
     }
 
     vector<Handler*> handlers;
-    
+
     swap(handlers, m_del);
 }
 
@@ -150,7 +150,7 @@ void EventLoop::runAllActives()
 {
     map<int, int>::iterator iter = m_active.begin();
 
-    for(;iter != m_active.end();iter++)
+    for(; iter != m_active.end(); iter++)
     {
         int fd = (*iter).first;
         int event = (*iter).second;

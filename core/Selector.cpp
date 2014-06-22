@@ -10,7 +10,7 @@ namespace sealedserver
 Selector::Selector(EventLoop* loop) : m_loop(loop), m_socknum(0)
 {
     m_epollfd = epoll_create(1);
-	m_events  = (struct epoll_event*)malloc(MAX_NEVENTS * sizeof(struct epoll_event));    
+    m_events  = (struct epoll_event*)malloc(MAX_NEVENTS * sizeof(struct epoll_event));
 
     /// make sure no problem exists in constructor
     assert(errno == 0);
@@ -28,12 +28,12 @@ void Selector::registerEvent(Handler *handler, short event)
 
     int  fd      = sock.fd();
     int  events  = event;
-   	bool addFlag = true;
+    bool addFlag = true;
 
     /// Firstly, check the status
     /// Then determining whether `add` or `modify`
-    if(handler -> getStatus() != 0) 
-    	addFlag = false;
+    if(handler -> getStatus() != 0)
+        addFlag = false;
 
     handler -> updateStatus(event);
     events  =  handler -> getStatus();
@@ -65,13 +65,13 @@ void Selector::unRegisterEvent(Handler *handler, short event)
 
     /// if event == -1, delete it from selector
     /// else if event or EPOLLRDHUP or  EPOLLERR or  EPOLLHUP, delete it from selector
-    /// else  
+    /// else
     if(event == -1)
     {
         DEBUG << "Found Close Event(triggered by detach), fd: " << fd;
 
         assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
-        handler->setDelflag();        
+        handler->setDelflag();
     }
     else if((event & EPOLLRDHUP) || (event & EPOLLERR) || (event & EPOLLHUP))
     {
@@ -115,9 +115,9 @@ int Selector::dispatch(int second)
     int timeout = second*1000; //5s
 
     int num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, timeout);
-    
+
     if(num != 0) DEBUG << "Dispatch, numbef of events: " << num ;
-    
+
     for(int i = 0; i < num; i++)
     {
         int what = m_events[i].events;

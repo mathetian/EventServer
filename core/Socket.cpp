@@ -9,7 +9,7 @@ namespace sealedserver
 
 Socket::Socket(int fd) : m_fd(fd) { }
 
-Socket::Socket(int family, int type) : 
+Socket::Socket(int family, int type) :
     m_fd(::socket(family, type, 0))
 {
     setUnblocking();
@@ -28,8 +28,9 @@ int Socket::fd() const
 
 bool Socket::bindListen(const Address *paddr)
 {
-    bind(paddr); listen();
-    
+    bind(paddr);
+    listen();
+
     return setStatus();
 }
 
@@ -37,7 +38,7 @@ bool Socket::connect(const Address *paddr)
 {
     if (::connect(fd(), paddr->data(), paddr->length()) != 0)
     {
-        if (errno != EINPROGRESS) 
+        if (errno != EINPROGRESS)
             m_status = Status(strerror(errno));
     }
 
@@ -64,7 +65,7 @@ Socket Socket::accept(Address *pa)
 {
     sockaddr addr;
     socklen_t addrlen = sizeof(addr);
-    
+
     int new_fd;
     while(true)
     {
@@ -77,12 +78,12 @@ Socket Socket::accept(Address *pa)
             setStatus();
             return Socket();
         }
-        else 
+        else
             break;
     }
 
     pa->setAddr(&addr, addrlen);
-    
+
     return Socket(new_fd);
 }
 
@@ -130,7 +131,7 @@ NetAddress Socket::getsockname()
     socklen_t len = sizeof(buf);
 
     int ret = ::getsockname(fd(), (sockaddr*)buf, &len);
-    
+
     setStatus();
 
     return NetAddress(buf, len);

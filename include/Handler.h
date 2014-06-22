@@ -17,7 +17,7 @@ class EventLoop;
 
 /**
 ** A handler that receives notifications on events on a file descriptor.
-** The subclass may call registerxxxx/unRegisterxxx to enable/disable 
+** The subclass may call registerxxxx/unRegisterxxx to enable/disable
 ** read/write events
 ** Handlers are only active when attached to both an event loop
 ** and callback(io schedule)
@@ -82,13 +82,13 @@ public:
     /// @param val, the event need to be unregistered with
     void removeStatus(int val);
 
-        /// Get the delete flag;
+    /// Get the delete flag;
     bool getDelflag() const;
 
     /// Set the delete flag
     /// Later it will be removed from memory
     bool setDelflag();
-    
+
     /// Proccess the atvie event
     void proceed(int event);
 
@@ -100,13 +100,13 @@ protected:
     void detach();
 
 protected:
-    
+
     EventLoop*  m_loop;
     Socket      m_sock;
 
     /// Socket status
     int         m_status;
-    
+
     /// Delete flag
     bool        m_delflag;
 };

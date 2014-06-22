@@ -36,7 +36,7 @@ public:
     bool empty() const
     {
         ScopeMutex scope(&m_mutex);
-        
+
         return m_queue.empty();
     }
 
@@ -106,7 +106,8 @@ public:
         if (empty())
             return T();
 
-        T ret = front(); pop();
+        T ret = front();
+        pop();
 
         return ret;
     }

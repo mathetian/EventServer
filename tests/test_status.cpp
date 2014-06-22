@@ -11,20 +11,20 @@ class A { };
 
 TEST(A, ok)
 {
-	Status status;
-	ASSERT_EQ(status, true);
+    Status status;
+    ASSERT_EQ(status, true);
 }
 
 TEST(A, error)
 {
-	int fd = open("hello.txt", O_RDONLY);
-	Status status(strerror(errno));
-	ASSERT_EQ(status, false);
-	WARN << status ;
+    int fd = open("hello.txt", O_RDONLY);
+    Status status(strerror(errno));
+    ASSERT_EQ(status, false);
+    WARN << status ;
 }
 
 int main()
 {
-	RunAllTests();
-	return 0;
+    RunAllTests();
+    return 0;
 }

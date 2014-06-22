@@ -6,7 +6,7 @@ class A { };
 
 TEST(A, address)
 {
-	
+
 }
 
 TEST(A, netaddress)
@@ -16,6 +16,6 @@ TEST(A, netaddress)
 
 int main()
 {
-	RunAllTests();
-	return 0;
+    RunAllTests();
+    return 0;
 }

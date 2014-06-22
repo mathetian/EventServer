@@ -5,45 +5,45 @@
 #include "Tester.h"
 using namespace utils;
 
-class A 
-{ 
+class A
+{
 public:
-	friend bool operator == (const A &a1, const A &a2);
+    friend bool operator == (const A &a1, const A &a2);
 
-	friend ostream& operator << (ostream &os, const A &a1);
+    friend ostream& operator << (ostream &os, const A &a1);
 };
 
 bool operator == (const A &a1, const A &a2)
 {
-	return true;
+    return true;
 }
 
 ostream& operator << (ostream &os, const A &a1)
 {
-	os << "Address: " << &a1;
-	return os;
+    os << "Address: " << &a1;
+    return os;
 }
 
 TEST(A, Plain)
 {
-	ASSERT_EQ(1, 1);
-	A a, b;
-	ASSERT_EQ(a, b);
-}	
+    ASSERT_EQ(1, 1);
+    A a, b;
+    ASSERT_EQ(a, b);
+}
 
 TEST(A, String)
 {
-	string str1 = "hello";
-	const char *str2 = "hello";
-	ASSERT_EQ(str1, "hello");
-	ASSERT_EQ(str2, "hello");
-	ASSERT_EQ(str2, str1);
-	const char *str3 = "hello";
-	ASSERT_EQ(str2, str3);
+    string str1 = "hello";
+    const char *str2 = "hello";
+    ASSERT_EQ(str1, "hello");
+    ASSERT_EQ(str2, "hello");
+    ASSERT_EQ(str2, str1);
+    const char *str3 = "hello";
+    ASSERT_EQ(str2, str3);
 }
 
 int main()
 {
-	RunAllTests();
-	return 0;
+    RunAllTests();
+    return 0;
 }

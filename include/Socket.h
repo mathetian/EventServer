@@ -69,7 +69,7 @@ public:
     /// Close the file descriptor
     void close();
 
-    /// Attempts to read bytes into a buffer. 
+    /// Attempts to read bytes into a buffer.
     ///
     /// @return the number of bytes actually read
     int read(void *buf, uint32_t count);
@@ -99,7 +99,7 @@ private:
     ///
     /// @return true if successful.
     bool setUnblocking();
-    
+
     /// Sets a handle into blocking or non-blocking mode.
     ///
     /// @return true if status == successful
@@ -115,13 +115,13 @@ private:
 
 TO_STRING(Socket);
 
-/// A TCP socket descriptor. 
+/// A TCP socket descriptor.
 class TCPSocket : public Socket
 {
 public:
     /// Constructor
     TCPSocket() : Socket() { }
-    
+
     /// Constructor, passed by a address
     /// Try to instance the socket(by bind and listen)
     TCPSocket(Address *paddr) : Socket(AF_INET, SOCK_STREAM)

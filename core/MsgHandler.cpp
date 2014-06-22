@@ -8,13 +8,14 @@
 namespace sealedserver
 {
 
-MSGHandler::MSGHandler(EventLoop* loop, Socket sock) 
+MSGHandler::MSGHandler(EventLoop* loop, Socket sock)
     : Handler(loop), m_global(true), m_first(false)
 {
     /// Must be written here
     /// Don't allow after `:`
     m_sock = sock;
-    attach(); registerRead();
+    attach();
+    registerRead();
     assert(sock.status());
 }
 
@@ -59,10 +60,10 @@ void MSGHandler::onReceiveEvent()
 
         flag = false;
 
-        if(len == 0)  
+        if(len == 0)
             onCloseEvent(CLSEOF);
-        else if(len < 0 && errno == EAGAIN) 
-        { 
+        else if(len < 0 && errno == EAGAIN)
+        {
             /// omit, shouldn't happen in the first `read`
 
             if(first == true)
@@ -80,17 +81,18 @@ void MSGHandler::onReceiveEvent()
             /// must be proceed manually
             buf.set_length(len);
             receivedMsg(SUCC, buf);
-            flag = true; first = false;
+            flag = true;
+            first = false;
         }
     }
 }
 
 void MSGHandler::onSendEvent()
 {
-    /// Write utils the buffer empty 
+    /// Write utils the buffer empty
     /// Or out buffer is full
     unRegisterWrite();
-    
+
     if(m_first == true)
     {
         connected();
@@ -109,7 +111,7 @@ void MSGHandler::onSendEvent()
         uint32_t  length = buf.length();
 
         int len = m_sock.write(data, length);
-        
+
         /// if len == 0, EOF
         /// else if len < 0 && errno == EAGAIN, out buffer is full
         /// else if len < 0, Error happens. Close the socket
@@ -129,7 +131,7 @@ void MSGHandler::onSendEvent()
         else
         {
             assert(len == length);
-            sentMsg(SUCC, len, length); 
+            sentMsg(SUCC, len, length);
             flag = false;
         }
     }
@@ -142,8 +144,11 @@ void MSGHandler::onCloseEvent(ClsMtd st)
     /// 2. close the socket(shutdown?)
     /// 3. invoke the close event of customed
     /// 4. remove this object(add to the wait list of removed items)
-    
-    detach(); m_sock.close(); closed(st); m_loop -> addClosed(this);
+
+    detach();
+    m_sock.close();
+    closed(st);
+    m_loop -> addClosed(this);
 }
 
 };

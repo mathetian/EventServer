@@ -9,13 +9,13 @@ namespace sealedserver
 
 Address::Address() { }
 
-Address::Address(const void *addr, socklen_t len) : 
+Address::Address(const void *addr, socklen_t len) :
     m_addr(static_cast<const char*>(addr), len) { }
 
 const sockaddr *Address::data() const
 {
     return static_cast<const sockaddr *>\
-    	(static_cast<const void *>(m_addr.data()));
+           (static_cast<const void *>(m_addr.data()));
 }
 
 socklen_t Address::length() const
@@ -27,7 +27,7 @@ void   Address::setAddr(const void *addr, socklen_t len)
 {
     m_addr = string(static_cast<const char *>(addr), len);
 }
-    
+
 NetAddress::NetAddress() { }
 
 NetAddress::NetAddress(port pt)

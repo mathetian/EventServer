@@ -63,7 +63,7 @@ private:
             {
                 int widx = idx + 1;
                 if (widx >= num_pipes) widx -= num_pipes;
-                
+
                 if(::write(pipes[2 * widx + 1].fd(), "m", 1) != 1)
                 {
                     INFO << strerror(errno) ;
@@ -76,9 +76,9 @@ private:
 
             if(count % num_pipes == 0)
             {
-                end = Timer::now(); 
+                end = Timer::now();
                 fprintf(stdout, "%8ld, id %d\n", end.to_usecs() - start.to_usecs(), (int)(Thread::getIDType()%100));
-               // fprintf(stdout, "%8ld, %8ld\n", end.to_usecs(), start.to_usecs());
+                // fprintf(stdout, "%8ld, %8ld\n", end.to_usecs(), start.to_usecs());
                 fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
                 start = end;
             }
@@ -86,9 +86,9 @@ private:
         else assert(0);
     }
 
-     // Invoke when the socket has been closed
-    virtual void closed(ClsMtd st) 
-    { 
+    // Invoke when the socket has been closed
+    virtual void closed(ClsMtd st)
+    {
         DEBUG << "onCloseSocket(for " <<  m_sock.fd() <<  " ):" << st;
         if(errno != 0) DEBUG << strerror(errno);
 
@@ -107,7 +107,7 @@ void run_once()
     for (int i = 0; i < num_active; i++)
         ::write(pipes[i*space+1].fd(),"m",1);
 
-    if(errno != 0) 
+    if(errno != 0)
         printf("error: %s\n",strerror(errno));
     errno = 0;
 
@@ -116,13 +116,13 @@ void run_once()
     writes = num_writes;
 
     start = Timer::now();
-    
+
     WARN << "Begin Run" ;
-    
+
     pool.run();
 
     WARN << "End Run" ;
-    
+
     end = Timer::now();
 
     fprintf(stdout, "%8ld\n", end.to_usecs() - start.to_usecs());
@@ -148,7 +148,7 @@ int main(int argc, char* argv[])
     num_writes = num_pipes*25;
 
     setlimit(num_pipes);
-    
+
     int c;
     while ((c = getopt(argc, argv, "n:a:w:")) != -1)
     {

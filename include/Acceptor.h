@@ -19,18 +19,19 @@ namespace sealedserver
 **/
 template<class T>
 class TCPAcceptor : public Handler
-{    
+{
 public:
     /// Constructor
     TCPAcceptor(EventLoop* _loop, int localport) : Handler(_loop)
     {
         NetAddress addr = NetAddress(localport);
-        
+
         m_sock = TCPSocket(&addr);
-        attach(); registerRead();
+        attach();
+        registerRead();
 
         INFO << "TCPAcceptor Initialization: " << m_sock.getsockname();
-        
+
         assert(m_sock.status());
     }
 
@@ -44,10 +45,10 @@ private:
     {
         NetAddress a;
         Socket sock = m_sock.accept(&a);
-        
+
         DEBUG << "New Connection, through socket(local): " << sock.fd();
         DEBUG << "Corrsponding address:" << sock.getpeername();
-        
+
         if (sock.status() == true)
         {
             T* t = new T(getRandomLoop(), sock);
@@ -60,7 +61,8 @@ private:
     {
         DEBUG << "close listen socket fd: " << m_sock.fd() << " " << st;
 
-        detach(); m_sock.close();
+        detach();
+        m_sock.close();
     }
 };
 

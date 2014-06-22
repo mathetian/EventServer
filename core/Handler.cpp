@@ -8,7 +8,7 @@
 namespace sealedserver
 {
 
-Handler::Handler(EventLoop* loop) : 
+Handler::Handler(EventLoop* loop) :
     m_loop(loop), m_status(0), m_delflag(false)
 {
 }
@@ -114,7 +114,7 @@ void Handler::proceed(int event)
         **/
         int       error = 0;
         socklen_t errlen = sizeof(error);
-        
+
         if (getsockopt(m_sock.fd(), SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
         {
             DEBUG <<  "error = " << strerror(error);

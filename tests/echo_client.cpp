@@ -31,7 +31,8 @@ public:
     EchoClient(EventLoop *loop, Socket sock) : MSGHandler(loop, sock)
     {
         DEBUG << m_sock.getpeername() << " " << sock.fd();
-        m_first = true; registerWrite(); 
+        m_first = true;
+        registerWrite();
     }
 
     virtual ~EchoClient()
@@ -43,9 +44,10 @@ protected:
     {
         DEBUG << "Connected Successful" << m_sock;
 
-        char * buff = new char[20]; memset(buff, 0, 20);
+        char * buff = new char[20];
+        memset(buff, 0, 20);
         sprintf(buff, "wait for me, I am %d", m_sock.fd());
-        
+
         write(Buffer(buff, true));
     }
 
@@ -70,8 +72,8 @@ protected:
     }
 
     // Invoke when the socket has been closed
-    virtual void closed(ClsMtd st) 
-    { 
+    virtual void closed(ClsMtd st)
+    {
         DEBUG << "onCloseSocket(for " <<  m_sock.fd() <<  " ):" << st;
         if(errno != 0) DEBUG << strerror(errno);
 
@@ -110,13 +112,13 @@ private:
             /// TBD
 
             EchoClient *client = new EchoClient(pool.getRandomLoop(), sock);
-            
+
             if(i%10000==0)
             {
                 printf("press Enter to continue: ");
                 getchar();
             }
-            
+
             usleep(1 * 1000);
         }
     }
@@ -144,12 +146,13 @@ int setlimit(int num_pipes)
 int main()
 {
     Log::setLevel(Log::debug);
-    
+
     ::signal(SIGINT, signalStop);
-    setlimit(100000); errno = 0;
+    setlimit(100000);
+    errno = 0;
 
     ClientSimulator simulator(BASE_PORT);
-    
+
     pool.run();
 
     INFO << "End of Main";

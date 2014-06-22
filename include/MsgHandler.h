@@ -32,7 +32,7 @@ public:
     /// @param loop, EventLoop it belongs
     /// @param sock, the socket
     MSGHandler(EventLoop* loop, Socket sock);
-    
+
     /// Destructor
     virtual ~MSGHandler();
 
@@ -65,10 +65,10 @@ public:
 
     /// Invoke when a message has been received
     virtual void receivedMsg(STATUS status, Buffer &buf) { }
-    
+
     /// Invoke when a message has been sent
     virtual void sentMsg(STATUS status, int len, int targetLen) { }
-    
+
     /// Invoke when a socket has been closed
     virtual void closed(ClsMtd st)              { }
 

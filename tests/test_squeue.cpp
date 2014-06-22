@@ -10,13 +10,19 @@ using namespace utils;
 class A
 {
 public:
-    const char* a() { return "A::a"; }
+    const char* a()
+    {
+        return "A::a";
+    }
 };
 
 class B
 {
 public:
-    const char* b() { return "B::b"; }
+    const char* b()
+    {
+        return "B::b";
+    }
 };
 
 TEST(A, Plain)

@@ -18,7 +18,7 @@ EventPool pool(4);
 ** A handler for a single connection to a client.
 **
 ** In this application, EchoServers are created
-** by the TCPAcceptor<EchoServer> handler 
+** by the TCPAcceptor<EchoServer> handler
 ** see the main() function below.
 **
 ** We subclass MSGHandler and override a few of its virtual methods:
@@ -57,13 +57,13 @@ private:
         }
         else assert(0);
     }
-    
+
     // Invoked when the socket has been closed
-    virtual void closed(ClsMtd st) 
-    { 
+    virtual void closed(ClsMtd st)
+    {
         DEBUG << "onCloseSocket(for " <<  m_sock.fd() <<  "):" << st;
         if(errno != 0) DEBUG << strerror(errno);
-        
+
         errno = 0;
     }
 };
@@ -92,8 +92,9 @@ int main()
     Log::setLevel(Log::debug);
 
     ::signal(SIGINT, signalStop);
-    setlimit(100000); errno = 0;
-    
+    setlimit(100000);
+    errno = 0;
+
     vector<TCPAcceptor<EchoServer>*> acceptors(PORT_NUM, NULL);
 
     for(int i = 0; i < PORT_NUM; i++)

@@ -18,12 +18,12 @@ TEST(A, Assignment)
 TEST(A, ConstScope)
 {
     Slice slice;
-    
+
     {
         string str = "hello, body";
         slice = str;
     }
-    
+
     ASSERT_NE(slice.str(), "hello, body");
     ASSERT_EQ((string)slice, "hello, body");
 }
@@ -31,13 +31,14 @@ TEST(A, ConstScope)
 TEST(A, HeapScope)
 {
     Slice slice;
-    
+
     {
         char *data = new char[5];
         memset(data, 0, 5);
         strcpy(data, "hell");
         slice = Slice(data, 5);
-        delete [] data; data = NULL;
+        delete [] data;
+        data = NULL;
     }
     ASSERT_EQ((string)slice, "");
 }

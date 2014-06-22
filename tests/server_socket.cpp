@@ -6,7 +6,7 @@ class A { };
 
 TEST(A, socket1)
 {
-	
+
 }
 
 TEST(A, socket1)
@@ -16,6 +16,6 @@ TEST(A, socket1)
 
 int main()
 {
-	RunAllTests();
-	return 0;
+    RunAllTests();
+    return 0;
 }

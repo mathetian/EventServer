@@ -21,7 +21,7 @@ namespace sealedserver
 class EventPool;
 
 /**
-** An event loop that multiplexes a set of handlers.  
+** An event loop that multiplexes a set of handlers.
 **/
 class EventLoop : public Noncopyable
 {
@@ -33,7 +33,7 @@ public:
     ~EventLoop();
 
 public:
-    /// Invokes the event loop.  
+    /// Invokes the event loop.
     /// Return only when stop by manually
     void runForever();
 

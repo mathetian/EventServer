@@ -16,17 +16,17 @@ struct EventPool::ThreadArg_t
 
 EventPool::EventPool(int loopNum) : m_loopNum(loopNum)
 {
-	m_threads = new Thread*   [loopNum];
-	m_args    = new ThreadArg [loopNum];
-	m_loops   = new EventLoop*[loopNum];
+    m_threads = new Thread*   [loopNum];
+    m_args    = new ThreadArg [loopNum];
+    m_loops   = new EventLoop*[loopNum];
 
     for(int i=0; i < loopNum; i++)
     {
-    	m_args[i].ep   = this;
+        m_args[i].ep   = this;
         m_args[i].func = &EventPool::ThreadBody;
         m_args[i].id   = i;
 
-    	m_threads[i] = new Thread(ThreadFunc, &(m_args[i]));
+        m_threads[i] = new Thread(ThreadFunc, &(m_args[i]));
     }
 
     for(int i=0; i < loopNum ; i++)
@@ -35,30 +35,32 @@ EventPool::EventPool(int loopNum) : m_loopNum(loopNum)
 
 EventPool::~EventPool()
 {
-	for(int i = 0;i < m_loopNum;i++)
-	{
-		delete m_threads[i];
-		m_threads[i] = NULL;
-	}
+    for(int i = 0; i < m_loopNum; i++)
+    {
+        delete m_threads[i];
+        m_threads[i] = NULL;
+    }
 
-	delete [] m_threads;
+    delete [] m_threads;
 
-	delete [] m_args;
+    delete [] m_args;
 
-    for(int i = 0;i < m_loopNum;i++)
+    for(int i = 0; i < m_loopNum; i++)
     {
         delete m_loops[i];
         m_loops[i] = NULL;
     }
 
     delete [] m_loops;
-	m_args = NULL; m_loops = NULL; m_threads = NULL;
+    m_args = NULL;
+    m_loops = NULL;
+    m_threads = NULL;
 
 }
 
 void EventPool::run()
 {
-	for(int i=0; i < m_loopNum; i++)
+    for(int i=0; i < m_loopNum; i++)
         m_threads[i]->run();
 
     for(int i=0; i<m_loopNum; i++)
@@ -67,7 +69,7 @@ void EventPool::run()
 
 void EventPool::stop()
 {
-    for(int i=0;i < m_loopNum; i++)
+    for(int i=0; i < m_loopNum; i++)
         m_loops[i] -> stop();
 
     WARN << "End closeAllLoop" ;
@@ -85,7 +87,7 @@ int        EventPool::getLoopNum() const
 
 EventLoop* EventPool::getLoopByID(int id)
 {
-	assert(id >= 0 && id < m_loopNum);
+    assert(id >= 0 && id < m_loopNum);
 
     return m_loops[id];
 }
@@ -95,7 +97,7 @@ void* EventPool::ThreadBody(int id)
     INFO << "Loop " << id << " Running";
 
     m_loops[id]->runForever();
-    
+
     WARN << "Loop " << id << " Finished";
 }
 
@@ -104,7 +106,7 @@ void* EventPool::ThreadFunc(void *arg)
     ThreadArg targ = *(ThreadArg*)arg;
 
     ((targ.ep)->*(targ.func))(targ.id);
-        
+
     pthread_exit(NULL);
 }
 

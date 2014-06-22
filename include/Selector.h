@@ -53,7 +53,7 @@ private:
 
     /// m_loop, EventLoop
     EventLoop          *m_loop;
-    
+
     /// m_events, each time write in it
     struct epoll_event *m_events;
 };

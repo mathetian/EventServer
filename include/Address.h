@@ -16,7 +16,7 @@ namespace sealedserver
 ** A network address.  Addresses, like STL strings, may be
 ** passed and copied by value.
 **/
-class Address 
+class Address
 {
 public:
     /// Constructs an empty address.
@@ -40,7 +40,7 @@ protected:
 };
 
 /**
-** An IP address and port.  
+** An IP address and port.
 ** IPv4 addresses are supported
 **/
 class NetAddress : public Address
@@ -55,24 +55,24 @@ public:
     /// Constructs an address from a port(used by server)
     NetAddress(port pt);
 
-    /// Constructs an address from a host name and port. 
+    /// Constructs an address from a host name and port.
     /// Convert ip/pt to data to sockaddr_in
     /// later converted to string
     NetAddress(string ip, port pt);
-    
+
     NetAddress(const void *addr, socklen_t len);
 
 public:
-    /// Returns the corresponding ip 
+    /// Returns the corresponding ip
     string IP() const;
-    
-    /// Returns the corresponding port 
+
+    /// Returns the corresponding port
     port   Port() const;
 
     /// Returns a human-readable version of this address.
     string as_string() const
     {
-         string out = IP();
+        string out = IP();
 
         out += ":" + to_string(Port());
 
@@ -81,7 +81,7 @@ public:
 
 private:
     void init(string ip, port pt);
-    
+
     /**
     ** Convert data to sockaddr_in
     **/

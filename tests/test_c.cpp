@@ -9,7 +9,10 @@ using namespace utils;
 class A
 {
 public:
-    string as_string() const { return "Class A"; }
+    string as_string() const
+    {
+        return "Class A";
+    }
 };
 
 TO_STRING(A);
@@ -19,7 +22,10 @@ class B
     int v;
 public:
     B() : v(3) { }
-    string as_string() const { return to_string(v); }
+    string as_string() const
+    {
+        return to_string(v);
+    }
 };
 
 TO_STRING(B);
@@ -45,6 +51,6 @@ TEST(A, UINT)
 int main()
 {
     RunAllTests();
-    
+
     return 0;
 }

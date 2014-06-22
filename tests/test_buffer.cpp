@@ -6,13 +6,16 @@
 #include "Tester.h"
 using namespace utils;
 
-class A 
-{ 
-	Buffer buf;
+class A
+{
+    Buffer buf;
 public:
-	A() : buf("hello world") { }
+    A() : buf("hello world") { }
 
-	int size() { return buf.size(); }
+    int size()
+    {
+        return buf.size();
+    }
 };
 
 /**
@@ -20,7 +23,7 @@ public:
 **/
 TEST(A, Size)
 {
-	ASSERT_EQ(size(), 11);
+    ASSERT_EQ(size(), 11);
 };
 
 /**
@@ -29,14 +32,14 @@ TEST(A, Size)
 **/
 TEST(A, Counter)
 {
-	Buffer buff;
-	
-	{
-		Buffer buff1("hello world");
-		buff = buff1;
-	}
+    Buffer buff;
 
-	cout << (string)buff << endl;
+    {
+        Buffer buff1("hello world");
+        buff = buff1;
+    }
+
+    cout << (string)buff << endl;
 };
 
 /**
@@ -45,22 +48,22 @@ TEST(A, Counter)
 **/
 TEST(A, SelfAlloc)
 {
-	Buffer buff;
-	
-	{
-		char * str = new char[10];
-		memset(str, 0, 10);
-		strncpy(str, "great day", 9);
+    Buffer buff;
 
-		Buffer buff1(str, true);
-		buff = buff1;
-	}
+    {
+        char * str = new char[10];
+        memset(str, 0, 10);
+        strncpy(str, "great day", 9);
 
-	cout << (string)buff << endl;
+        Buffer buff1(str, true);
+        buff = buff1;
+    }
+
+    cout << (string)buff << endl;
 };
 
 int main()
 {
-	RunAllTests();
+    RunAllTests();
     return 0;
 }

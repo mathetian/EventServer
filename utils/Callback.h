@@ -111,8 +111,9 @@ public:
     struct bindfunc : public func
     {
         typedef R(O::*fp_t)();
-        fp_t fp; O* op;
-        
+        fp_t fp;
+        O* op;
+
         bindfunc(O* op, fp_t fp) : op(op), fp(fp)
         {
             assert(op);
@@ -124,7 +125,7 @@ public:
             assert(op);
             return (op->*fp)();
         }
-        
+
         bool stat()
         {
             if(op == NULL)
