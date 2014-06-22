@@ -43,12 +43,17 @@ EventPool::~EventPool()
 
 	delete [] m_threads;
 
-	m_threads = NULL;
-
 	delete [] m_args;
-	//delete [] m_loops;
 
-	m_args = NULL; //m_loops = NULL;
+    for(int i = 0;i < m_loopNum;i++)
+    {
+        delete m_loops[i];
+        m_loops[i] = NULL;
+    }
+
+    delete [] m_loops;
+	m_args = NULL; m_loops = NULL; m_threads = NULL;
+
 }
 
 void EventPool::run()

@@ -14,56 +14,52 @@ using namespace utils;
 namespace sealedserver
 {
 
+/**
+** Users shouldn't override this class
+**/
 template<class T>
 class TCPAcceptor : public Handler
-{
-    TCPAcceptor& operator=(const TCPAcceptor<T>&acceptor);
-    
+{    
 public:
-    TCPAcceptor() : Handler(NULL) { }
-
+    /// Constructor
     TCPAcceptor(EventLoop* _loop, int localport) : Handler(_loop)
     {
         NetAddress addr = NetAddress(localport);
+        
         m_sock = TCPSocket(&addr);
-        onProceed();
+        
+        attach(); registerRead();
+        assert(m_sock.status());
+
+        INFO << "TCPAcceptor Initialization: " << m_sock.getsockname() ;
     }
 
-    TCPAcceptor(EventLoop* _loop, string ip, int localport) : Handler(_loop)
+    /// Destructor
+    virtual ~TCPAcceptor()
     {
-        NetAddress addr = NetAddress(ip,localport);
-        m_sock = TCPSocket(&addr);
-        onProceed();
     }
 
-    void onProceed()
-    {
-        attach();
-        registerRead();
-        assert(m_sock.fd() >= 0);
-        INFO << "TCPAcceptor Initialization" ;
-        INFO << m_sock.getsockname() ;
-    }
 private:
-    void onReceiveMsg()
+    void onReceivEvent()
     {
         NetAddress a;
         TCPSocket sock = m_sock.accept(&a);
+        
         DEBUG << "New Connection: " << sock.fd() << " " << sock.getpeername();
-        if (sock.fd() >= 0)
+        
+        if (sock.status() == true)
         {
             T* t = new T(getRandomLoop(), sock);
         }
     }
 
-    void onSendMsg() { }
-    void onCloseSocket(int st)
-    {
-        assert(st == 0);
-        DEBUG << "close listen socket fd: " << m_sock.fd();
+    void onSendEvent() { }
 
-        detach();
-        m_sock.close();
+    void onCloseEvent(ClsMtd st)
+    {
+        DEBUG << "close listen socket fd: " << m_sock.fd() << " " << st;
+
+        detach(); m_sock.close();
     }
 };
 

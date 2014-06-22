@@ -23,15 +23,25 @@ public:
     /// @param loop, EventLoop
     Selector(EventLoop* loop);
 
+    /// Destructor
+    virtual ~Selector();
+
 public:
     /// Register Special Event of handler
     void registerEvent(Handler *handler, short event);
 
     /// Unregister Speical Event of handler
+    ///
+    /// @param hanler, the handler
+    /// @param event, event should be removed
+    ///               -1 need to be delete
+    ///    otherwise, just removing the event
     void unRegisterEvent(Handler *handler, short event);
 
     /// Dispatch, loop will invoke this function in each round
-    int dispatch();
+    ///
+    /// @param second, the default second passed by this function
+    int dispatch(int second = 5);
 
 private:
     /// m_epollfd, epoll needs this fd

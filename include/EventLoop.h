@@ -75,9 +75,13 @@ public:
     void addClosed(Handler* handler);
 
     /// Process the handlers need to be delete
-    void finDel();
+    void finishDelete();
 
     void insert(Handler *handler);
+
+private:
+    /// Run After dispatch(for all active events)
+    void runAllActives();
 
 private:
     /// m_stop, status of whether need to be stopped
@@ -93,7 +97,7 @@ private:
     Mutex     m_mutex;
 
     /// list or map
-    vector<Handler*>   m_active;
+    map<int, int>      m_active;
     vector<Handler*>   m_del;
     map<int, Handler*> m_map;
 

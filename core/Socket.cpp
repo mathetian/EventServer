@@ -7,7 +7,7 @@
 namespace sealedserver
 {
 
-Socket::Socket(int fd) : m_fd(fd) { }
+Socket::Socket(int fd) : fd(-1) { }
 
 Socket::Socket(int family, int type) : 
     m_fd(::socket(family, type, 0))
@@ -17,8 +17,8 @@ Socket::Socket(int family, int type) :
     int optval = 1;
 
     setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-    
-    assert(m_fd >= 0);
+
+    setStatus();
 }
 
 int Socket::fd() const
@@ -30,42 +30,41 @@ bool Socket::bindListen(const Address *paddr)
 {
     bind(paddr); listen();
     
-    if(errno != 0) 
-        return false;
-    return true;
+    return setStatus();
 }
 
 bool Socket::connect(const Address *paddr)
 {
     if (::connect(fd(), paddr->data(), paddr->length()) != 0)
     {
-        if (errno != EINPROGRESS) return false;
-        return true;
+        if (errno != EINPROGRESS) 
+            m_status = Status(strerror(errno));
     }
-    return true;
+
+    errno = 0;
+    return status == true ? true : false;
 }
 
 
 bool Socket::bind(const Address *paddr)
 {
-    if (::bind(fd(), paddr->data(), paddr->length()) != 0)
-        return false;
-    
-    return true;
+    ::bind(fd(), paddr->data(), paddr->length());
+
+    return setStatus();
 }
 
 bool Socket::listen(int backlog)
 {
-    if (::listen(fd(), backlog) != 0)
-        return false;
+    ::listen(fd(), backlog);
 
-    return true;
+    return setStatus();
 }
 
 Socket Socket::accept(Address *pa)
 {
     sockaddr addr;
     socklen_t addrlen = sizeof(addr);
+    
     int new_fd;
     while(true)
     {
@@ -74,12 +73,16 @@ Socket Socket::accept(Address *pa)
         {
             if (errno == EAGAIN || errno == ECONNABORTED)
                 continue;
+
+            setStatus();
             return Socket();
         }
-        else break;
+        else 
+            break;
     }
 
     pa->setAddr(&addr, addrlen);
+    
     return Socket(new_fd);
 }
 
@@ -92,12 +95,16 @@ int Socket::read(void *buf, uint32_t count)
 {
     count = ::read(m_fd, buf, count);
 
+    setStatus();
+
     return count;
 }
 
 int Socket::write(const void *buf, int count)
 {
     count = ::write(m_fd, buf, count);
+
+    setStatus();
 
     return count;
 }
@@ -111,6 +118,8 @@ NetAddress Socket::getpeername()
 
     int ret = ::getpeername(fd(), (sockaddr*)&buf, &len);
 
+    setStatus();
+
     return NetAddress(buf, len);
 }
 
@@ -121,8 +130,8 @@ NetAddress Socket::getsockname()
     socklen_t len = sizeof(buf);
 
     int ret = ::getsockname(fd(), (sockaddr*)buf, &len);
-
-    assert(ret == 0 && len != sizeof(buf));
+    
+    setStatus();
 
     return NetAddress(buf, len);
 }
@@ -141,6 +150,15 @@ bool Socket::setUnblocking()
     assert(fcntl(fd(), F_SETFL, flags) >= 0);
 
     return true;
+}
+
+bool Socket::setStatus()
+{
+    if(errno != 0)
+        m_status = Status(strerror(errno));
+
+    errno = 0;
+    return status == true ? true : false;
 }
 
 };

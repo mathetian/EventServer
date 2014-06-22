@@ -7,29 +7,36 @@
 namespace sealedserver
 {
 
-Selector::Selector(EventLoop* loop) : m_loop(loop)
+Selector::Selector(EventLoop* loop) : m_loop(loop), m_socknum(0)
 {
     m_epollfd = epoll_create(1);
 	m_events  = (struct epoll_event*)malloc(MAX_NEVENTS * sizeof(struct epoll_event));    
-    m_socknum = 0;
 
-    /// make sure no problem exist in constructor
+    /// make sure no problem exists in constructor
     assert(errno == 0);
+}
+
+Selector::~Selector()
+{
+    ::close(m_epollfd);
+    free(m_events);
 }
 
 void Selector::registerEvent(Handler *handler, short event)
 {
-    Socket sock = handler->getSocket();
+    Socket sock  = handler -> getSocket();
 
-    int fd       = sock.fd();
-    int events   = event;
+    int  fd      = sock.fd();
+    int  events  = event;
    	bool addFlag = true;
 
-    if(handler->getStatus() != 0) 
+    /// Firstly, check the status
+    /// Then determining whether `add` or `modify`
+    if(handler -> getStatus() != 0) 
     	addFlag = false;
 
     handler -> updateStatus(event);
-    events  =  handler->getStatus();
+    events  =  handler -> getStatus();
 
     events |= EPOLLET;
 
@@ -48,70 +55,75 @@ void Selector::registerEvent(Handler *handler, short event)
 
 void Selector::unRegisterEvent(Handler *handler, short event)
 {
-    Socket sock = handler->getSocket();
-    int fd = sock.fd(), events = 0, delflag = 1;
+    Socket sock = handler -> getSocket();
+    int fd       = sock.fd()
+    int events   = 0;
+    bool delflag = true;
 
-    if(handler->getDelflag() == 1) return;
+    /// Has been put into remove list
+    if(handler->getDelflag() == true) return;
 
+    /// if event == -1, delete it from selector
+    /// else if event or EPOLLRDHUP or  EPOLLERR or  EPOLLHUP, delete it from selector
+    /// else  
     if(event == -1)
     {
-        DEBUG << "found Close Event(triggered by detach), fd: " << fd;
-        if(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) != 0)
-        {
-            printf("error = %s, %d\n", strerror(errno), fd);
-            assert(0);
-        }
-        handler->setDelflag();
-        return;
+        DEBUG << "Found Close Event(triggered by detach), fd: " << fd;
+
+        assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
+        handler->setDelflag();        
     }
     else if((event & EPOLLRDHUP) || (event & EPOLLERR) || (event & EPOLLHUP))
     {
         if (event & EPOLLRDHUP)
-            DEBUG << "found EPOLLRDHUP for fd: " << fd;
+            DEBUG << "Found EPOLLRDHUP for fd: " << fd;
+        else if(event & EPOLLERR)
+            DEBUG << "Found EPOLLERR for fd: " << fd;
         else
-            DEBUG << "found EPOLLERR for fd: " << fd;
+            DEBUG << "Found EPOLLHUP for fd: " << fd;
 
         assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
         handler->setDelflag();
-        return;
     }
-
-    handler->removeStatus(event);
-    events = handler->getStatus();
-    if(events != 0) delflag = 0;
-
-    if(delflag == 0)
+    else
     {
-        struct epoll_event epev = {0, {0}};
-        epev.events   = events;
-        epev.data.ptr = handler;
-        assert(epoll_ctl(m_epollfd, EPOLL_CTL_MOD, fd, &epev) == 0);
-    }
-    else if(delflag == 1)
-    {
-        assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
-        m_socknum--;
+        /// Firstly, remove event from event-list
+        /// Then   , get the updated status
+
+        handler->removeStatus(event);
+        events = handler->getStatus();
+
+        if(events != 0) delflag = false;
+
+        if(delflag == false)
+        {
+            struct epoll_event epev = {0, {0}};
+            epev.events   = events;
+            epev.data.ptr = handler;
+            assert(epoll_ctl(m_epollfd, EPOLL_CTL_MOD, fd, &epev) == 0);
+        }
+        else
+        {
+            assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
+            m_socknum--;
+        }
     }
 }
 
-int Selector::dispatch()
+int Selector::dispatch(int second)
 {
-    int num;
+    int timeout = second*1000; //5s
 
-    int timeout = 5*1000; //5s
-
-    num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, timeout);
+    int num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, timeout);
     
-    DEBUG << "dispatch: " << num ;
+    DEBUG << "Dispatch, numbef of events: " << num ;
     
     for(int i = 0; i < num; i++)
     {
         int what = m_events[i].events;
         Handler *handler = (Handler*)m_events[i].data.ptr;
-        m_loop->addActive(handler->getSocket().fd(), what);
+        m_loop->addActive(handler -> getSocket().fd(), what);
     }
-
-    m_loop->finDel();
 }
 
 };

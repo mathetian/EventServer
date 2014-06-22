@@ -57,13 +57,13 @@ void EventLoop::runOnce()
 {   
     m_selector->dispatch();
 
+    runAllActives();
+    finishDelete();
+
     ScopeMutex scope(&m_mutex);
 
     // for(int i=0; i < m_active.size(); i++)
     //     m_active[i]->onProceed();
-
-    vector<Handler*> tmp;
-    swap(tmp, m_active);
 }
 
 void EventLoop::stop()
@@ -117,46 +117,8 @@ void EventLoop::unRegisterWrite(int fd)
 
 void EventLoop::addActive(int fd, int type)
 {
-    assert(m_map.find(fd) != m_map.end());
-
-    Handler *handler = m_map[fd];
-    
-    if((type & EPOLLRDHUP) || (type & EPOLLERR) || (type & EPOLLHUP))
-    {
-        m_selector->unRegisterEvent(handler, -1);
-
-        INFO << fd << " " << (type&EPOLLRDHUP) << " " << (type&EPOLLERR) << " " << (type&EPOLLHUP);
-
-        /**
-        ** get the information for errno
-        **/
-        int       error = 0;
-        socklen_t errlen = sizeof(error);
-        
-        if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
-        {
-            INFO <<  "error = " << strerror(error);
-        }
-
-        handler->onCloseSocket(CLSMAN);
-
-        return;
-    }
-    
-    if(handler -> getDelflag() == 1) 
-        return;
-    
-    if((type & EPOLLOUT) != 0)
-    {
-        m_selector->unRegisterEvent(handler, EPOLLOUT);
-        handler->onSendMsg();
-    }
-    
-    if(handler->getDelflag() == 1) 
-        return;
-    
-    if((type & EPOLLIN) != 0)
-        handler -> onReceiveMsg();
+    assert(m_active.find(fd) == m_active.end());
+    m_active[fd] = type;
 }
 
 void EventLoop::addClosed(Handler* handler)
@@ -164,7 +126,7 @@ void EventLoop::addClosed(Handler* handler)
     m_del.push_back(handler);
 }
 
-void EventLoop::finDel()
+void EventLoop::finishDelete()
 {
     INFO << "Need Destory " << m_del.size() << " Objects";
 
@@ -172,8 +134,7 @@ void EventLoop::finDel()
     {
         Handler *handler = m_del[i];
         
-        if(handler) 
-            delete handler;
+        if(handler) delete handler;
         
         handler = NULL;
     }
@@ -181,6 +142,23 @@ void EventLoop::finDel()
     vector<Handler*> handlers;
     
     swap(handlers, m_del);
+}
+
+void EventLoop::runAllActives()
+{
+    map<int, int>::iterator iter = m_active.begin();
+
+    for(;iter != m_active.end();iter++)
+    {
+        int fd = (*iter).first;
+        int event = (*iter).second;
+
+        assert(m_map.find(fd) != m_map.end());
+
+        m_map[fd] -> proceed();
+    }
+
+    m_active.clear();
 }
 
 };

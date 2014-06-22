@@ -6,6 +6,7 @@
 #define _SOCKET_H
 
 #include "Log.h"
+#include "Status.h"
 using namespace utils;
 
 #include "Address.h"
@@ -30,7 +31,7 @@ enum ClsMtd {CLSSIG = 0, CLSEOF, CLSERR, CLSMAN};
 class Socket
 {
 public:
-    /// Default constructor
+    /// Constructor(default)
     Socket(int fd = -1);
 
     /// Constructor
@@ -92,10 +93,18 @@ private:
     ///
     /// @return true if successful.
     bool setUnblocking();
+    
+    /// Sets a handle into blocking or non-blocking mode.
+    ///
+    /// @return true if status == successful
+    bool setStatus();
 
 private:
     /// file descriptor
     int    m_fd;
+
+    /// Status
+    Status m_status;
 };
 
 /// A TCP socket descriptor. 

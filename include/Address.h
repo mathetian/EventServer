@@ -9,9 +9,6 @@
 #include "Noncopyable.h"
 using namespace utils;
 
-/**
-** 
-**/
 namespace sealedserver
 {
 

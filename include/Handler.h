@@ -5,6 +5,9 @@
 #ifndef _EVENT_HANDLER_H
 #define _EVENT_HANDLER_H
 
+#include "Noncopyable.h"
+using namespace utils;
+
 #include "Socket.h"
 
 namespace sealedserver
@@ -20,7 +23,7 @@ class EventLoop;
 ** and callback(io schedule)
  */
 
-class Handler
+class Handler : public Noncopyable
 {
 public:
     /// Constructor.
@@ -38,18 +41,17 @@ public:
     void unRegisterRead();
     void unRegisterWrite();
 
-
 public:
     /// Called by the event loop when bytes are available on the file
     /// descriptor (if read event happens).
-    virtual void onReceiveMsg()  = 0;
+    virtual void onReceiveEvent()  = 0;
 
     /// Called by the event loop when there are bytes need to be written
     /// and written is enable
-    virtual void onSendMsg()     = 0;
+    virtual void onSendEvent()     = 0;
 
     /// Called by the event loop when there close events happens
-    virtual void onCloseSocket(int st) = 0;
+    virtual void onCloseEvent(ClsMtd st) = 0;
 
 public:
     /// Helper functions
@@ -60,15 +62,15 @@ public:
     /// Return the loop it registers with
     EventLoop *getLoop() const;
 
+    /// Get random loop
+    EventLoop* getRandomLoop() const;
+
+public:
+    /// Function about status
+    /// Selector will detect it
+
     /// Return the status
     int getStatus() const;
-
-    /// Get the delete flag;
-    int getDelflag() const;
-
-    /// Set the delete flag
-    /// Later it will be removed from memory
-    int setDelflag();
 
     /// Update the registered event status
     ///
@@ -80,8 +82,16 @@ public:
     /// @param val, the event need to be unregistered with
     void removeStatus(int val);
 
-    /// Get random loop
-    EventLoop* getRandomLoop();
+        /// Get the delete flag;
+    bool getDelflag() const;
+
+    /// Set the delete flag
+    /// Later it will be removed from memory
+    bool setDelflag();
+    
+    /// Proccess the atvie event
+    void proceed(int event);
+
 protected:
     /// Attach `this` to loop
     void attach();
@@ -98,7 +108,7 @@ protected:
     int         m_status;
     
     /// Delete flag
-    int         m_delflag;
+    bool        m_delflag;
 };
 
 };

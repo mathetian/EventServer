@@ -82,22 +82,12 @@ class ClientSimulator
 public:
     ClientSimulator(string ip, int port)
     {
-        Initialize(ip, port);
+        createClients(ip, port);
     }
 
     ClientSimulator(int port)
     {
-        Initialize(port);
-    }
-
-    void Initialize(int port)
-    {
         createClients("127.0.0.1", port)
-    }
-
-    void Initialize(string ip, int port)
-    {
-        createClients(ip, port);
     }
 
 private:

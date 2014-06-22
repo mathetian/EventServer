@@ -28,7 +28,7 @@ public:
     EventPool(int loopNum = 2);
 
     /// Destructor, deallocate heap
-    ~EventPool();
+    virtual ~EventPool();
 
 public:
     /// start the loop and wait in here

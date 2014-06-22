@@ -8,18 +8,23 @@
 namespace sealedserver
 {
 
-MSGHandler::MSGHandler(EventLoop* loop, Socket sock) : Handler(loop)
+MSGHandler::MSGHandler(EventLoop* loop, Socket sock) 
+    : Handler(loop), m_sock(sock), m_global(true)
 {
-    m_sock = sock;
-    m_loop->insert(this);
+    attach(); registerRead();
+    assert(sock.status());
 }
 
 MSGHandler::~MSGHandler()
 {
+    /// Nothing need to be done
+    /// Socket has been closed in other functions
 }
 
 int MSGHandler::write(const Buffer& buf)
 {
+    if(m_global == false) return;
+
     m_Bufs.push_back(buf);
     registerWrite();
 }
@@ -27,13 +32,14 @@ int MSGHandler::write(const Buffer& buf)
 int MSGHandler::close()
 {
     onCloseEvent(CLSMAN);
+    m_global = false;
 }
 
 void MSGHandler::onReceiveEvent()
 {
     bool first = true, flag = true;
 
-    while(flag)
+    while(flag && m_global)
     {
         Buffer buf(MSGLEN);
         int len = m_sock.read(buf.data(), MSGLEN);
@@ -50,11 +56,10 @@ void MSGHandler::onReceiveEvent()
             onCloseSocket(CLSEOF);
         else if(len < 0 && errno == EAGAIN) 
         { 
+            /// omit, shouldn't happen in the first `read`
+
             if(first == true)
-            {
-                /// omit, shouldn't happen 
                 assert(0);
-            }
         }
         else if(len < 0)
             onCloseEvent(CLSERR);
@@ -63,7 +68,7 @@ void MSGHandler::onReceiveEvent()
             buf.set_length(len);
             receivedMsg(SUCC, buf);
         }
-        else if(len == MSGLEN) 
+        else
         {
             /// must be proceed manually
             buf.set_length(len);
@@ -77,9 +82,11 @@ void MSGHandler::onSendEvent()
 {
     /// Write utils the buffer empty 
     /// Or out buffer is full
+    unRegisterWrite();
     
     bool flag = true;
-    while(m_Bufs.size() > 0 && flag == true)
+
+    while(m_Bufs.size() > 0 && flag == true && m_global)
     {
         Buffer buf = m_Bufs.front();
         m_Bufs.pop_front();
@@ -94,23 +101,22 @@ void MSGHandler::onSendEvent()
         /// else if len < 0, Error happens. Close the socket
         /// else normal
 
+        flag = false;
+
         if(len == 0)
-        {
-            onCloseEvent(CLSEOF); flag = false;
-        }
+            onCloseEvent(CLSEOF);
         else if(len < 0 && errno == EAGAIN)
         {
             m_Bufs.push_back(buf);
-            registerWrite(); flag = false;
+            registerWrite();
         }
         else if(len < 0)
-        {
-            onCloseEvent(CLSERR); flag = false;
-        }
+            onCloseEvent(CLSERR);
         else
         {
             assert(len == length);
-            sentMsg(SUCC, len, length);
+            sentMsg(SUCC, len, length); 
+            flag = false;
         }
     }
 }
@@ -123,7 +129,7 @@ void MSGHandler::onCloseEvent(ClsMtd st)
     /// 3. invoke the close event of customed
     /// 4. remove this object(add to the wait list of removed items)
     
-    detach(); m_sock.close(); closed(st); m_loop->addClosed(this);
+    detach(); m_sock.close(); closed(st); m_loop -> addClosed(this);
 }
 
 };

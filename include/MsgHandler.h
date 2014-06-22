@@ -31,7 +31,6 @@ public:
     ///
     /// @param loop, EventLoop it belongs
     /// @param sock, the socket
-    /// @param first, ?
     MSGHandler(EventLoop* loop, Socket sock);
     
     /// Destructor
@@ -47,7 +46,7 @@ public:
     int close();
 
     /// status enumeration
-    typedef enum  { EXCEED, SOCKERR, BLOCKED, SUCC} STATUS;
+    typedef enum  { EXCEED, SOCKERR, BLOCKED, SUCC, CONTINUE, FINAL} STATUS;
 
 private:
     /// Invoked when a written event happens(callback)
@@ -76,6 +75,9 @@ public:
 private:
     /// Buffer list, which wait for write
     list <Buffer>  m_Bufs;
+
+    /// Global flag for closed
+    bool           m_global;
 };
 
 };
