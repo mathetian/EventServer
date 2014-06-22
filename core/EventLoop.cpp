@@ -59,11 +59,6 @@ void EventLoop::runOnce()
 
     runAllActives();
     finishDelete();
-
-    ScopeMutex scope(&m_mutex);
-
-    // for(int i=0; i < m_active.size(); i++)
-    //     m_active[i]->onProceed();
 }
 
 void EventLoop::stop()
