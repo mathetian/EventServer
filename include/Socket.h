@@ -88,7 +88,12 @@ public:
     /// Create a pipe of sockets
     static pair<Socket, Socket> pipe();
 
+    /// Return the status(the lastest status)
     Status status();
+
+    /// Returns a human-readable version of this address.
+    string as_string() const;
+
 private:
     /// Sets a handle into blocking or non-blocking mode.
     ///
@@ -107,6 +112,8 @@ private:
     /// Status
     Status m_status;
 };
+
+TO_STRING(Socket);
 
 /// A TCP socket descriptor. 
 class TCPSocket : public Socket

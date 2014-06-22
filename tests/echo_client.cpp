@@ -6,11 +6,12 @@
 #include "EventPool.h"
 #include "EventLoop.h"
 #include "MsgHandler.h"
+using namespace sealedserver;
 
 #define BASE_PORT 10000
-#define PORT_NUM  10
+#define PORT_NUM  1
 
-#define CLIENT_NUM 100
+#define CLIENT_NUM 1
 
 EventPool pool(1);
 
@@ -42,7 +43,7 @@ protected:
         INFO << "Connected Successful" << m_sock;
 
         char * buff = new char[20]; memset(buff, 0, 20);
-        sprintf(buf, "wait for me, I am %d", m_sock.fd());
+        sprintf(buff, "wait for me, I am %d", m_sock.fd());
         
         write(Buffer(buff, true));
     }
@@ -87,13 +88,13 @@ public:
 
     ClientSimulator(int port)
     {
-        createClients("127.0.0.1", port)
+        createClients("127.0.0.1", port);
     }
 
 private:
     void createClients(string ip, int port)
     {
-        for(int i = 0; i < size; i++)
+        for(int i = 0; i < CLIENT_NUM; i++)
         {
             NetAddress svrAddr(ip, port + (i%PORT_NUM));
 
@@ -137,6 +138,8 @@ int setlimit(int num_pipes)
 
 int main()
 {
+    Log::setLevel(Log::debug);
+    
     ::signal(SIGINT, signalStop);
     setlimit(100000); errno = 0;
 

@@ -36,6 +36,12 @@ TEST(A, TestB)
     ASSERT_EQ(to_string(b), "3");
 }
 
+TEST(A, UINT)
+{
+    uint32_t a = 123;
+    ASSERT_EQ(to_string(a), "123");
+}
+
 int main()
 {
     RunAllTests();

@@ -7,9 +7,10 @@
 #include "EventPool.h"
 #include "EventLoop.h"
 #include "MsgHandler.h"
+using namespace sealedserver;
 
 #define BASE_PORT 10000
-#define PORT_NUM  10
+#define PORT_NUM  1
 
 EventPool pool(4);
 
@@ -87,10 +88,11 @@ int setlimit(int num_pipes)
 
 int main()
 {
+    Log::setLevel(Log::debug);
+
     ::signal(SIGINT, signalStop);
-
     setlimit(100000); errno = 0;
-
+    
     vector<TCPAcceptor<EchoServer>*> acceptors(PORT_NUM, NULL);
 
     for(int i = 0; i < PORT_NUM; i++)

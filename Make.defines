@@ -29,5 +29,4 @@ CLEAN = \
 		utils/Atomic \
 		utils/Buffer \
 		utils/Thread \
-		include/MsgHandler \
-		*.a
+		include/MsgHandler

@@ -31,7 +31,10 @@ public:
         attach(); registerRead();
         assert(m_sock.status());
 
-        INFO << "TCPAcceptor Initialization: " << m_sock.getsockname() ;
+        INFO << "TCPAcceptor Initialization: ";
+        NetAddress add = m_sock.getsockname(); 
+
+        NetAddress add1 = add;
     }
 
     /// Destructor
@@ -40,10 +43,10 @@ public:
     }
 
 private:
-    void onReceivEvent()
+    void onReceiveEvent()
     {
         NetAddress a;
-        TCPSocket sock = m_sock.accept(&a);
+        Socket sock = m_sock.accept(&a);
         
         DEBUG << "New Connection: " << sock.fd() << " " << sock.getpeername();
         

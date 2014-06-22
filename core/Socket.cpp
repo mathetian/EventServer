@@ -166,4 +166,13 @@ Status Socket::status()
     return m_status;
 }
 
+string Socket::as_string() const
+{
+    char buff[100];
+    memset(buff, 0, 100);
+    sprintf(buff, "socket fd: %d", fd());
+
+    return buff;
+}
+
 };
