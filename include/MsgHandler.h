@@ -78,6 +78,10 @@ private:
 
     /// Global flag for closed
     bool           m_global;
+
+protected:
+    /// Flag for connected(certainly only for client)
+    bool           m_first;
 };
 
 };

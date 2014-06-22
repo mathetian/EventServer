@@ -7,7 +7,7 @@
 namespace sealedserver
 {
 
-Socket::Socket(int fd) : m_fd(-1) { }
+Socket::Socket(int fd) : m_fd(fd) { }
 
 Socket::Socket(int family, int type) : 
     m_fd(::socket(family, type, 0))

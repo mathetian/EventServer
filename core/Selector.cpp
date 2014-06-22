@@ -116,7 +116,7 @@ int Selector::dispatch(int second)
 
     int num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, timeout);
     
-    DEBUG << "Dispatch, numbef of events: " << num ;
+    if(num != 0) DEBUG << "Dispatch, numbef of events: " << num ;
     
     for(int i = 0; i < num; i++)
     {

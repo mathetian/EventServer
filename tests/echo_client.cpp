@@ -11,7 +11,7 @@ using namespace sealedserver;
 #define BASE_PORT 10000
 #define PORT_NUM  1
 
-#define CLIENT_NUM 1
+#define CLIENT_NUM 10000
 
 EventPool pool(1);
 
@@ -30,7 +30,8 @@ class EchoClient : public MSGHandler
 public:
     EchoClient(EventLoop *loop, Socket sock) : MSGHandler(loop, sock)
     {
-        DEBUG << m_sock.getsockname() << " " << sock.fd();
+        DEBUG << m_sock.getpeername() << " " << sock.fd();
+        m_first = true; registerWrite(); 
     }
 
     virtual ~EchoClient()
@@ -40,7 +41,7 @@ protected:
     /// Invoked when a connection we try either succeeds or fails.
     virtual void connected()
     {
-        INFO << "Connected Successful" << m_sock;
+        DEBUG << "Connected Successful" << m_sock;
 
         char * buff = new char[20]; memset(buff, 0, 20);
         sprintf(buff, "wait for me, I am %d", m_sock.fd());
@@ -49,12 +50,13 @@ protected:
     }
 
     /// Invoked when a message is received
-    virtual void receivedMsg(STATUS status, Buffer &buf)
+    virtual void receivedMsg(STATUS status, Buffer &receivedBuff)
     {
         if(status == SUCC)
         {
-            INFO << "ReceivedMsg: " << (string)buf << " through fd " << m_sock.fd();
+            DEBUG << "Received(from " <<  m_sock.fd() <<  " ):" << (string)receivedBuff;
         }
+        else assert(0);
     }
 
     /// Invoked when a msg has been sent
@@ -62,14 +64,17 @@ protected:
     {
         if(status == SUCC)
         {
-            INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.fd();
+            DEBUG << "SendedMsg(to " <<  m_sock.fd() <<  " ):" << len << " " << targetLen;
         }
+        else assert(0);
     }
 
     // Invoke when the socket has been closed
     virtual void closed(ClsMtd st) 
     { 
-        DEBUG << "onCloseSocket: " << st << " " << m_sock.fd() << strerror(errno);
+        DEBUG << "onCloseSocket(for " <<  m_sock.fd() <<  " ):" << st;
+        if(errno != 0) DEBUG << strerror(errno);
+
         errno = 0;
     }
 };

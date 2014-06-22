@@ -9,7 +9,7 @@ namespace sealedserver
 {
 
 MSGHandler::MSGHandler(EventLoop* loop, Socket sock) 
-    : Handler(loop), m_global(true)
+    : Handler(loop), m_global(true), m_first(false)
 {
     /// Must be written here
     /// Don't allow after `:`
@@ -91,6 +91,13 @@ void MSGHandler::onSendEvent()
     /// Or out buffer is full
     unRegisterWrite();
     
+    if(m_first == true)
+    {
+        connected();
+        m_first = false;
+    }
+
+
     bool flag = true;
 
     while(m_Bufs.size() > 0 && flag == true && m_global)

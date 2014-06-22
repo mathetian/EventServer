@@ -107,7 +107,7 @@ void Handler::proceed(int event)
     {
         detach();
 
-        INFO << m_sock.fd() << " " << (event&EPOLLRDHUP) << " " << (event&EPOLLERR) << " " << (event&EPOLLHUP);
+        DEBUG << "Proceed: " << m_sock.fd() << " " << (event&EPOLLRDHUP) << " " << (event&EPOLLERR) << " " << (event&EPOLLHUP);
 
         /**
         ** get the information for errno
@@ -117,7 +117,7 @@ void Handler::proceed(int event)
         
         if (getsockopt(m_sock.fd(), SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
         {
-            INFO <<  "error = " << strerror(error);
+            DEBUG <<  "error = " << strerror(error);
         }
 
         onCloseEvent(CLSERR);

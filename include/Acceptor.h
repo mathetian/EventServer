@@ -27,14 +27,11 @@ public:
         NetAddress addr = NetAddress(localport);
         
         m_sock = TCPSocket(&addr);
-        
         attach(); registerRead();
+
+        INFO << "TCPAcceptor Initialization: " << m_sock.getsockname();
+        
         assert(m_sock.status());
-
-        INFO << "TCPAcceptor Initialization: ";
-        NetAddress add = m_sock.getsockname(); 
-
-        NetAddress add1 = add;
     }
 
     /// Destructor
@@ -48,7 +45,8 @@ private:
         NetAddress a;
         Socket sock = m_sock.accept(&a);
         
-        DEBUG << "New Connection: " << sock.fd() << " " << sock.getpeername();
+        DEBUG << "New Connection, through socket(local): " << sock.fd();
+        DEBUG << "Corrsponding address:" << sock.getpeername();
         
         if (sock.status() == true)
         {

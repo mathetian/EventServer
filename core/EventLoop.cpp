@@ -36,7 +36,7 @@ void EventLoop::runForever()
     while (!m_stop) 
         runOnce();
 
-    WARN << "EventLoop Stopped" ;
+    WARN << "Begin EventLoop Stop" ;
    
     map<int, Handler*>::iterator iter = m_map.begin();
 
@@ -44,13 +44,15 @@ void EventLoop::runForever()
     {
         Handler *handler = (*iter).second;
 
-        INFO << handler->getSocket().fd();
+        DEBUG << handler->getSocket().fd();
         
         m_selector->unRegisterEvent(handler, -1);
         
         handler->onCloseEvent(CLSSIG);
     }
 
+    WARN << "End EventLoop Stop" ;
+    
     m_map.clear();
 }
 
@@ -124,7 +126,11 @@ void EventLoop::addClosed(Handler* handler)
 
 void EventLoop::finishDelete()
 {
-    INFO << "Need Destory " << m_del.size() << " Objects";
+     if(m_del.size() != 0)
+    {
+        DEBUG << "Need to Destory " << m_del.size() \
+            << " Objects" << ". Remain " << m_map.size() ;
+    }
 
     for(int i=0; i < m_del.size(); i++)
     {

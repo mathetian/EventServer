@@ -12,7 +12,7 @@ using namespace sealedserver;
 #define BASE_PORT 10000
 #define PORT_NUM  1
 
-EventPool pool(4);
+EventPool pool(1);
 
 /**
 ** A handler for a single connection to a client.
@@ -42,11 +42,10 @@ private:
     {
         if(status == MSGHandler::SUCC)
         {
-            INFO << "Received: " << (string)receivedBuff << " through fd " << m_sock.fd();
+            DEBUG << "Received(from " <<  m_sock.fd() <<  "):" << (string)receivedBuff;
             write(receivedBuff);
         }
-        else 
-            assert(0);
+        else  assert(0);
     }
 
     // Invoked when a msg has been sent
@@ -54,15 +53,17 @@ private:
     {
         if(status == MSGHandler::SUCC)
         {
-            INFO << "SendedMsg: " << len << " " << targetLen << " through fd " << m_sock.fd();
+            DEBUG << "SendedMsg(to " <<  m_sock.fd() <<  "):" << len << " " << targetLen;
         }
-        else { }
+        else assert(0);
     }
     
     // Invoked when the socket has been closed
     virtual void closed(ClsMtd st) 
     { 
-        DEBUG << "onCloseSocket: " << st << " " << m_sock.fd() << strerror(errno);
+        DEBUG << "onCloseSocket(for " <<  m_sock.fd() <<  "):" << st;
+        if(errno != 0) DEBUG << strerror(errno);
+        
         errno = 0;
     }
 };
