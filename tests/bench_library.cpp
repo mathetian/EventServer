@@ -1,34 +1,48 @@
-#include <vector>
-using namespace std;
+// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include <sys/socket.h>
-#include <sys/resource.h>
+#include "Timer.h"
+#include "Thread.h"
+using namespace utils;
 
 #include "Socket.h"
-#include "EventPool.h"
 #include "EventLoop.h"
+#include "EventPool.h"
 #include "MsgHandler.h"
-#include "Timer.h"
+using namespace sealedserver;
 
+/// count, the total has been received
+/// writes, the number of item need to be written
+/// fired, the number of items has been written
+///
+/// We should notice that `fired` + `writes` = `A fixed value`
 Atomic count, writes, fired;
+
+/// num_pipes,  number of socket-pairs
+/// num_active, number of active at the same time
+/// num_writes, number of times of writting(need to send `num_writes` times)
 int num_pipes, num_active, num_writes;
 
 class EchoServer;
 
+/// socket-pairs
 vector<Socket> pipes;
+
+/// each socket will bind with a server instance
+/// we put it in the vector
 vector<EchoServer*> servers;
 
-int thrnum = 4;
-EventPool pool(thrnum);
+EventPool pool(4);
 
-Timer start, before, end;
+Timer start, end, prev;
 
 class EchoServer : public MSGHandler
 {
 public:
-    EchoServer(EventLoop *loop, Socket sock, int idx) : MSGHandler(loop, sock, 1), idx(idx)
+    EchoServer(EventLoop *loop, Socket sock, int idx) : MSGHandler(loop, sock), idx(idx)
     {
-        DEBUG << "EchoServer: " << sock.fd() << " " << idx;
+        DEBUG << m_sock.getpeername() << " " << sock.fd();
     }
 
     void clear()
@@ -38,53 +52,47 @@ public:
     }
 
 private:
-    virtual void receivedMsg(STATUS status, Buffer &buf)
+    virtual void receivedMsg(STATUS status, Buffer &receivedBuff)
     {
         if(status == SUCC)
         {
-            INFO << "Received: " << (string)buf << " through fd " << m_sock.fd();
-            count += buf.length();
+            DEBUG << "Received(from " <<  m_sock.fd() <<  " ):" << (string)receivedBuff;
+            count += receivedBuff.length();
 
             if (writes > 0)
             {
                 int widx = idx + 1;
                 if (widx >= num_pipes) widx -= num_pipes;
-                INFO << "widx: " << widx ;
-                if(::write(pipes[2 * widx + 1].fd(), "m", 1)!=1)
+                
+                if(::write(pipes[2 * widx + 1].fd(), "m", 1) != 1)
                 {
                     INFO << strerror(errno) ;
                     assert(0);
                 }
+
                 writes--;
                 fired++;
             }
 
-            if(count % 10000 == 0)
+            if(count % num_pipes == 0)
             {
-                //WARN << count << " " << writes;
-                Timer end1 = Timer::now();
-                fprintf(stdout, "%8ld %8ld\n", end1.to_usecs() - before.to_usecs(), end1.to_usecs() - start.to_usecs());
+                end = Timer::now(); 
+                fprintf(stdout, "%8ld, id %d\n", end.to_usecs() - start.to_usecs(), (int)(Thread::getIDType()%100));
+               // fprintf(stdout, "%8ld, %8ld\n", end.to_usecs(), start.to_usecs());
                 fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
-
+                start = end;
             }
-
-            // if(count % num_pipes == 0)
-            // {
-            //     Timer end1 = Timer::now();
-            //     fprintf(stdout, "%8ld %8ld\n", end1.to_usecs() - before.to_usecs(), end1.to_usecs() - start.to_usecs());
-            //     fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
-            // }
         }
-        else
-            INFO << "BAD" ;
+        else assert(0);
     }
 
-    virtual void onCloseSocket(int st)
-    {
-        if(errno != 0)
-            DEBUG << strerror(errno);
+     // Invoke when the socket has been closed
+    virtual void closed(ClsMtd st) 
+    { 
+        DEBUG << "onCloseSocket(for " <<  m_sock.fd() <<  " ):" << st;
+        if(errno != 0) DEBUG << strerror(errno);
+
         errno = 0;
-        DEBUG << "onCloseSocket: " << st << " " << m_sock.fd();
     }
 
 private:
@@ -93,26 +101,31 @@ private:
 
 void run_once()
 {
-    start = Timer::now();
-
     int space = num_pipes / num_active;
     space *= 2;
+
     for (int i = 0; i < num_active; i++)
         ::write(pipes[i*space+1].fd(),"m",1);
 
-    if(errno != 0) printf("error: %s\n",strerror(errno));
+    if(errno != 0) 
+        printf("error: %s\n",strerror(errno));
+    errno = 0;
 
     fired  = num_active;
     count  = 0;
     writes = num_writes;
 
-    before = Timer::now();
-    WARN << "Begin runforever" ;
-    pool.runforever();
-    WARN << "End runforever" ;
+    start = Timer::now();
+    
+    WARN << "Begin Run" ;
+    
+    pool.run();
+
+    WARN << "End Run" ;
+    
     end = Timer::now();
 
-    fprintf(stdout, "%8ld %8ld\n", end.to_usecs() - before.to_usecs(), end.to_usecs() - start.to_usecs());
+    fprintf(stdout, "%8ld\n", end.to_usecs() - start.to_usecs());
 }
 
 int setlimit(int num_pipes)
@@ -128,11 +141,14 @@ int setlimit(int num_pipes)
 
 int main(int argc, char* argv[])
 {
-    num_pipes  = 150000;
-    num_active = 1000;
+    Log::setLevel(Log::info);
+
+    num_pipes  = 100000;
+    num_active = 100;
     num_writes = num_pipes*25;
 
-    //setlimit(num_pipes);
+    setlimit(num_pipes);
+    
     int c;
     while ((c = getopt(argc, argv, "n:a:w:")) != -1)
     {
@@ -159,17 +175,14 @@ int main(int argc, char* argv[])
     for (int i = 0; i < num_pipes; i++)
     {
         pair<Socket, Socket> ss = Socket::pipe();
-        pipes[i*2]=ss.first;
-        pipes[i*2+1]=ss.second;
+        pipes[i*2]   = ss.first;
+        pipes[i*2+1] = ss.second;
     }
 
     for (int i = 0; i < num_pipes; i++)
         servers.push_back(new EchoServer(pool.getRandomLoop(), pipes[i*2],i));
 
-    for (int i = 0; i < 1; i++)
-    {
-        run_once();
-        fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
-        for(int i=0; i<num_pipes; i++) servers[i]->clear();
-    }
+    run_once();
+    fprintf(stdout, "writes=%d, fired=%d, recv=%d\n", (int)writes, (int)fired, (int)count);
+    pool.stop();
 }

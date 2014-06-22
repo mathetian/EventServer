@@ -12,7 +12,7 @@ using namespace sealedserver;
 #define BASE_PORT 10000
 #define PORT_NUM  1
 
-EventPool pool(1);
+EventPool pool(4);
 
 /**
 ** A handler for a single connection to a client.
@@ -26,7 +26,7 @@ EventPool pool(1);
 ** - receivedMsg()  is invoked when a message is received
 ** - sentMsg()      is invoked when a msg has been sent
 ** - closed()       is invoked when the socket has been closed
- */
+**/
 class EchoServer : public MSGHandler
 {
 public:

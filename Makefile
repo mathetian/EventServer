@@ -23,21 +23,21 @@ lib: clean prepare compile
 compile:
 	${CXX} ${CXXFLAGS} ${HEADER} -lpthread -c ${SOURCES} 
 
-echo: server client
+echo: prepare server client
 	
 server: tests/echo_server.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
-	#mv $@ bin
+	mv $@ bin
 
 client: tests/echo_client.cpp utils/Log.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
-	#mv $@ bin
+	mv $@ bin
 
-bench_library: tests/bench_library.cpp
+bench_library: prepare tests/bench_library.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
-tests: ${tests}
+tests: prepare ${tests}
 	
 test_buffer: tests/test_buffer.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
@@ -76,7 +76,7 @@ test_thread: tests/test_thread.cpp
 	mv $@ bin
 	
 prepare:
-	mkdir bin
+	-mkdir bin
 
 clean: 
 	-rm -rf bin ${CLEAN}

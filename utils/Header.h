@@ -16,6 +16,7 @@
 #include <sys/time.h>
 #include <arpa/inet.h>
 #include <sys/epoll.h>
+#include <sys/socket.h>
 #include <sys/resource.h>
 
 #include <set>
