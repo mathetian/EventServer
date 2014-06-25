@@ -71,7 +71,7 @@ protected:
         else assert(0);
     }
 
-    // Invoke when the socket has been closed
+    /// Invoke when the socket has been closed
     virtual void closed(ClsMtd st)
     {
         DEBUG << "onCloseSocket(for " <<  m_sock.fd() <<  " ):" << st;

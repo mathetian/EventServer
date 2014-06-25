@@ -44,7 +44,7 @@ void EventLoop::runForever()
     {
         Handler *handler = (*iter).second;
 
-        DEBUG << handler->getSocket().fd();
+        DEBUG << "Stop fd: " << handler->getSocket().fd();
 
         m_selector->unRegisterEvent(handler, -1);
 

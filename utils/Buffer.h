@@ -49,6 +49,11 @@ public:
     {
         return string(dat, len);
     }
+
+    void set_data(const void *dat)
+    {
+        this -> dat = static_cast<char*>(const_cast<void*>(dat));
+    }
 };
 
 /**
@@ -154,11 +159,31 @@ public:
     Buffer(const char* str, bool self_alloc = false) : MutableBuff(str, strlen(str), strlen(str)), \
         ref(new Atomic(0)), self_alloc(self_alloc)
     {
+        if(self_alloc == false)
+        {
+            self_alloc = true;
+            char *dat1 = new char[strlen(str) + 1];
+            memset(dat1, 0, strlen(str) + 1);
+            memcpy(dat1, str, strlen(str));
+
+            set_data(dat1);
+        }
+
         acquire();
     }
 
     Buffer(const string &str) : MutableBuff(str.data(), str.size(), str.size()), ref(new Atomic(0)), self_alloc(0)
     {
+        if(self_alloc == false)
+        {
+            self_alloc = true;
+            char *dat1 = new char[str.size() + 1];
+            memset(dat1, 0, str.size() + 1);
+            memcpy(dat1, str.c_str(), str.size());
+            
+            set_data(dat1);
+        }
+
         acquire();
     }
 

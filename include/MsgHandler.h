@@ -48,7 +48,7 @@ public:
     /// status enumeration
     typedef enum  { EXCEED, SOCKERR, BLOCKED, SUCC, CONTINUE, FINAL} STATUS;
 
-private:
+protected:
     /// Invoked when a written event happens(callback)
     void onReceiveEvent();
 

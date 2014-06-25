@@ -63,8 +63,20 @@ void EventPool::run()
     for(int i=0; i < m_loopNum; i++)
         m_threads[i]->run();
 
-    for(int i=0; i<m_loopNum; i++)
+    for(int i=0; i < m_loopNum; i++)
         m_threads[i]->join();
+}
+
+void EventPool::subrun()
+{
+    for(int i=0; i < m_loopNum; i++)
+        m_threads[i]->run();
+}
+
+void EventPool::subjoin()
+{
+    for(int i=0; i < m_loopNum; i++)
+        m_threads[i] -> join();
 }
 
 void EventPool::stop()

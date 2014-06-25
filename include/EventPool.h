@@ -46,6 +46,13 @@ public:
     /// get the Number of Loops
     int        getLoopNum() const;
 
+public:
+    /// start the loop
+    void       subrun();
+
+    /// wait in here
+    void       subjoin();
+
 private:
     /// Threadxxxx is used to assist the `run`
     void*        ThreadBody(int id);

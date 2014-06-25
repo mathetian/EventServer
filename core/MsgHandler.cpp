@@ -99,7 +99,6 @@ void MSGHandler::onSendEvent()
         m_first = false;
     }
 
-
     bool flag = true;
 
     while(m_Bufs.size() > 0 && flag == true && m_global)
