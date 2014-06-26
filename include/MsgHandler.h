@@ -5,9 +5,6 @@
 #ifndef _MSG_HANDLER_H
 #define _MSG_HANDLER_H
 
-using namespace std;
-
-#include "Log.h"
 #include "Buffer.h"
 using namespace utils;
 

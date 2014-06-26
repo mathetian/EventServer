@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#ifndef _ACCEPTOR_H
-#define _ACCEPTOR_H
+#ifndef _HTTP_ACC_H
+#define _HTTP_ACC_H
 
-#include "Log.h"
-using namespace utils;
-
-#include "Handler.h"
-#include "EventLoop.h"
+#include "Acceptor.h"
 
 namespace sealedserver
 {
 
+class HttpServer;
+
+/**
+** Users shouldn't override this class
+**/
 template<class T>
-class TCPAcceptor : public Handler
+class HttpAcceptor : public Handler
 {
 public:
     /// Constructor
-    TCPAcceptor(EventLoop* loop, int localport) : Handler(loop)
+    HttpAcceptor(EventLoop* loop, int localport) : Handler(loop)
     {
         NetAddress addr = NetAddress(localport);
 
@@ -27,28 +28,27 @@ public:
         attach();
         registerRead();
 
-        INFO << "TCPAcceptor Initialization: " << m_sock.getsockname();
+        INFO << "HttpAcceptor Initialization: " << m_sock.getsockname();
 
         assert(m_sock.status());
     }
 
     /// Destructor
-    virtual ~TCPAcceptor()
+    virtual ~HttpAcceptor()
     {
     }
 
-public:
+private:
     virtual void onReceiveEvent()
     {
         Socket sock = wrap();
 
         if (sock.status() == true)
         {
-            T* t = new T(getRandomLoop(), sock);
+            T* t = new T(m_server, getRLoop(), sock);
         }
     }
 
-public:
     void onSendEvent() { }
 
     void onCloseEvent(ClsMtd st)
@@ -58,6 +58,9 @@ public:
         detach();
         m_sock.close();
     }
+
+private:
+	HttpServer *m_server;
 
 public:
     Socket wrap()
@@ -75,7 +78,6 @@ public:
     {
         return getRandomLoop();
     }
-
 };
 
 };

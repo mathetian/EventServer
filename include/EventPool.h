@@ -24,8 +24,8 @@ namespace sealedserver
 class EventPool : public Noncopyable
 {
 public:
-    /// Constructor, the default number of loops would be 2
-    EventPool(int loopNum = 2);
+    /// Constructor, the default number of loops would be 1
+    EventPool(int loopNum = 1);
 
     /// Destructor, deallocate heap
     virtual ~EventPool();
