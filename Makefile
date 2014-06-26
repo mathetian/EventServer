@@ -25,11 +25,15 @@ compile:
 
 echo: prepare server client
 	
-server: tests/echo_server.cpp utils/Log.cpp
+server: tests/echo_server.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
-client: tests/echo_client.cpp utils/Log.cpp
+client: tests/echo_client.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
+	mv $@ bin
+
+http_server: tests/http_server.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 

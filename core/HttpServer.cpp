@@ -25,6 +25,11 @@ void HttpServer::start()
 	pool_.run();
 }
 
+void HttpServer::stop()
+{
+	pool_.stop();
+}
+
 void HttpServer::add(const string &url, Callback callback, void *arg)
 {
 	calls_[url] = make_pair(callback, arg);

@@ -27,6 +27,7 @@ public:
 
 public:
 	void start();
+	void stop();
 	void add(const string &url, Callback callback, void *arg);
 	void error(Callback callback, void *arg);
 
@@ -40,6 +41,7 @@ private:
 	Pair      error_;
 	bool      errflag_;
 	HttpAcceptor<HttpConnection> *acceptor_;
+
 };
 
 };

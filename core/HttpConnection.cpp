@@ -25,7 +25,7 @@ void HttpConnection::receivedMsg(STATUS status, Buffer &receivedBuff)
 	if(errcode_ != 0) badRequest();
 	else server_ -> process(this);
 
-	unRegisterRead();
+	//unRegisterRead();
 }
 
 void HttpConnection::sentMsg(STATUS status, int len, int targetLen)
@@ -73,7 +73,7 @@ void HttpConnection::parse(Buffer &receivedBuff)
 		return;
 	} 
 
-	str = str.substr(index + 2);
+	str  = str.substr(index + 2);
 	flag = parseHeader(str);
 
 	if(flag == false) 
@@ -95,7 +95,7 @@ bool HttpConnection::parseFirstLine(const string &str, int &index)
   	method_ = str.substr(i, j - i);
 
   	/// skip space
-  	for(i = j;i < len && str.at(j) == ' ';i++);
+  	for(i = j;i < len && str.at(i) == ' ';i++);
 	if(i >= len) return false;
 	
 	/// Find the first space
@@ -109,9 +109,9 @@ bool HttpConnection::parseFirstLine(const string &str, int &index)
 	if(i >= len) return false;
 
 	/// Find the `\r` space
-  	for(j = i + 1;j < len && str.at(j) == '\r';j++);
-  	if(j >= len - 1 || str.at(j + 1) != '\n') return false;
-
+ 	for(j = i + 1;j < len && str.at(j) != '\r';j++);
+ 	if(j >= len - 1 || str.at(j + 1) != '\n') return false;
+	
   	version_ = str.substr(i, j - i);	
 
   	index = j + 2;
@@ -153,15 +153,14 @@ bool HttpConnection::parseLine(string str)
 	header_[str.substr(0,index)] = str.substr(index + 2);
 }
 
+/// only support get
 int HttpConnection::is_valid_http_method(const char *s) {
-  return !strcmp(s, "GET") || !strcmp(s, "POST") || !strcmp(s, "HEAD") ||
-    !strcmp(s, "CONNECT") || !strcmp(s, "PUT") || !strcmp(s, "DELETE") ||
-    !strcmp(s, "OPTIONS") || !strcmp(s, "PROPFIND") || !strcmp(s, "MKCOL");
+  return !strcmp(s, "GET");
 }
 
 bool HttpConnection::check()
 {
-	if(is_valid_http_method(method_.c_str())) 
+	if(is_valid_http_method(method_.c_str()) == false) 
 		return false;
 
 	if (memcmp(version_.c_str(), "HTTP/", 5) != 0)
