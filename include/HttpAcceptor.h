@@ -20,7 +20,7 @@ class HttpAcceptor : public Handler
 {
 public:
     /// Constructor
-    HttpAcceptor(EventLoop* loop, int localport) : Handler(loop)
+    HttpAcceptor(HttpServer *server, EventLoop* loop, int localport) : Handler(loop), server_(server)
     {
         NetAddress addr = NetAddress(localport);
 
@@ -41,11 +41,15 @@ public:
 private:
     virtual void onReceiveEvent()
     {
-        Socket sock = wrap();
+        NetAddress a;
+        Socket sock = m_sock.accept(&a);
+
+        DEBUG << "New Connection, through socket(local): " << sock.fd();
+        DEBUG << "Corrsponding address:" << sock.getpeername();
 
         if (sock.status() == true)
         {
-            T* t = new T(m_server, getRLoop(), sock);
+            T* t = new T(server_, getRandomLoop(), sock);
         }
     }
 
@@ -60,24 +64,7 @@ private:
     }
 
 private:
-	HttpServer *m_server;
-
-public:
-    Socket wrap()
-    {
-        NetAddress a;
-        Socket sock = m_sock.accept(&a);
-
-        DEBUG << "New Connection, through socket(local): " << sock.fd();
-        DEBUG << "Corrsponding address:" << sock.getpeername();
-
-        return sock;
-    }
-
-    EventLoop* getRLoop()
-    {
-        return getRandomLoop();
-    }
+	HttpServer *server_;
 };
 
 };

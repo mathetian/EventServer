@@ -28,7 +28,7 @@ public:
 public:
 	void start();
 	void add(const string &url, Callback callback, void *arg);
-	void adderror(Callback callback, void *arg);
+	void error(Callback callback, void *arg);
 
 public:
 	bool process(HttpConnection *conn);

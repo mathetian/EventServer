@@ -9,7 +9,7 @@ namespace sealedserver
 
 HttpServer::HttpServer(int port) : port_(port), errflag_(false)
 {
-	acceptor_ = new HttpAcceptor<HttpConnection>(pool_.getRandomLoop(), port);
+	acceptor_ = new HttpAcceptor<HttpConnection>(this, pool_.getRandomLoop(), port);
 }
 
 HttpServer::~HttpServer()
@@ -30,7 +30,7 @@ void HttpServer::add(const string &url, Callback callback, void *arg)
 	calls_[url] = make_pair(callback, arg);
 }
 
-void HttpServer::adderror(Callback callback, void *arg)
+void HttpServer::error(Callback callback, void *arg)
 {
 	error_   = make_pair(callback, arg);
 	errflag_ = true;
@@ -38,11 +38,9 @@ void HttpServer::adderror(Callback callback, void *arg)
 
 bool HttpServer::process(HttpConnection *conn)
 {
-	Header header = conn -> getHeader();
-	assert(header.find("url") != header.end());
+	string query = conn -> getQuery();
 
-	string url = header["url"];
-	if(calls_.find(url) ==  calls_.end())
+	if(calls_.find(query) ==  calls_.end())
 	{
 		if(errflag_)
 		{
@@ -53,13 +51,13 @@ bool HttpServer::process(HttpConnection *conn)
 		}
 		else
 		{
-			conn -> notfound();
+			conn -> notFound();
 		}
 	}
 	else
 	{
-		Callback callback = calls_[url].first;
-		void    *arg      = calls_[url].second;
+		Callback callback = calls_[query].first;
+		void    *arg      = calls_[query].second;
 		callback(conn, arg);
 	}
 }
