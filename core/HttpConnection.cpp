@@ -262,22 +262,30 @@ static const char *status_code_to_str(int status_code) {
 
 void HttpConnection::notFound()
 {
-	/// TBD
-	char buf[100];
-	memset(buf, 0, 100);
-	sprintf(buf, "HTTP/1.1 %d %s\r\n\r\n", 404, status_code_to_str(404));
+	char *data  = new char[1024];
+	memset(data, 0, 200);
+	sprintf(data, "HTTP/1.1 %d %s\r\nContent-Type: text/html\r\n\r\n", 404, status_code_to_str(404));
 
-	write(buf);
+	char * body = data + strlen(data);
+	sprintf(body, "<HTML><TITLE>Not Found</TITLE>\r\n<BODY><P>The \
+			server could not fulfill\r\nyour request because the resource specified\r\n\
+				is unavailable or nonexistent.\r\n</BODY></HTML>\r\n");
+
+	write(Buffer(data, true));
 }
 
 void HttpConnection::badRequest()
 {
-	/// TBD
-	char buf[100];
-	memset(buf, 0, 100);
-	sprintf(buf, "HTTP/1.1 %d %s\r\n\r\n", 400, status_code_to_str(400));
+	char *data  = new char[1024];
+	memset(data, 0, 200);
+	sprintf(data, "HTTP/1.1 %d %s\r\nContent-Type: text/html\r\n\r\n", 400, status_code_to_str(400));
 
-	write(buf);
+	char * body = data + strlen(data);
+	sprintf(body, "<HTML><TITLE>Bad Request</TITLE>\r\n<BODY><P>The \
+			server could not fulfill\r\nyour request because the resource specified\r\n\
+				is unavailable or nonexistent.\r\n</BODY></HTML>\r\n");
+
+	write(Buffer(data, true));
 }
 
 
