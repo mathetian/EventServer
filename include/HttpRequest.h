@@ -5,10 +5,6 @@
 #ifndef _HTTP_CONN_H
 #define _HTTP_CONN_H
 
-#include "Socket.h"
-#include "Acceptor.h"
-#include "EventPool.h"
-#include "EventLoop.h"
 #include "MsgHandler.h"
 using namespace sealedserver;
 
@@ -16,30 +12,38 @@ namespace sealedserver
 {
 
 class HttpServer;
+class HttpResponse;
 
-class HttpConnection : public MSGHandler
+class HttpRequest : public MSGHandler
 {
     typedef map<string, string> Header;
     typedef map<string, string> Params;
 public:
 	/// Constructor
-	HttpConnection(HttpServer *server, EventLoop *loop, Socket sock);
+	HttpRequest(HttpServer *server, EventLoop *loop, Socket sock);
 	
 	/// Destructor
-	virtual ~HttpConnection();
+	virtual ~HttpRequest();
 
 public:
 	/// Invoked when a message is received.
-    virtual void receivedMsg(STATUS status, Buffer &receivedBuff);
+    virtual void received(STATUS status, Buffer &receivedBuff);
 
     /// Invoked when a msg has been sent
-    virtual void sentMsg(STATUS status, int len, int targetLen);
+    virtual void sent(STATUS status, int len, int targetLen);
 
 public:
     /// send 404
     void    notFound();
+    
+    /// 400
     void    badRequest();
+
+    /// Get query string
     string  getQuery() const;
+
+    /// Init the response
+    void    initResponse(int code);
 
 private:
     /// Parse the head & body
@@ -67,15 +71,32 @@ private:
     bool check();
 
 private:
-    Header       header_;
-    string       body_;
-    HttpServer  *server_;
-    int          errcode_;
+    /// The first line
     string       method_;
     string       url_;
-    string       querystring_;
     string       version_;
+
+    /// The result of parsed url_
+    string       querystring_;
     Params       params_;
+
+    /// The header
+    Header       header_;   
+    
+    /// The body. Only supported empty
+    string       body_;
+
+    /// The server
+    HttpServer  *server_;
+
+    /// The errcode_ represent the type of error of parameters
+    int          errcode_;
+
+    /// Each request will have a response
+    HttpResponse *response_;
+
+    /// bool first, the first read
+    bool          first_;
 };
 
 };

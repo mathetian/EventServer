@@ -9,7 +9,7 @@ namespace sealedserver
 
 HttpServer::HttpServer(int port) : port_(port), errflag_(false)
 {
-	acceptor_ = new HttpAcceptor<HttpConnection>(this, pool_.getRandomLoop(), port);
+	acceptor_ = new HttpAcceptor<HttpRequest>(this, pool_.getRandomLoop(), port);
 }
 
 HttpServer::~HttpServer()
@@ -41,12 +41,14 @@ void HttpServer::error(Callback callback, void *arg)
 	errflag_ = true;
 }
 
-bool HttpServer::process(HttpConnection *conn)
+bool HttpServer::process(HttpRequest *conn)
 {
 	string query = conn -> getQuery();
 
 	if(calls_.find(query) ==  calls_.end())
 	{
+		conn -> initResponse(404);
+
 		if(errflag_)
 		{
 			Callback callback = error_.first;
@@ -61,6 +63,8 @@ bool HttpServer::process(HttpConnection *conn)
 	}
 	else
 	{
+		conn -> initResponse(200);
+		
 		Callback callback = calls_[query].first;
 		void    *arg      = calls_[query].second;
 		callback(conn, arg);

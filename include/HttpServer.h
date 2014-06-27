@@ -9,14 +9,15 @@
 using namespace utils;
 
 #include "HttpAcceptor.h"
-#include "HttpConnection.h"
+#include "HttpRequest.h"
+#include "HttpResponse.h"
 
 namespace sealedserver
 {
 
 class HttpServer : public Noncopyable
 {
-	typedef void (*Callback) (HttpConnection*, void*);
+	typedef void (*Callback) (HttpRequest*, HttpResponse*, void*);
 	typedef pair<Callback, void*> Pair;
 	typedef map<string, Pair> Callbacks;
 	typedef map<string, string> Header;
@@ -32,7 +33,7 @@ public:
 	void error(Callback callback, void *arg);
 
 public:
-	bool process(HttpConnection *conn);
+	bool process(HttpRequest *conn);
 
 private:
 	EventPool pool_;
@@ -40,7 +41,7 @@ private:
 	int       port_;
 	Pair      error_;
 	bool      errflag_;
-	HttpAcceptor<HttpConnection> *acceptor_;
+	HttpAcceptor<HttpRequest> *acceptor_;
 
 };
 

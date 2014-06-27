@@ -52,7 +52,7 @@ public:
     }
 
 private:
-    virtual void receivedMsg(STATUS status, Buffer &receivedBuff)
+    virtual void received(STATUS status, Buffer &receivedBuff)
     {
         if(status == SUCC)
         {

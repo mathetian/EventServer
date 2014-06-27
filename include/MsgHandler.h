@@ -37,7 +37,7 @@ public:
     /// writes a message, put it into a queue
     ///
     /// @param buf, the buffer needed to be written
-    int write(const Buffer& buf);
+    int send(const Buffer& buf);
 
     /// close the socket manually
     int close();
@@ -61,10 +61,10 @@ public:
     virtual void connected()  { }
 
     /// Invoke when a message has been received
-    virtual void receivedMsg(STATUS status, Buffer &buf) { }
+    virtual void received(STATUS status, Buffer &buf) { }
 
     /// Invoke when a message has been sent
-    virtual void sentMsg(STATUS status, int len, int targetLen) { }
+    virtual void sent(STATUS status, int len, int targetLen) { }
 
     /// Invoke when a socket has been closed
     virtual void closed(ClsMtd st)              { }

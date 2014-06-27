@@ -2,29 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include "HttpBuffer.h"
 #include "HttpServer.h"
-#include "HttpConnection.h"
+#include "HttpRequest.h"
 using namespace sealedserver;
 
 #define Port 8080
 
 HttpServer server(Port);
 
-void sign_handler(HttpConnection * conn, void *arg)
+void re_construct(HttpRequest *conn, HttpResponse *rep, void *arg)
 {
 }
 
-void pub_handler(HttpConnection * conn, void *arg)
-{
-
-}
-
-void sub_handler(HttpConnection * conn, void *arg)
+void sign_handler(HttpRequest *conn, HttpResponse *rep, void *arg)
 {
 }
 
-void error_handler(HttpConnection * conn, void *arg)
+void pub_handler(HttpRequest *conn, HttpResponse *rep, void *arg)
 {
+}
+
+void sub_handler(HttpRequest *conn, HttpResponse *rep, void *arg)
+{
+}
+
+void error_handler(HttpRequest *conn, HttpResponse *rep, void *arg)
+{
+    re_construct(conn, arg);
 }
 
 /// Signal Stop the server
@@ -57,7 +62,7 @@ int main()
 	server.add("/sign", sign_handler, NULL);
 	server.add("/pub",  pub_handler, NULL);
 	server.add("/sub",  sub_handler, NULL);
-	//server.error(error_handler, NULL);
+	server.error(error_handler, NULL);
 
 	INFO << "server starting" ;
 	server.start();

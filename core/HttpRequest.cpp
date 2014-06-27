@@ -4,52 +4,45 @@
 
 
 #include "HttpServer.h"
-#include "HttpConnection.h"
+#include "HttpRequest.h"
+#include "HttpResponse.h"
 
 namespace sealedserver
 {
 
-HttpConnection::HttpConnection(HttpServer *server, EventLoop *loop, Socket sock) : \
-	MSGHandler(loop, sock), server_(server), errcode_(0)
+HttpRequest::HttpRequest(HttpServer *server, EventLoop *loop, Socket sock) : \
+	MSGHandler(loop, sock), server_(server), errcode_(0), first_(false)
 {
 }
 
-HttpConnection::~HttpConnection()
+HttpRequest::~HttpRequest()
 {
-}
-
-void HttpConnection::receivedMsg(STATUS status, Buffer &receivedBuff)
-{
-	parse(receivedBuff);
+	if(response_)
+		delete response_;
 	
-	if(errcode_ != 0) badRequest();
-	else server_ -> process(this);
-
-	//unRegisterRead();
+	response_ = NULL;
 }
 
-void HttpConnection::sentMsg(STATUS status, int len, int targetLen)
+void HttpRequest::received(STATUS status, Buffer &receivedBuff)
+{
+	if(first_ == true) return;
+
+	first_ = true;
+
+	parse(receivedBuff);
+
+	if(errcode_ != 0) {
+		initResponse(400);
+		badRequest();
+	}else server_ -> process(this);
+}
+
+void HttpRequest::sent(STATUS status, int len, int targetLen)
 {
 	close();
 }
 
-static char *skip(char **buf, const char *delimiters) {
-  char *p, *begin_word, *end_word, *end_delimiters;
-
-  begin_word = *buf;
-  end_word = begin_word + strcspn(begin_word, delimiters);
-  end_delimiters = end_word + strspn(end_word, delimiters);
-
-  for (p = end_word; p < end_delimiters; p++) {
-    *p = '\0';
-  }
-
-  *buf = end_delimiters;
-
-  return begin_word;
-}
-
-void HttpConnection::parse(Buffer &receivedBuff)
+void HttpRequest::parse(Buffer &receivedBuff)
 {
 	string str = (string)receivedBuff;
 
@@ -80,7 +73,7 @@ void HttpConnection::parse(Buffer &receivedBuff)
 		errcode_ = 1;
 }
 
-bool HttpConnection::parseFirstLine(const string &str, int &index)
+bool HttpRequest::parseFirstLine(const string &str, int &index)
 {
 	int i = 0, len = str.size(), j;
 	
@@ -119,7 +112,7 @@ bool HttpConnection::parseFirstLine(const string &str, int &index)
   	return true;
 }
 
-bool HttpConnection::parseHeader(string str)
+bool HttpRequest::parseHeader(string str)
 {
 	bool flag = true;
 	while(!errcode_ && str.size() != 0)
@@ -143,7 +136,7 @@ bool HttpConnection::parseHeader(string str)
 	return true;
 }
 
-bool HttpConnection::parseLine(string str)
+bool HttpRequest::parseLine(string str)
 {	
 	int index = str.find(": ");
 	
@@ -154,11 +147,11 @@ bool HttpConnection::parseLine(string str)
 }
 
 /// only support get
-int HttpConnection::is_valid_http_method(const char *s) {
+int HttpRequest::is_valid_http_method(const char *s) {
   return !strcmp(s, "GET");
 }
 
-bool HttpConnection::check()
+bool HttpRequest::check()
 {
 	if(is_valid_http_method(method_.c_str()) == false) 
 		return false;
@@ -169,7 +162,7 @@ bool HttpConnection::check()
 	return true;
 }
 
-bool HttpConnection::parseURL()
+bool HttpRequest::parseURL()
 {
 	int index = url_.find("?");
 	bool flag = true;
@@ -187,7 +180,7 @@ bool HttpConnection::parseURL()
 
 #define HEXTOI(x) (isdigit(x) ? x - '0' : x - 'W')
 
-bool HttpConnection::decode(string para)
+bool HttpRequest::decode(string para)
 {
 	int i, a, b; string decodestr;
 	int len = para.size();
@@ -227,7 +220,7 @@ bool HttpConnection::decode(string para)
 	return flag;
 }
 
-bool HttpConnection::parsekv(string str)
+bool HttpRequest::parsekv(string str)
 {
 	int index = str.find("=");
 	if(index == -1 || index == 0)
@@ -237,61 +230,26 @@ bool HttpConnection::parsekv(string str)
 	return true;
 }
 
-static const char *status_code_to_str(int status_code) {
-  switch (status_code) {
-    case 200: return "OK";
-    case 201: return "Created";
-    case 204: return "No Content";
-    case 301: return "Moved Permanently";
-    case 302: return "Found";
-    case 304: return "Not Modified";
-    case 400: return "Bad Request";
-    case 403: return "Forbidden";
-    case 404: return "Not Found";
-    case 405: return "Method Not Allowed";
-    case 409: return "Conflict";
-    case 411: return "Length Required";
-    case 413: return "Request Entity Too Large";
-    case 415: return "Unsupported Media Type";
-    case 423: return "Locked";
-    case 500: return "Server Error";
-    case 501: return "Not Implemented";
-    default:  return "Server Error";
-  }
-}
-
-void HttpConnection::notFound()
+/// Not found & without error callback
+void HttpRequest::notFound()
 {
-	char *data  = new char[1024];
-	memset(data, 0, 200);
-	sprintf(data, "HTTP/1.1 %d %s\r\nContent-Type: text/html\r\n\r\n", 404, status_code_to_str(404));
-
-	char * body = data + strlen(data);
-	sprintf(body, "<HTML><TITLE>Not Found</TITLE>\r\n<BODY><P>The \
-			server could not fulfill\r\nyour request because the resource specified\r\n\
-				is unavailable or nonexistent.\r\n</BODY></HTML>\r\n");
-
-	write(Buffer(data, true));
+	response_ -> send();
 }
 
-void HttpConnection::badRequest()
+void HttpRequest::badRequest()
 {
-	char *data  = new char[1024];
-	memset(data, 0, 200);
-	sprintf(data, "HTTP/1.1 %d %s\r\nContent-Type: text/html\r\n\r\n", 400, status_code_to_str(400));
-
-	char * body = data + strlen(data);
-	sprintf(body, "<HTML><TITLE>Bad Request</TITLE>\r\n<BODY><P>The \
-			server could not fulfill\r\nyour request because the resource specified\r\n\
-				is unavailable or nonexistent.\r\n</BODY></HTML>\r\n");
-
-	write(Buffer(data, true));
+	response_ -> send();
 }
 
 
-string HttpConnection::getQuery() const
+string HttpRequest::getQuery() const
 {
 	return querystring_;
+}
+
+string HttpRequest::initResponse(int code)
+{
+	response_ = new HttpRequest(this, code);
 }
 
 };

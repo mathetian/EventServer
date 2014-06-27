@@ -25,7 +25,7 @@ MSGHandler::~MSGHandler()
     /// Socket has been closed in other functions
 }
 
-int MSGHandler::write(const Buffer& buf)
+int MSGHandler::send(const Buffer& buf)
 {
     if(m_global == false) return 0;
 
@@ -74,13 +74,13 @@ void MSGHandler::onReceiveEvent()
         else if(len < MSGLEN)
         {
             buf.set_length(len);
-            receivedMsg(SUCC, buf);
+            received(SUCC, buf);
         }
         else
         {
             /// must be proceed manually
             buf.set_length(len);
-            receivedMsg(SUCC, buf);
+            received(SUCC, buf);
             flag = true;
             first = false;
         }
@@ -130,7 +130,7 @@ void MSGHandler::onSendEvent()
         else
         {
             assert(len == length);
-            sentMsg(SUCC, len, length);
+            sent(SUCC, len, length);
             flag = false;
         }
     }
