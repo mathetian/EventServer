@@ -137,7 +137,7 @@ bool HttpParser::parseURL()
 		querystring_ = url_;
 	else
 	{
-		querystring_ = url_.substr(0, index + 1);
+		querystring_ = url_.substr(0, index);
 		flag = decode(url_.substr(index + 1));
 	}
 

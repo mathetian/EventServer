@@ -11,6 +11,11 @@ using namespace sealedserver;
 
 HttpServer server(Port);
 
+string concat(string key, string value)
+{
+    return key + ": " + value + "\r\n";
+}
+
 void sign_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
     rep -> addHeader("Content-Type", "text/plain");
@@ -21,20 +26,27 @@ void sign_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 
     rep -> addBody(origin);
 
-     rep -> send();
+    rep -> addBody("\n");
+
+    map<string, string> params = parser -> getParams();
+    map<string, string>::iterator iter = params.begin();
+
+    for(;iter != params.end();iter++)
+    {
+        rep -> addBody(concat((*iter).first, (*iter).second));
+    }   
+
+    rep -> send();
 }
 
 void pub_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
+
 }
 
 void sub_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
-}
 
-string concat(string key, string value)
-{
-    return key + ": " + value + "\r\n";
 }
 
 void error_handler(HttpRequest *req, HttpResponse *rep, void *arg)
@@ -55,6 +67,16 @@ void error_handler(HttpRequest *req, HttpResponse *rep, void *arg)
     {
         rep -> addBody(concat((*iter).first, (*iter).second));
     }
+    
+    rep -> addBody("\n");
+
+    map<string, string> params = parser -> getParams();
+    iter = params.begin();
+
+    for(;iter != params.end();iter++)
+    {
+        rep -> addBody(concat((*iter).first, (*iter).second));
+    }   
 
     rep -> send();
 }
