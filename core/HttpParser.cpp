@@ -30,7 +30,7 @@ bool HttpParser::parse(Buffer &receivedBuff)
 		return false;
 	} 
 
-	str  = str.substr(index + 2);
+	str  = str.substr(index);
 	flag = parseHeader(str);
 
 	if(flag == false) 
