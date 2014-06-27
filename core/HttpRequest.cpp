@@ -233,11 +233,26 @@ bool HttpRequest::parsekv(string str)
 /// Not found & without error callback
 void HttpRequest::notFound()
 {
+	response_ -> addHeader("Content-Type", "text/html");
+
+	response_ -> addBody("<HTML><TITLE>Not Found</TITLE>");
+	response_ -> addBody("<BODY><P>The server could not fulfill")
+	response_ -> addBody("your request because the resource specified");
+	response_ -> addBody("is unavailable or nonexistent.");
+	response_ -> addBody("</BODY></HTML>");
+
 	response_ -> send();
 }
 
 void HttpRequest::badRequest()
 {
+	response_ -> addBody("<HTML><TITLE>Bad Request</TITLE>");
+	
+	response_ -> addBody("<BODY><P>The server could not fulfill")
+	response_ -> addBody("your request because the resource specified");
+	response_ -> addBody("is unavailable or nonexistent.");
+	response_ -> addBody("</BODY></HTML>");
+
 	response_ -> send();
 }
 
