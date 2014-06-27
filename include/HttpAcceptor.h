@@ -64,7 +64,7 @@ private:
     }
 
 private:
-	HttpServer *server_;
+    HttpServer *server_;
 };
 
 };

@@ -11,22 +11,22 @@ using namespace utils;
 namespace sealedserver
 {
 
-class HttpParser{
+class HttpParser {
 
     typedef map<string, string> Header;
     typedef map<string, string> Params;
 
 public:
-	/// Parse the head & body
+    /// Parse the head & body
     /// Currently, only support get
-    /// That means we won't support post 
+    /// That means we won't support post
     /// In this version
     bool parse(Buffer &receivedBuff);
 
 private:
     /// Parse the first line
     bool parseFirstLine(const string &str, int &index);
-    
+
     /// Parse the header except the first line
     bool parseHeader(string str);
 
@@ -37,35 +37,49 @@ private:
     bool parseURL();
     bool decode(string para);
     bool parsekv(string str);
-    
+
     /// Check the information
     int  is_valid_http_method(const char *s);
     bool check();
 
 public:
     /// Get Method
-    string getMethod()  const { return method_; }
+    string getMethod()  const {
+        return method_;
+    }
 
-    /// Get URL 
-    string getUrl() const { return url_; }
+    /// Get URL
+    string getUrl() const {
+        return url_;
+    }
 
     /// Get Version
-    string getVersion() const { return version_; }
+    string getVersion() const {
+        return version_;
+    }
 
     /// Get Header
-    Header getHeader() { return header_; }
+    Header getHeader() {
+        return header_;
+    }
 
     /// Get the url
-    string getQuery() const { return querystring_; }
+    string getQuery() const {
+        return querystring_;
+    }
 
     /// Get the params
-    Params getParams() { return params_; }
+    Params getParams() {
+        return params_;
+    }
 
     /// Get the origin string
-    string getOrigin() const {  return origin_; }
+    string getOrigin() const {
+        return origin_;
+    }
 
 private:
-	/// The first line
+    /// The first line
     string       method_;
     string       url_;
     string       version_;
@@ -75,8 +89,8 @@ private:
     Params       params_;
 
     /// The header
-    Header       header_;   
-    
+    Header       header_;
+
     /// The body. Only supported empty
     string       body_;
 

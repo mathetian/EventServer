@@ -180,7 +180,7 @@ public:
             char *dat1 = new char[str.size() + 1];
             memset(dat1, 0, str.size() + 1);
             memcpy(dat1, str.c_str(), str.size());
-            
+
             set_data(dat1);
         }
 

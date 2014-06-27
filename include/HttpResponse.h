@@ -17,27 +17,27 @@ namespace sealedserver
 class HttpResponse : public Noncopyable
 {
 public:
-	/// Constructor
-	HttpResponse(HttpRequest*, int code);
-	
-	/// Deconstructor
-	virtual ~HttpResponse();
+    /// Constructor
+    HttpResponse(HttpRequest*, int code);
+
+    /// Deconstructor
+    virtual ~HttpResponse();
 
 public:
-	/// The send operation
-	void send();
+    /// The send operation
+    void send();
 
 public:
-	/// Add header(each line will constite with key/value)
-	void addHeader(const string &key, const string &value);
+    /// Add header(each line will constite with key/value)
+    void addHeader(const string &key, const string &value);
 
-	/// Add body
-	void addBody(const string &body);
+    /// Add body
+    void addBody(const string &body);
 
-private:	
-	string       header_;
-	string       body_;
-	HttpRequest *request_;
+private:
+    string       header_;
+    string       body_;
+    HttpRequest *request_;
 };
 
 };

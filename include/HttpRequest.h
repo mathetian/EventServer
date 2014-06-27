@@ -19,14 +19,14 @@ class HttpResponse;
 class HttpRequest : public MSGHandler
 {
 public:
-	/// Constructor
-	HttpRequest(HttpServer *server, EventLoop *loop, Socket sock);
-	
-	/// Destructor
-	virtual ~HttpRequest();
+    /// Constructor
+    HttpRequest(HttpServer *server, EventLoop *loop, Socket sock);
+
+    /// Destructor
+    virtual ~HttpRequest();
 
 public:
-	/// Invoked when a message is received.
+    /// Invoked when a message is received.
     virtual void received(STATUS status, Buffer &receivedBuff);
 
     /// Invoked when a msg has been sent
@@ -35,7 +35,7 @@ public:
 public:
     /// send 404
     void    notFound();
-    
+
     /// 400
     void    badRequest();
 

@@ -31,10 +31,10 @@ void sign_handler(HttpRequest *req, HttpResponse *rep, void *arg)
     map<string, string> params = parser -> getParams();
     map<string, string>::iterator iter = params.begin();
 
-    for(;iter != params.end();iter++)
+    for(; iter != params.end(); iter++)
     {
         rep -> addBody(concat((*iter).first, (*iter).second));
-    }   
+    }
 
     rep -> send();
 }
@@ -62,21 +62,21 @@ void error_handler(HttpRequest *req, HttpResponse *rep, void *arg)
     map<string, string> header = parser -> getHeader();
 
     map<string, string>::iterator iter = header.begin();
-    
-    for(;iter != header.end();iter++)
+
+    for(; iter != header.end(); iter++)
     {
         rep -> addBody(concat((*iter).first, (*iter).second));
     }
-    
+
     rep -> addBody("\n");
 
     map<string, string> params = parser -> getParams();
     iter = params.begin();
 
-    for(;iter != params.end();iter++)
+    for(; iter != params.end(); iter++)
     {
         rep -> addBody(concat((*iter).first, (*iter).second));
-    }   
+    }
 
     rep -> send();
 }
@@ -102,20 +102,20 @@ int setlimit(int num_pipes)
 
 int main()
 {
-	Log::setLevel(Log::debug);
+    Log::setLevel(Log::debug);
 
     ::signal(SIGINT, signalStop);
     setlimit(100000);
     errno = 0;
-    
-	server.add("/sign", sign_handler, NULL);
-	server.add("/pub",  pub_handler, NULL);
-	server.add("/sub",  sub_handler, NULL);
-	server.error(error_handler, NULL);
 
-	INFO << "server starting" ;
-	server.start();
+    server.add("/sign", sign_handler, NULL);
+    server.add("/pub",  pub_handler, NULL);
+    server.add("/sub",  sub_handler, NULL);
+    server.error(error_handler, NULL);
 
-	INFO << "server stopping" ;
-	return 0;
+    INFO << "server starting" ;
+    server.start();
+
+    INFO << "server stopping" ;
+    return 0;
 }
