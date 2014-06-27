@@ -13,6 +13,11 @@ HttpServer server(Port);
 
 void sign_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
+    rep -> addHeader("Content-Type", "text/plain");
+
+    string origin = req -> getOrigin();
+
+    req -> addBody(origin);
 }
 
 void pub_handler(HttpRequest *req, HttpResponse *rep, void *arg)
@@ -23,15 +28,32 @@ void sub_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
 }
 
-void error_handler(HttpRequest *req, HttpResponse *rep, void *arg)
+string concat(string key, string value)
 {
-    rep -> addHeader("Content-Type", "text/html");
-
-    typedef map<string, string> Header;
-
-    Header header = req -> getHeader();
+    return key + ": " + value + "\r\n";
 }
 
+void error_handler(HttpRequest *req, HttpResponse *rep, void *arg)
+{
+    rep -> addHeader("Content-Type", "text/plain");
+
+    HttpParser *parser = req -> getParser();
+
+    rep -> addBody(concat("method", parser -> getMethod());
+    rep -> addBody(concat("version", parser -> getVersion()));
+    rep -> addBody(concat("url", parser -> getUrl()));
+
+    map<string, string> header = parser -> getHeader();
+
+    map<string, string>::iterator iter = header.begin();
+    
+    for(;iter != header.end();iter++)
+    {
+        rep -> addBody(concat((*iter).first, (*iter).second));
+    }
+
+    rep -> send();
+}
 
 /// Signal Stop the server
 void signalStop(int)

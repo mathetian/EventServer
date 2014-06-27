@@ -12,6 +12,8 @@ using namespace utils;
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
+#include "EventPool.h"
+
 namespace sealedserver
 {
 

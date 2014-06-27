@@ -39,7 +39,7 @@ HttpResponse::HttpResponse(HttpRequest *request, int code) : request_(request_)
 	header_ = ss.str();
 }
 
-HttpResponse::~HttpRequest()
+HttpResponse::~HttpResponse()
 {
 }
 

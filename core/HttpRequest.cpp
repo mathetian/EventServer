@@ -13,6 +13,7 @@ namespace sealedserver
 HttpRequest::HttpRequest(HttpServer *server, EventLoop *loop, Socket sock) : \
 	MSGHandler(loop, sock), server_(server), errcode_(0), first_(false)
 {
+	parser_ = new HttpParser;
 }
 
 HttpRequest::~HttpRequest()
@@ -21,6 +22,9 @@ HttpRequest::~HttpRequest()
 		delete response_;
 	
 	response_ = NULL;
+
+	delete parser_;
+	parser_ = NULL;
 }
 
 void HttpRequest::received(STATUS status, Buffer &receivedBuff)
@@ -29,7 +33,7 @@ void HttpRequest::received(STATUS status, Buffer &receivedBuff)
 
 	first_ = true;
 
-	bool flag = parser_.parse(receivedBuff);
+	bool flag = parser_ -> parse(receivedBuff);
 	
 	if(flag == false)
 	{
@@ -53,7 +57,7 @@ void HttpRequest::notFound()
 	response_ -> addHeader("Content-Type", "text/html");
 
 	response_ -> addBody("<HTML><TITLE>Not Found</TITLE>");
-	response_ -> addBody("<BODY><P>The server could not fulfill")
+	response_ -> addBody("<BODY><P>The server could not fulfill");
 	response_ -> addBody("your request because the resource specified");
 	response_ -> addBody("is unavailable or nonexistent.");
 	response_ -> addBody("</BODY></HTML>");
@@ -65,7 +69,7 @@ void HttpRequest::badRequest()
 {
 	response_ -> addBody("<HTML><TITLE>Bad Request</TITLE>");
 	
-	response_ -> addBody("<BODY><P>The server could not fulfill")
+	response_ -> addBody("<BODY><P>The server could not fulfill");
 	response_ -> addBody("your request because the resource specified");
 	response_ -> addBody("is unavailable or nonexistent.");
 	response_ -> addBody("</BODY></HTML>");
@@ -73,14 +77,24 @@ void HttpRequest::badRequest()
 	response_ -> send();
 }
 
-string HttpRequest::initResponse(int code)
+void HttpRequest::initResponse(int code)
 {
-	response_ = new HttpRequest(this, code);
+	response_ = new HttpResponse(this, code);
 }
 
 string HttpRequest::getQuery() const
 {
 	return parser_ -> getQuery();
+}
+
+HttpParser* HttpRequest::getParser()
+{
+	return parser_;
+}
+
+HttpResponse* HttpRequest::getResponse()
+{
+	return response_;
 }
 
 };

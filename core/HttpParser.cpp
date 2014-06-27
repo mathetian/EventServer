@@ -11,6 +11,8 @@ bool HttpParser::parse(Buffer &receivedBuff)
 {
 	string str = (string)receivedBuff;
 
+	origin_ = str;
+	
 	int index; bool flag;
 	flag = parseFirstLine(str, index);
 
@@ -192,11 +194,6 @@ bool HttpParser::parsekv(string str)
 	params_[str.substr(0, index)] = str.substr(index + 1);
 
 	return true;
-}
-
-string HttpParser::getQuery() const
-{
-	return querystring_;
 }
 
 };

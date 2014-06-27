@@ -18,8 +18,6 @@ class HttpResponse;
 
 class HttpRequest : public MSGHandler
 {
-    typedef map<string, string> Header;
-    typedef map<string, string> Params;
 public:
 	/// Constructor
 	HttpRequest(HttpServer *server, EventLoop *loop, Socket sock);
@@ -47,11 +45,11 @@ public:
     /// Init the response
     void    initResponse(int code);
 
-public:
-    /// Get Header
-    Header  getHeader();
+    /// Get the Response
+    HttpResponse* getResponse();
 
-    class HttpParse;
+public:
+    HttpParser* getParser();
 
 private:
     /// The server
@@ -66,7 +64,7 @@ private:
     /// bool first, the first read
     bool          first_;
 
-    HttpParser    parser_;
+    HttpParser   *parser_;
 };
 
 };

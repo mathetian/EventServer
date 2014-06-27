@@ -54,7 +54,7 @@ bool HttpServer::process(HttpRequest *conn)
 			Callback callback = error_.first;
 			void    *arg      = error_.second;
 
-			callback(conn, arg);
+			callback(conn, conn -> getResponse(), arg);
 		}
 		else
 		{
@@ -67,7 +67,7 @@ bool HttpServer::process(HttpRequest *conn)
 		
 		Callback callback = calls_[query].first;
 		void    *arg      = calls_[query].second;
-		callback(conn, arg);
+		callback(conn, conn -> getResponse(),arg);
 	}
 }
 
