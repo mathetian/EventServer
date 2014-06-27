@@ -31,7 +31,7 @@ static const char *status_code_to_str(int status_code) {
   }
 }
 
-HttpResponse::HttpResponse(HttpRequest *request, int code) : request_(request_)
+HttpResponse::HttpResponse(HttpRequest *request, int code) : request_(request)
 {
 	stringstream ss;
 	ss << "HTTP/1.1 " << code << " " << status_code_to_str(code) << "\r\n";
@@ -53,7 +53,7 @@ void HttpResponse::send()
 void HttpResponse::addHeader(const string &key, const string &value)
 {
 	stringstream ss;
-	ss << key << ": " << value;
+	ss << key << ": " << value << "\r\n";
 
 	header_ += ss.str();
 }

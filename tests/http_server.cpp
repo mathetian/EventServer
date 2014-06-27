@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
-#include "HttpBuffer.h"
 #include "HttpServer.h"
 #include "HttpRequest.h"
+#include "HttpResponse.h"
 using namespace sealedserver;
 
 #define Port 8080
@@ -15,9 +15,13 @@ void sign_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
     rep -> addHeader("Content-Type", "text/plain");
 
-    string origin = req -> getOrigin();
+    HttpParser *parser = req -> getParser();
 
-    req -> addBody(origin);
+    string origin = parser -> getOrigin();
+
+    rep -> addBody(origin);
+
+     rep -> send();
 }
 
 void pub_handler(HttpRequest *req, HttpResponse *rep, void *arg)
@@ -39,7 +43,7 @@ void error_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 
     HttpParser *parser = req -> getParser();
 
-    rep -> addBody(concat("method", parser -> getMethod());
+    rep -> addBody(concat("method", parser -> getMethod()));
     rep -> addBody(concat("version", parser -> getVersion()));
     rep -> addBody(concat("url", parser -> getUrl()));
 
