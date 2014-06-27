@@ -8,6 +8,8 @@
 #include "MsgHandler.h"
 using namespace sealedserver;
 
+#include "HttpParser.h"
+
 namespace sealedserver
 {
 
@@ -45,47 +47,13 @@ public:
     /// Init the response
     void    initResponse(int code);
 
-private:
-    /// Parse the head & body
-    /// Currently, only support get
-    /// That means we won't support post 
-    /// In this version
-    void parse(Buffer &receivedBuff);
-    
-    /// Parse the first line
-    bool parseFirstLine(const string &str, int &index);
-    
-    /// Parse the header except the first line
-    bool parseHeader(string str);
+public:
+    /// Get Header
+    Header  getHeader();
 
-    /// Parse each line of the header expect the first line
-    bool parseLine(string str);
-
-    /// Parse the parameters in the url
-    bool parseURL();
-    bool decode(string para);
-    bool parsekv(string str);
-    
-    /// Check the information
-    int is_valid_http_method(const char *s);
-    bool check();
+    class HttpParse;
 
 private:
-    /// The first line
-    string       method_;
-    string       url_;
-    string       version_;
-
-    /// The result of parsed url_
-    string       querystring_;
-    Params       params_;
-
-    /// The header
-    Header       header_;   
-    
-    /// The body. Only supported empty
-    string       body_;
-
     /// The server
     HttpServer  *server_;
 
@@ -97,6 +65,8 @@ private:
 
     /// bool first, the first read
     bool          first_;
+
+    HttpParser    parser_;
 };
 
 };

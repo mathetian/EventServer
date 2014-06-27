@@ -11,26 +11,27 @@ using namespace sealedserver;
 
 HttpServer server(Port);
 
-void re_construct(HttpRequest *conn, HttpResponse *rep, void *arg)
+void sign_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
 }
 
-void sign_handler(HttpRequest *conn, HttpResponse *rep, void *arg)
+void pub_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
 }
 
-void pub_handler(HttpRequest *conn, HttpResponse *rep, void *arg)
+void sub_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
 }
 
-void sub_handler(HttpRequest *conn, HttpResponse *rep, void *arg)
+void error_handler(HttpRequest *req, HttpResponse *rep, void *arg)
 {
+    rep -> addHeader("Content-Type", "text/html");
+
+    typedef map<string, string> Header;
+
+    Header header = req -> getHeader();
 }
 
-void error_handler(HttpRequest *conn, HttpResponse *rep, void *arg)
-{
-    re_construct(conn, arg);
-}
 
 /// Signal Stop the server
 void signalStop(int)
