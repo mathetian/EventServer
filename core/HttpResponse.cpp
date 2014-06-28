@@ -49,14 +49,26 @@ static const char *status_code_to_str(int status_code) {
     }
 }
 
-static string getPrefix(const string &url)
+static string getPrefix(string url)
 {
     /// TBD
+    int index = url.find("http://");
+    if(index != -1) url = url.substr(index + 7);
+        index = url.find("/");
+    if(index != -1) url = url.substr(0, index);
+
+    return url;
 }
 
-static string getPosix(const string &url)
+static string getPosix(string url)
 {
     /// TBD
+    int index = url.find("http://");
+    if(index != -1) url = url.substr(index + 7);
+        index = url.find("/");
+    if(index != -1) url = url.substr(index + 1);
+
+    return url;
 }
 
 /// For the server
