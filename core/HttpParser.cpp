@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include "C.h"
+using namespace utils;
+
 #include "HttpParser.h"
 
 namespace sealedserver
@@ -209,6 +212,48 @@ bool HttpParser::parsekv(string str)
     if(index == -1 || index == 0)
         return false;
     params_[str.substr(0, index)] = str.substr(index + 1);
+
+    return true;
+}
+
+bool HttpParser::parseURL(const string &url, string &host, int &port, string &qstr)
+{
+    int index1 = url.find("/");
+    int index2 = url.find(":");
+
+    if(index1 == -1)
+    {
+        /// That means qstr == empty        
+        qstr = "/";
+
+        if(index2 == -1)
+        {
+            host = url;
+            port = 80;
+        }
+        else
+        {
+            host = url.substr(0, index2);
+            port = to_int(url.substr(index2 + 1));
+        }
+    }
+    else
+    {
+        /// That means qstr != empty
+        qstr = "/" + url.substr(index1 + 1);
+
+        if(index2 == -1 || index2 > index1)
+        {
+             /// That means without port
+            host = url.substr(0, index1);
+            port = 80;
+        }
+        else
+        {
+            host = url.substr(0, index2);
+            port = to_int(url.substr(index2 + 1, index1 - index2 - 1));
+        }
+    }
 
     return true;
 }
