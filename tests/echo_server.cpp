@@ -43,7 +43,7 @@ private:
         if(status == MSGHandler::SUCC)
         {
             DEBUG << "Received(from " <<  m_sock.fd() <<  "):" << (string)receivedBuff;
-            write(receivedBuff);
+            send(receivedBuff);
         }
         else  assert(0);
     }

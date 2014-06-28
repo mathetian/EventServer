@@ -8,7 +8,7 @@
 #include "Header.h"
 
 #include "Noncopyable.h"
-
+#include "Log.h"
 /**
 ** Thread.h is the archive of many sub-module of concurrency.
 **
@@ -37,7 +37,12 @@ public:
     id_type  run()
     {
         assert(m_tid == -1);
-        pthread_create(&m_tid, NULL, m_task, m_args);
+        int flag = pthread_create(&m_tid, NULL, m_task, m_args);
+        if(errno != 0)
+        {
+            INFO << strerror(errno);
+            assert(errno == 0);
+        }
         return m_tid;
     }
     /**

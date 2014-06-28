@@ -7,7 +7,7 @@
 #include "HttpResponse.h"
 using namespace sealedserver;
 
-#define Port 8080
+#define Port 8081
 
 HttpServer server(Port);
 

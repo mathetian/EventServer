@@ -15,9 +15,9 @@ Socket::Socket(int family, int type) :
     setUnblocking();
 
     int optval = 1;
-
+    
     setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-
+    
     setStatus();
 }
 

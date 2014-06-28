@@ -48,7 +48,7 @@ protected:
         memset(buff, 0, 20);
         sprintf(buff, "wait for me, I am %d", m_sock.fd());
 
-        write(Buffer(buff, true));
+        send(Buffer(buff, true));
     }
 
     /// Invoked when a message is received

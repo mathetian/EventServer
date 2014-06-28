@@ -22,6 +22,8 @@ HttpRequest::HttpRequest(HttpClient *client, string url, EventLoop *loop, Socket
 {
     /// TBD
     parser_ = new HttpParser(1);
+    m_first = true;
+    registerWrite();
 }
 
 HttpRequest::~HttpRequest()

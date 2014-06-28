@@ -21,7 +21,7 @@ void error(HttpRequest *req, void *arg)
 void signalStop(int)
 {
     INFO << "Stop running...by manually";
-    server.stop();
+    client.stop();
 }
 
 /// Change the configure
@@ -42,9 +42,11 @@ int main()
 
     ::signal(SIGINT, signalStop);
     setlimit(100000); errno = 0;
-
-	client.request("http://www.google.com", get, error);
-	client.request("http://128.199.204.82", get, error);
+    
+    client.start();
+	
+    client.request("http://www.google.com", get, error, NULL);
+	//client.request("http://128.199.204.82", get, error, NULL);
 	
 	client.wait();
 
