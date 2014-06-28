@@ -12,9 +12,14 @@ namespace sealedserver
 {
 
 class HttpParser {
-
     typedef map<string, string> Header;
     typedef map<string, string> Params;
+public:
+    /// There are two packages that need to be resolved
+    ///
+    /// @param type, 0 for the request(parse the request package)
+    ///            , 1 for the response(parse the response package)
+    HttpParser(int type);
 
 public:
     /// Parse the head & body
@@ -28,7 +33,7 @@ private:
     bool parseFirstLine(const string &str, int &index);
 
     /// Parse the header except the first line
-    bool parseHeader(string str);
+    bool parseHeader(string str, int &index);
 
     /// Parse each line of the header expect the first line
     bool parseLine(string str);
@@ -96,6 +101,9 @@ private:
 
     /// string origin
     string       origin_;
+
+    /// the request/response
+    int          type_;
 };
 
 };

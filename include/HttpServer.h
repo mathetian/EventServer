@@ -22,7 +22,6 @@ class HttpServer : public Noncopyable
     typedef void (*Callback) (HttpRequest*, HttpResponse*, void*);
     typedef pair<Callback, void*> Pair;
     typedef map<string, Pair> Callbacks;
-    typedef map<string, string> Header;
 
 public:
     HttpServer(int port);

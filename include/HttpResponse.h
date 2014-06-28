@@ -17,8 +17,11 @@ namespace sealedserver
 class HttpResponse : public Noncopyable
 {
 public:
-    /// Constructor
+    /// Constructor, for the request
     HttpResponse(HttpRequest*, int code);
+
+    /// Constructor
+    HttpResponse(HttpRequest*);
 
     /// Deconstructor
     virtual ~HttpResponse();

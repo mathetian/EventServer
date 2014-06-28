@@ -7,6 +7,11 @@
 namespace sealedserver
 {
 
+HttpParser::HttpParser(int type) : type_(type)
+{
+
+}
+
 bool HttpParser::parse(Buffer &receivedBuff)
 {
     string str = (string)receivedBuff;
@@ -32,10 +37,14 @@ bool HttpParser::parse(Buffer &receivedBuff)
     }
 
     str  = str.substr(index);
-    flag = parseHeader(str);
+    flag = parseHeader(str, index);
 
     if(flag == false)
         return false;
+
+    assert(index < str.size());
+    
+    body_ = str.substr(index);
 
     return true;
 }
@@ -79,9 +88,9 @@ bool HttpParser::parseFirstLine(const string &str, int &index)
     return true;
 }
 
-bool HttpParser::parseHeader(string str)
+bool HttpParser::parseHeader(string str, int &rindex)
 {
-    bool flag = true;
+    bool flag = true; rindex = 0;
     while(str.size() != 0)
     {
         int index = str.find("\r\n");
@@ -97,6 +106,7 @@ bool HttpParser::parseHeader(string str)
             return false;
         }
 
+        rindex += index + 2;
         str = str.substr(index + 2);
     }
 
@@ -120,11 +130,16 @@ int HttpParser::is_valid_http_method(const char *s) {
 
 bool HttpParser::check()
 {
-    if(is_valid_http_method(method_.c_str()) == false)
-        return false;
+    if(type_ == 0)
+    {
+        if(is_valid_http_method(method_.c_str()) == false)
+            return false;
 
-    if (memcmp(version_.c_str(), "HTTP/", 5) != 0)
-        return false;
+        if (memcmp(version_.c_str(), "HTTP/", 5) != 0)
+            return false;
+    }
+    /// to reduce the bound
+    /// we omit the check of response package
 
     return true;
 }

@@ -49,12 +49,37 @@ static const char *status_code_to_str(int status_code) {
     }
 }
 
+static string getPrefix(const string &url)
+{
+    /// TBD
+}
+
+static string getPosix(const string &url)
+{
+    /// TBD
+}
+
+/// For the server
 HttpResponse::HttpResponse(HttpRequest *request, int code) : request_(request)
 {
     stringstream ss;
     ss << "HTTP/1.1 " << code << " " << status_code_to_str(code) << "\r\n";
 
     header_ = ss.str();
+}
+
+/// For the client
+HttpResponse::HttpResponse(HttpRequest *request) : request_(request)
+{
+    stringstream ss; 
+    ss << "GET " << getPosix(request -> getUrl()) << " " << "HTTP/1.1" << "\r\n";
+
+    header_ = ss.str();
+
+    addHeader("Host", getPrefix(request -> getUrl()));
+    addHeader("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0");
+    addHeader("Accept-Language", "en-US,en;q=0.5");
+    addHeader("Accept-Encoding", "gzip, deflate");
 }
 
 HttpResponse::~HttpResponse()
