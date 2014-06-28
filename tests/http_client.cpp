@@ -13,12 +13,12 @@ void get(HttpRequest *req, void *arg)
 {	
     HttpParser *parser = req -> getParser();
 
-    cout << parser -> getOrigin() << endl;
+    WARN << parser -> getOrigin() ;
 }
 
 void error(HttpRequest *req, void *arg)
 {
-    cout << "error" << endl;
+    WARN << "error" ;
 }
 
 /// Signal Stop the server
@@ -49,8 +49,12 @@ int main()
     
     client.start();
 	
-    client.request("http://202.120.58.161", get, error, NULL);
+    /// bbs.sjtu.edu.cn
+    client.request("202.120.58.161", get, error, NULL);
 	
+    /// yulongti.info/?p=2761
+    client.request("128.199.204.82:80/?p=2761", get, error, NULL);
+    
 	client.wait();
 
 	return 0;

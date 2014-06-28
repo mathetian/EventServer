@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include "C.h"
+using namespace utils;
+
+#include "HttpParser.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
@@ -49,29 +53,6 @@ static const char *status_code_to_str(int status_code) {
     }
 }
 
-static string getPrefix(string url)
-{
-    /// TBD
-    int index = url.find("http://");
-    if(index != -1) url = url.substr(index + 7);
-        index = url.find("/");
-    if(index != -1) url = url.substr(0, index);
-
-    return url;
-}
-
-static string getPosix(string url)
-{
-    /// TBD
-    int index = url.find("http://");
-    if(index != -1) url = url.substr(index + 7);
-        index = url.find("/");
-    if(index != -1) url = url.substr(index + 1);
-    if(index == -1) url = "/";
-    
-    return url;
-}
-
 /// For the server
 HttpResponse::HttpResponse(HttpRequest *request, int code) : request_(request)
 {
@@ -84,12 +65,22 @@ HttpResponse::HttpResponse(HttpRequest *request, int code) : request_(request)
 /// For the client
 HttpResponse::HttpResponse(HttpRequest *request) : request_(request)
 {
+    string url = request -> getUrl(); 
+
+    string host, qstr; int port; 
+    
+    assert(HttpParser::parseURL(url, host, port, qstr) == true);
+    
+    stringstream ss1;
+    ss1 << host << ":" << port;
+    host = ss1.str();
+
     stringstream ss; 
-    ss << "GET " << getPosix(request -> getUrl()) << " " << "HTTP/1.1" << "\r\n";
+    ss << "GET " << qstr << " " << "HTTP/1.1" << "\r\n";
 
     header_ = ss.str();
 
-    addHeader("Host", getPrefix(request -> getUrl()));
+    addHeader("Host", host);
     addHeader("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0");
     addHeader("Accept-Language", "en-US,en;q=0.5");
     addHeader("Accept-Encoding", "gzip, deflate");

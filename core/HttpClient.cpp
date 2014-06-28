@@ -46,15 +46,17 @@ bool HttpClient::request(const string &url, Callback get, Callback error, void *
 	}
 
 	/// TBD, parse the url and find out the ip/port
+	string host, qstr; int port;
+
+	assert(HttpParser::parseURL(url, host, port, qstr) == true);
 	
-	NetAddress svrAddr(string("202.120.58.161"), 80);
+	NetAddress svrAddr(host, port);
 
     Socket sock(AF_INET, SOCK_STREAM);
     sock.connect(&svrAddr);
-//	Socket sock;
 
     /// Don't need to de-locate it
-    HttpRequest *request = new HttpRequest(this, url, pool_.getRandomLoop(), sock);
+    new HttpRequest(this, url, pool_.getRandomLoop(), sock);
 }
 
 
