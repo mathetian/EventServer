@@ -11,10 +11,14 @@ HttpClient client;
 
 void get(HttpRequest *req, void *arg)
 {	
+    HttpParser *parser = req -> getParser();
+
+    cout << parser -> getOrigin() << endl;
 }
 
 void error(HttpRequest *req, void *arg)
 {
+    cout << "error" << endl;
 }
 
 /// Signal Stop the server
@@ -45,8 +49,7 @@ int main()
     
     client.start();
 	
-    client.request("http://www.google.com", get, error, NULL);
-	//client.request("http://128.199.204.82", get, error, NULL);
+    client.request("http://128.199.204.82", get, error, NULL);
 	
 	client.wait();
 

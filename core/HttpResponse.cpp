@@ -67,7 +67,8 @@ static string getPosix(string url)
     if(index != -1) url = url.substr(index + 7);
         index = url.find("/");
     if(index != -1) url = url.substr(index + 1);
-
+    if(index == -1) url = "/";
+    
     return url;
 }
 
@@ -101,7 +102,7 @@ HttpResponse::~HttpResponse()
 void HttpResponse::send()
 {
     string content = header_ + "\r\n" + body_;
-
+     INFO << content;
     request_ -> send(content);
 }
 
