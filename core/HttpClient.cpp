@@ -47,7 +47,7 @@ bool HttpClient::request(const string &url, Callback get, Callback error, void *
 
 	/// TBD, parse the url and find out the ip/port
 	
-	NetAddress svrAddr(string("128.199.204.82"), 80);
+	NetAddress svrAddr(string("202.120.58.161"), 80);
 
     Socket sock(AF_INET, SOCK_STREAM);
     sock.connect(&svrAddr);

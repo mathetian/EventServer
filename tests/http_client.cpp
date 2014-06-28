@@ -49,7 +49,7 @@ int main()
     
     client.start();
 	
-    client.request("http://128.199.204.82", get, error, NULL);
+    client.request("http://202.120.58.161", get, error, NULL);
 	
 	client.wait();
 
