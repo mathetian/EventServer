@@ -46,7 +46,7 @@ bool HttpParser::parse(Buffer &receivedBuff)
         return false;
 
     assert(index < str.size());
-    
+
     body_ = str.substr(index);
 
     return true;
@@ -93,7 +93,8 @@ bool HttpParser::parseFirstLine(const string &str, int &index)
 
 bool HttpParser::parseHeader(string str, int &rindex)
 {
-    bool flag = true; rindex = 0;
+    bool flag = true;
+    rindex = 0;
     while(str.size() != 0)
     {
         int index = str.find("\r\n");
@@ -223,7 +224,7 @@ bool HttpParser::parseURL(const string &url, string &host, int &port, string &qs
 
     if(index1 == -1)
     {
-        /// That means qstr == empty        
+        /// That means qstr == empty
         qstr = "/";
 
         if(index2 == -1)
@@ -244,7 +245,7 @@ bool HttpParser::parseURL(const string &url, string &host, int &port, string &qs
 
         if(index2 == -1 || index2 > index1)
         {
-             /// That means without port
+            /// That means without port
             host = url.substr(0, index1);
             port = 80;
         }

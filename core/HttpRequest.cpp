@@ -54,7 +54,7 @@ void HttpRequest::connected()
 void HttpRequest::received(STATUS status, Buffer &receivedBuff)
 {
     /// Forbid received twice
-    /// We don't use unRegisterRead 
+    /// We don't use unRegisterRead
     /// As it will incur the forbidded vist
     if(first_ == true) return;
 
@@ -62,7 +62,7 @@ void HttpRequest::received(STATUS status, Buffer &receivedBuff)
 
     bool flag = parser_ -> parse(receivedBuff);
 
-    if(flag == false){
+    if(flag == false) {
         errcode_ = 1;
     }
 

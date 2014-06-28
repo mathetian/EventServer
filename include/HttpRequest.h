@@ -43,7 +43,7 @@ public:
     /// Invoked when a msg has been sent
     /// Only for the server
     virtual void sent(STATUS status, int len, int targetLen);
-    
+
 public:
     /// For the server
 
@@ -61,7 +61,7 @@ public:
 
     /// Get the Response
     HttpResponse* getResponse();
-    
+
     /// Get the parser
     HttpParser* getParser();
 
@@ -85,10 +85,14 @@ public:
     **/
 
     /// Return the url
-    string getUrl() const { return url_; }
+    string getUrl() const {
+        return url_;
+    }
 
     /// Return the errcode_
-    int    getCode() const { return errcode_; } 
+    int    getCode() const {
+        return errcode_;
+    }
 
 private:
     /**

@@ -10,7 +10,7 @@ using namespace sealedserver;
 HttpClient client;
 
 void get(HttpRequest *req, void *arg)
-{	
+{
     HttpParser *parser = req -> getParser();
 
     WARN << parser -> getOrigin() ;
@@ -42,20 +42,21 @@ int setlimit(int num_pipes)
 
 int main()
 {
-	Log::setLevel(Log::debug);
+    Log::setLevel(Log::debug);
 
     ::signal(SIGINT, signalStop);
-    setlimit(100000); errno = 0;
-    
+    setlimit(100000);
+    errno = 0;
+
     client.start();
-	
+
     /// bbs.sjtu.edu.cn
     client.request("202.120.58.161", get, error, NULL);
-	
+
     /// yulongti.info/?p=2761
     client.request("128.199.204.82:80/?p=2761", get, error, NULL);
-    
-	client.wait();
 
-	return 0;
+    client.wait();
+
+    return 0;
 }

@@ -87,7 +87,7 @@ public:
     /// A helper function for parsing the url
     ///
     /// @param url, the url
-    ///       host, the parsed ip(result) 
+    ///       host, the parsed ip(result)
     ///       port, the port(usually 80)
     ///       qstr, the query string
     /// @return false, failed
@@ -97,7 +97,7 @@ public:
     ///           119.75.218.77/s?wd=a
     ///Or
     ///           119.75.218.77:80/s?wd=a
-    /// 
+    ///
     /// The first type means that the port is the default port, which means 80
     /// you can't add http* or others in this url
     /// Also, you can give `119.75.218.77/` as a parameters

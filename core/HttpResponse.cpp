@@ -65,17 +65,18 @@ HttpResponse::HttpResponse(HttpRequest *request, int code) : request_(request)
 /// For the client
 HttpResponse::HttpResponse(HttpRequest *request) : request_(request)
 {
-    string url = request -> getUrl(); 
+    string url = request -> getUrl();
 
-    string host, qstr; int port; 
-    
+    string host, qstr;
+    int port;
+
     assert(HttpParser::parseURL(url, host, port, qstr) == true);
-    
+
     stringstream ss1;
     ss1 << host << ":" << port;
     host = ss1.str();
 
-    stringstream ss; 
+    stringstream ss;
     ss << "GET " << qstr << " " << "HTTP/1.1" << "\r\n";
 
     header_ = ss.str();
@@ -93,7 +94,6 @@ HttpResponse::~HttpResponse()
 void HttpResponse::send()
 {
     string content = header_ + "\r\n" + body_;
-     INFO << content;
     request_ -> send(content);
 }
 

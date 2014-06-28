@@ -17,40 +17,41 @@ HttpClient::~HttpClient()
 
 void HttpClient::start()
 {
-	pool_.subrun();
+    pool_.subrun();
 }
 
 void HttpClient::wait()
 {
-	pool_.subjoin();
+    pool_.subjoin();
 }
 
 void HttpClient::stop()
 {
-	pool_.stop();
+    pool_.stop();
 }
 
 bool HttpClient::request(const string &url, Callback get, Callback error, void *arg)
 {
-	if(calls_.find(url) != calls_.end())
-	{
-		Pair pair = calls_[url];
-		if(get != pair.first.first || error != pair.first.second 
-				|| arg != pair.second){
-			return false;
-		}
-	}
-	else
-	{
-		calls_[url] =  make_pair(make_pair(get, error), arg);
-	}
+    if(calls_.find(url) != calls_.end())
+    {
+        Pair pair = calls_[url];
+        if(get != pair.first.first || error != pair.first.second
+                || arg != pair.second) {
+            return false;
+        }
+    }
+    else
+    {
+        calls_[url] =  make_pair(make_pair(get, error), arg);
+    }
 
-	/// TBD, parse the url and find out the ip/port
-	string host, qstr; int port;
+    /// TBD, parse the url and find out the ip/port
+    string host, qstr;
+    int port;
 
-	assert(HttpParser::parseURL(url, host, port, qstr) == true);
-	
-	NetAddress svrAddr(host, port);
+    assert(HttpParser::parseURL(url, host, port, qstr) == true);
+
+    NetAddress svrAddr(host, port);
 
     Socket sock(AF_INET, SOCK_STREAM);
     sock.connect(&svrAddr);
@@ -62,23 +63,23 @@ bool HttpClient::request(const string &url, Callback get, Callback error, void *
 
 void HttpClient::process(HttpRequest *req)
 {
-	string     url = req -> getUrl();
-	int    errcode = req -> getCode();
+    string     url = req -> getUrl();
+    int    errcode = req -> getCode();
 
-	assert(calls_.find(url) != calls_.end());
+    assert(calls_.find(url) != calls_.end());
 
-	Callback   get = calls_[url].first.first;
-	Callback error = calls_[url].first.second;
-	void      *arg = calls_[url].second;
-	
-	if(errcode != 0){
-		/// error in reply
-		error(req, arg);	
-	}
-	else {
-		/// everything is ok
-		get(req, arg);
-	}
+    Callback   get = calls_[url].first.first;
+    Callback error = calls_[url].first.second;
+    void      *arg = calls_[url].second;
+
+    if(errcode != 0) {
+        /// error in reply
+        error(req, arg);
+    }
+    else {
+        /// everything is ok
+        get(req, arg);
+    }
 
 }
 
