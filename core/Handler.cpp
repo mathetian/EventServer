@@ -105,7 +105,7 @@ void Handler::proceed(int event)
 {
     if((event & EPOLLRDHUP) || (event & EPOLLERR) || (event & EPOLLHUP))
     {
-        detach();
+        /// detach();
 
         DEBUG << "Proceed: " << m_sock.fd() << " " << (event&EPOLLRDHUP) << " " << (event&EPOLLERR) << " " << (event&EPOLLHUP);
 

@@ -12,11 +12,20 @@ HttpServer::HttpServer(int port) : port_(port), errflag_(false)
     acceptor_ = new HttpAcceptor<HttpRequest>(this, pool_.getRandomLoop(), port);
 }
 
+HttpServer::HttpServer(int port, int place) : port_(port), errflag_(false)
+{
+    
+}
+
 HttpServer::~HttpServer()
 {
     pool_.stop();
 
-    delete acceptor_;
+    if(acceptor_)
+    {
+        delete acceptor_;
+    }
+    
     acceptor_ = NULL;
 }
 

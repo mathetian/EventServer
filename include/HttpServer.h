@@ -24,7 +24,15 @@ class HttpServer : public Noncopyable
     typedef map<string, Pair> Callbacks;
 
 public:
+    /// Constructor
     HttpServer(int port);
+
+    /// Constructor
+    /// place is short for placeholder
+    /// place is used in inherited class
+    HttpServer(int port, int place);
+
+    /// Destructor
     virtual ~HttpServer();
 
 public:
@@ -36,7 +44,7 @@ public:
 public:
     bool process(HttpRequest *conn);
 
-private:
+protected:
     EventPool pool_;
     Callbacks calls_;
     int       port_;

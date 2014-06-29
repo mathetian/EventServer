@@ -94,6 +94,10 @@ public:
         return errcode_;
     }
 
+public:
+    /// placeholder
+    virtual void RegisterVariable(void *arg) { }
+
 private:
     /**
     ** For the client
