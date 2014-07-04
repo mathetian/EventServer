@@ -63,3 +63,11 @@ How to use it? I have written a simple echo server-client in directory `tests`.
 2. Add timer & signal event
 3. Add support of asynchronous event and thread-pool(Edge Trigger & Thread affinity)
 4. Unit Test and Feature Test
+
+## Other Experiments we conducted
+
+1. Http Server will cost 2KB/Connection
+
+2. Http Client will cost 1KB/Connection
+
+3. VIRT won't change

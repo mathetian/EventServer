@@ -9,6 +9,10 @@
 #include "HttpResponse.h"
 using namespace sealedserver;
 
+#define CLINUM 100000
+#define Port 8081
+#define PortNum 5
+
 HttpClient client;
 
 void get(HttpRequest *req, void *arg)
@@ -58,9 +62,12 @@ int main()
     /// yulongti.info/?p=2761
     /// client.request("128.199.204.82/?p=2761", get, error, NULL);
 
-    for(int i = 0; i < 20000; i++)
+    for(int i = 0; i < CLINUM; i++)
     {
-        client.request("127.0.0.1:8081/sub", get, error, NULL);
+        stringstream ss; int port = Port + (i % PortNum);
+        ss << "127.0.0.1" << ":" << port << "/sub";
+
+        client.request(ss.str(), get, error, NULL);
         usleep(5 * 1000);
     }
 
