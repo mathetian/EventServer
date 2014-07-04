@@ -7,12 +7,15 @@
 namespace sealedserver
 {
 
-HttpServer::HttpServer(int port) : port_(port), errflag_(false)
+HttpServer::HttpServer(int port, int portnum) : port_(port), errflag_(false), portnum_(portnum)
 {
-    acceptor_ = new HttpAcceptor<HttpRequest>(this, pool_.getRandomLoop(), port);
+    acceptors_ = vector<HttpAcceptor<HttpRequest>*>(portnum);
+
+    for(int i = 0; i < portnum ;i++)
+        acceptors_[i] = new HttpAcceptor<HttpRequest>(this, pool_.getRandomLoop(), port + i);
 }
 
-HttpServer::HttpServer(int port, int place) : port_(port), errflag_(false)
+HttpServer::HttpServer(int port, int portnum, int place) : port_(port), errflag_(false), portnum_(portnum)
 {
 
 }
@@ -21,12 +24,11 @@ HttpServer::~HttpServer()
 {
     pool_.stop();
 
-    if(acceptor_)
+    for(int i = 0; i < portnum_ ;i++)
     {
-        delete acceptor_;
+        delete acceptors_[i];
+        acceptors_[i] = NULL;
     }
-
-    acceptor_ = NULL;
 }
 
 void HttpServer::start()

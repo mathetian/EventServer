@@ -10,8 +10,9 @@
 using namespace sealedserver;
 
 #define Port 8081
+#define PortNum 5
 
-HttpServer server(Port);
+HttpServer server(Port, PortNum);
 
 string concat(string key, string value)
 {

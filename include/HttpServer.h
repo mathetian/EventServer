@@ -25,14 +25,14 @@ class HttpServer : public Noncopyable
 
 public:
     /// Constructor
-    HttpServer(int port);
+    HttpServer(int port, int portnum);
 
     /// Constructor
     /// place is short for placeholder
     /// place is used in inherited class
     ///
     /// For extendible ClassEs
-    HttpServer(int port, int place);
+    HttpServer(int port, int portnum, int place);
 
     /// Destructor
     virtual ~HttpServer();
@@ -62,8 +62,9 @@ protected:
     int       port_;
     Pair      error_;
     bool      errflag_;
-    HttpAcceptor<HttpRequest> *acceptor_;
 
+    int       portnum_;
+    vector<HttpAcceptor<HttpRequest>*> acceptors_;
 };
 
 };
