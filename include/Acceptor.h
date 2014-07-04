@@ -24,8 +24,8 @@ public:
         NetAddress addr = NetAddress(localport);
 
         m_sock = TCPSocket(&addr);
-        attach();
-        registerRead();
+        
+        attach(); registerRead();
 
         INFO << "TCPAcceptor Initialization: " << m_sock.getsockname();
 
@@ -33,9 +33,7 @@ public:
     }
 
     /// Destructor
-    virtual ~TCPAcceptor()
-    {
-    }
+    virtual ~TCPAcceptor() { }
 
 public:
     virtual void onReceiveEvent()
@@ -49,17 +47,11 @@ public:
     }
 
 public:
+    /// `OnSendEvent` in Handler is pure virtual function
+    /// Therefore, we need override it here 
     void onSendEvent() { }
 
-    void onCloseEvent(ClsMtd st)
-    {
-        DEBUG << "close listen socket fd: " << m_sock.fd() << " " << st;
-
-        detach();
-        m_sock.close();
-    }
-
-public:
+private:
     Socket wrap()
     {
         NetAddress a;
@@ -70,12 +62,6 @@ public:
 
         return sock;
     }
-
-    EventLoop* getRLoop()
-    {
-        return getRandomLoop();
-    }
-
 };
 
 };

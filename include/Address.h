@@ -70,14 +70,7 @@ public:
     port   Port() const;
 
     /// Returns a human-readable version of this address.
-    string as_string() const
-    {
-        string out = IP();
-
-        out += ":" + to_string(Port());
-
-        return out;
-    }
+    string as_string() const;
 
 private:
     void init(string ip, port pt);

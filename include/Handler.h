@@ -51,7 +51,10 @@ public:
     virtual void onSendEvent()     = 0;
 
     /// Called by the event loop when there close events happens
-    virtual void onCloseEvent(ClsMtd st) = 0;
+    virtual void onCloseEvent(ClsMtd st)
+    {
+        detach(); m_sock.close();
+    }
 
 public:
     /// Helper functions
