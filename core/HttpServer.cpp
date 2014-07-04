@@ -50,33 +50,33 @@ void HttpServer::error(Callback callback, void *arg)
     errflag_ = true;
 }
 
-bool HttpServer::process(HttpRequest *conn)
+bool HttpServer::process(HttpRequest *req)
 {
-    string query = conn -> getQuery();
+    string query = req -> getQuery();
 
     if(calls_.find(query) ==  calls_.end())
     {
-        conn -> initResponse(404);
+        req -> initResponse(404);
 
         if(errflag_)
         {
             Callback callback = error_.first;
             void    *arg      = error_.second;
 
-            callback(conn, conn -> getResponse(), arg);
+            callback(req, req -> getResponse(), arg);
         }
         else
         {
-            conn -> notFound();
+            req -> notFound();
         }
     }
     else
     {
-        conn -> initResponse(200);
+        req -> initResponse(200);
 
         Callback callback = calls_[query].first;
         void    *arg      = calls_[query].second;
-        callback(conn, conn -> getResponse(),arg);
+        callback(req, req -> getResponse(),arg);
     }
 }
 

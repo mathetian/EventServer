@@ -3,6 +3,8 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "HttpServer.h"
+
+#include "HttpParser.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 using namespace sealedserver;

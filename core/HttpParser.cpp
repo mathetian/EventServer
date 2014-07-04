@@ -10,7 +10,7 @@ using namespace utils;
 namespace sealedserver
 {
 
-HttpParser::HttpParser(int type) : type_(type)
+HttpParser::HttpParser(HttpParser::ParseType type) : type_(type)
 {
 
 }
@@ -140,7 +140,7 @@ int HttpParser::is_valid_http_method(const char *s)
 
 bool HttpParser::check()
 {
-    if(type_ == 0)
+    if(type_ == REQUEST)
     {
         if(is_valid_http_method(method_.c_str()) == false)
             return false;

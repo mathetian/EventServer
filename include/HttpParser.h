@@ -16,11 +16,14 @@ class HttpParser
     typedef map<string, string> Header;
     typedef map<string, string> Params;
 public:
+    typedef enum {REQUEST, RESPONSE} ParseType;
+
+public:
     /// There are two packages that need to be resolved
     ///
     /// @param type, 0 for the request(parse the request package)
     ///            , 1 for the response(parse the response package)
-    HttpParser(int type);
+    HttpParser(ParseType type);
 
 public:
     /// Parse the head & body
@@ -68,7 +71,7 @@ public:
     }
 
     /// Get Header
-    Header getHeader()
+    Header getHeader() const
     {
         return header_;
     }
@@ -80,7 +83,7 @@ public:
     }
 
     /// Get the params
-    Params getParams()
+    Params getParams() const
     {
         return params_;
     }
@@ -131,7 +134,7 @@ private:
     string       origin_;
 
     /// the request/response
-    int          type_;
+    ParseType   type_;
 };
 
 };

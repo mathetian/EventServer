@@ -4,6 +4,8 @@
 
 #include "HttpClient.h"
 
+#include "HttpParser.h"
+
 namespace sealedserver
 {
 
@@ -55,7 +57,13 @@ bool HttpClient::request(const string &url, Callback get, Callback error, void *
     NetAddress svrAddr(host, port);
 
     Socket sock(AF_INET, SOCK_STREAM);
-    sock.connect(&svrAddr);
+    
+    /// Need further optimization
+    if(sock.connect(&svrAddr) == false)
+    {
+        INFO << sock.status() ;
+        assert(0);
+    }
 
     /// Don't need to de-locate it
     new HttpRequest(this, url, pool_.getRandomLoop(), sock);

@@ -30,19 +30,31 @@ public:
     /// Constructor
     /// place is short for placeholder
     /// place is used in inherited class
+    ///
+    /// For extendible ClassEs
     HttpServer(int port, int place);
 
     /// Destructor
     virtual ~HttpServer();
 
 public:
+    /// Start the server
+    /// To be special, it is used to start the `eventloop`
     void start();
+
+    /// Stop the server
+    /// To be special, it is used to stop the `eventloop`
     void stop();
+
+    /// Add callback for `url`
     void add(const string &url, Callback callback, void *arg);
+    
+    /// Set the error callback
     void error(Callback callback, void *arg);
 
 public:
-    bool process(HttpRequest *conn);
+    /// Process the `request`
+    bool process(HttpRequest *req);
 
 protected:
     EventPool pool_;

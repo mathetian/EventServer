@@ -78,10 +78,10 @@ HttpResponse::HttpResponse(HttpRequest *request) : request_(request)
     ss1 << host << ":" << port;
     host = ss1.str();
 
-    stringstream ss;
-    ss << "GET " << qstr << " " << "HTTP/1.1" << "\r\n";
+    stringstream ss2;
+    ss2 << "GET " << qstr << " " << "HTTP/1.1" << "\r\n";
 
-    header_ = ss.str();
+    header_ = ss2.str();
 
     addHeader("Host", host);
     addHeader("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0");

@@ -8,14 +8,13 @@
 #include "MsgHandler.h"
 using namespace sealedserver;
 
-#include "HttpParser.h"
-
 namespace sealedserver
 {
 
 class HttpServer;
 class HttpClient;
 class HttpResponse;
+class HttpParser;
 
 class HttpRequest : public MSGHandler
 {
