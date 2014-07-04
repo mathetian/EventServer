@@ -46,6 +46,8 @@ public:
     typedef enum  { EXCEED, SOCKERR, BLOCKED, SUCC, CONTINUE, FINAL} STATUS;
 
 protected:
+    /// Override functions
+
     /// Invoked when a written event happens(callback)
     void onReceiveEvent();
 
@@ -56,6 +58,8 @@ protected:
     void onCloseEvent(ClsMtd st);
 
 public:
+    /// Function should be overrided in sub-classes
+
     /// Invoke when has connected to the server
     /// Should override if and only if client
     virtual void connected()  { }
@@ -74,7 +78,8 @@ private:
     list <Buffer>  m_Bufs;
 
     /// Global flag for closed
-    bool           m_global;
+    /// Forbid sending after close
+    bool           m_close;
 
 protected:
     /// Flag for connected(certainly only for client)

@@ -9,13 +9,14 @@ namespace sealedserver
 {
 
 MSGHandler::MSGHandler(EventLoop* loop, Socket sock)
-    : Handler(loop), m_global(true), m_first(false)
+    : Handler(loop), m_close(false), m_first(false)
 {
     /// Must be written here
     /// Don't allow after `:`
     m_sock = sock;
-    attach();
-    registerRead();
+    
+    attach(); registerRead();
+    
     assert(sock.status());
 }
 
@@ -27,7 +28,7 @@ MSGHandler::~MSGHandler()
 
 int MSGHandler::send(const Buffer& buf)
 {
-    if(m_global == false) return 0;
+    if(m_close == true) return 0;
 
     m_Bufs.push_back(buf);
     registerWrite();
@@ -38,7 +39,7 @@ int MSGHandler::send(const Buffer& buf)
 int MSGHandler::close()
 {
     onCloseEvent(CLSMAN);
-    m_global = false;
+    m_close = true;
 
     return 0;
 }
@@ -47,7 +48,7 @@ void MSGHandler::onReceiveEvent()
 {
     bool first = true, flag = true;
 
-    while(flag && m_global)
+    while(flag && m_close == false)
     {
         Buffer buf(MSGLEN);
         int len = m_sock.read(buf.data(), MSGLEN);
@@ -60,17 +61,17 @@ void MSGHandler::onReceiveEvent()
 
         flag = false;
 
-        if(len == 0)
+        if(len == 0){
             onCloseEvent(CLSEOF);
+        }
         else if(len < 0 && errno == EAGAIN)
         {
             /// omit, shouldn't happen in the first `read`
-
-            if(first == true)
-                assert(0);
+            if(first == true) assert(0);
         }
-        else if(len < 0)
+        else if(len < 0) {
             onCloseEvent(CLSERR);
+        }
         else if(len < MSGLEN)
         {
             buf.set_length(len);
@@ -81,8 +82,7 @@ void MSGHandler::onReceiveEvent()
             /// must be proceed manually
             buf.set_length(len);
             received(SUCC, buf);
-            flag = true;
-            first = false;
+            flag = true; first = false;
         }
     }
 }
@@ -101,7 +101,7 @@ void MSGHandler::onSendEvent()
 
     bool flag = true;
 
-    while(m_Bufs.size() > 0 && flag == true && m_global)
+    while(m_Bufs.size() > 0 && flag == true && m_close == false)
     {
         Buffer buf = m_Bufs.front();
         m_Bufs.pop_front();
@@ -118,18 +118,21 @@ void MSGHandler::onSendEvent()
 
         flag = false;
 
-        if(len == 0)
+        if(len == 0){
             onCloseEvent(CLSEOF);
+        }
         else if(len < 0 && errno == EAGAIN)
         {
             m_Bufs.push_back(buf);
             registerWrite();
         }
-        else if(len < 0)
+        else if(len < 0){
             onCloseEvent(CLSERR);
+        }   
         else
         {
             assert(len == length);
+         
             sent(SUCC, len, length);
             flag = false;
         }
@@ -144,9 +147,11 @@ void MSGHandler::onCloseEvent(ClsMtd st)
     /// 3. invoke the close event of customed
     /// 4. remove this object(add to the wait list of removed items)
 
-    detach();
-    m_sock.close();
+    detach(); m_sock.close(); 
+    
+    /// Additional operations
     closed(st);
+
     m_loop -> addClosed(this);
 }
 

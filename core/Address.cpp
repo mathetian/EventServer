@@ -73,13 +73,4 @@ uint32_t NetAddress::Port() const
     return ntohs(inetAddr()->sin_port);
 }
 
-string NetAddress::as_string() const
-{
-    string out = IP();
-
-    out += ":" + to_string(Port());
-
-    return out;
-}
-
 };

@@ -33,6 +33,7 @@ void Selector::registerEvent(Handler *handler, short event)
 
     /// Firstly, check the status
     /// Then determining whether `add` or `modify`
+    
     if(handler -> getStatus() != 0)
         addFlag = false;
 
@@ -72,7 +73,7 @@ void Selector::unRegisterEvent(Handler *handler, short event)
         DEBUG << "Found Close Event(triggered by detach), fd: " << fd;
 
         assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
-        handler->setDelflag();
+        handler -> setDelflag();
     }
     else if((event & EPOLLRDHUP) || (event & EPOLLERR) || (event & EPOLLHUP))
     {
@@ -84,15 +85,15 @@ void Selector::unRegisterEvent(Handler *handler, short event)
             DEBUG << "Found EPOLLHUP for fd: " << fd;
 
         assert(epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, NULL) == 0);
-        handler->setDelflag();
+        handler -> setDelflag();
     }
     else
     {
         /// Firstly, remove event from event-list
         /// Then   , get the updated status
 
-        handler->removeStatus(event);
-        events = handler->getStatus();
+        handler -> removeStatus(event);
+        events = handler -> getStatus();
 
         if(events != 0) delflag = false;
 

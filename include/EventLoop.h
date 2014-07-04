@@ -9,11 +9,9 @@
 #include "Noncopyable.h"
 using namespace utils;
 
+#include "Handler.h"
 #include "Acceptor.h"
 #include "Selector.h"
-
-#include "MsgHandler.h"
-#include "Handler.h"
 
 namespace sealedserver
 {
@@ -71,7 +69,7 @@ public:
     /// Add active event to `m_active`
     void addActive(int fd, int type);
 
-    /// Add handler to `m_closed`
+    /// Add handler to `m_del`
     void addClosed(Handler* handler);
 
     /// Process the handlers need to be delete

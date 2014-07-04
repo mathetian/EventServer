@@ -28,6 +28,8 @@ public:
 
 public:
     /// Register Special Event of handler
+    ///
+    /// @param event, XX_IN/XX_OUT 
     void registerEvent(Handler *handler, short event);
 
     /// Unregister Speical Event of handler
@@ -44,18 +46,18 @@ public:
     int dispatch(int second = 5);
 
 private:
-    /// m_epollfd, epoll needs this fd
+    /// epoll needs this fd
     int m_epollfd;
 
-    /// m_scknum, counter of socket number
+    /// each time write in it
+    struct epoll_event *m_events;
+    
+    /// counter of socket number
     /// decrease enumeration of sockets
     int m_socknum;
 
-    /// m_loop, EventLoop
+    /// EventLoop
     EventLoop          *m_loop;
-
-    /// m_events, each time write in it
-    struct epoll_event *m_events;
 };
 
 };

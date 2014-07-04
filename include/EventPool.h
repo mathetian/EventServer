@@ -5,15 +5,7 @@
 #ifndef _EVENT_POOL_H
 #define _EVENT_POOL_H
 
-#include "Log.h"
-#include "Thread.h"
-#include "SQueue.h"
-#include "Callback.h"
-#include "Noncopyable.h"
-using namespace utils;
-
 #include "EventLoop.h"
-#include "Acceptor.h"
 
 namespace sealedserver
 {
@@ -37,6 +29,13 @@ public:
     /// stop(or kill) all loops
     void       stop();
 
+    /// start the loop
+    void       subrun();
+
+    /// wait in here
+    void       subjoin();
+
+public:    
     /// get RandomLoop(), to find a suitable loop
     EventLoop* getRandomLoop();
 
@@ -45,13 +44,6 @@ public:
 
     /// get the Number of Loops
     int        getLoopNum() const;
-
-public:
-    /// start the loop
-    void       subrun();
-
-    /// wait in here
-    void       subjoin();
 
 private:
     /// Threadxxxx is used to assist the `run`

@@ -32,6 +32,13 @@ public:
     /// Destructor
     virtual ~Handler();
 
+protected:
+    /// Attach `this` to loop
+    void attach();
+
+    /// Detach `this` from loop
+    void detach();
+
 public:
     /// Register Read/Write Events
     void registerRead();
@@ -48,22 +55,19 @@ public:
 
     /// Called by the event loop when there are bytes need to be written
     /// and written is enable
-    virtual void onSendEvent()     = 0;
+    virtual void onSendEvent()      { }
 
     /// Called by the event loop when there close events happens
-    virtual void onCloseEvent(ClsMtd st)
-    {
-        detach(); m_sock.close();
-    }
+    virtual void onCloseEvent(ClsMtd st);
 
 public:
     /// Helper functions
 
     /// Return the socket
-    Socket getSocket() const;
+    Socket     getSocket() const;
 
     /// Return the loop it registers with
-    EventLoop *getLoop() const;
+    EventLoop* getLoop()   const;
 
     /// Get random loop
     EventLoop* getRandomLoop() const;
@@ -96,15 +100,12 @@ public:
     void proceed(int event);
 
 protected:
-    /// Attach `this` to loop
-    void attach();
-
-    /// Detach `this` from loop
-    void detach();
-
-protected:
-
+    /// EventLoop it belong to
     EventLoop*  m_loop;
+
+    /// Socket belong to the handler
+    /// Each handler will bind with a socket
+    /// We name it as m_sock
     Socket      m_sock;
 
     /// Socket status

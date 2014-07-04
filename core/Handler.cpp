@@ -19,28 +19,57 @@ Handler::~Handler()
     /// Socket has been closed in other functions
 }
 
+void Handler::attach()
+{
+    assert(m_loop && m_sock.status());
+
+    m_loop->attachHandler(m_sock.fd(), this);
+}
+
+void Handler::detach()
+{
+    assert(m_loop && m_sock.status());
+    
+    m_loop->detachHandler(m_sock.fd(), this);
+}
+
 void Handler::registerRead()
 {
     assert(m_loop && m_sock.status());
+    
     m_loop->registerRead(m_sock.fd());
 }
 
 void Handler::registerWrite()
 {
+    if(m_sock.status() == false)
+    {
+        INFO << m_sock.status();
+    }
+
     assert(m_loop && m_sock.status());
+    
     m_loop->registerWrite(m_sock.fd());
 }
 
 void Handler::unRegisterRead()
 {
     assert(m_loop && m_sock.status());
+    
     m_loop->unRegisterRead(m_sock.fd());
 }
 
 void Handler::unRegisterWrite()
 {
     assert(m_loop && m_sock.status());
+   
     m_loop->unRegisterWrite(m_sock.fd());
+}
+
+/// Default behaviors(only be used in Acceptor)
+void Handler::onCloseEvent(ClsMtd st)
+{
+    detach(); m_sock.close(); m_loop -> addClosed(this);
 }
 
 Socket Handler::getSocket() const
@@ -89,37 +118,11 @@ bool Handler::setDelflag()
     m_delflag = true;
 }
 
-void Handler::attach()
-{
-    assert(m_loop && m_sock.status());
-    m_loop->attachHandler(m_sock.fd(), this);
-}
-
-void Handler::detach()
-{
-    assert(m_loop && m_sock.status());
-    m_loop->detachHandler(m_sock.fd(), this);
-}
-
 void Handler::proceed(int event)
 {
     if((event & EPOLLRDHUP) || (event & EPOLLERR) || (event & EPOLLHUP))
     {
-        /// detach();
-
         DEBUG << "Proceed: " << m_sock.fd() << " " << (event&EPOLLRDHUP) << " " << (event&EPOLLERR) << " " << (event&EPOLLHUP);
-
-        /**
-        ** get the information for errno
-        **/
-        int       error = 0;
-        socklen_t errlen = sizeof(error);
-
-        if (getsockopt(m_sock.fd(), SOL_SOCKET, SO_ERROR, (void *)&error, &errlen) == 0)
-        {
-            DEBUG <<  "error = " << strerror(error);
-        }
-
         onCloseEvent(CLSERR);
     }
     else

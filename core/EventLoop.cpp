@@ -13,6 +13,8 @@ EventLoop::EventLoop(EventPool *pool) : m_stop(false),
 
 EventLoop::~EventLoop()
 {
+    WARN << "Destructor" ;
+
     map<int, Handler*>::iterator iter = m_map.begin();
 
     for(; iter != m_map.end(); iter++)
@@ -69,9 +71,9 @@ void EventLoop::stop()
     m_stop = true;
 }
 
-/// won't allow attach duplicate
 void EventLoop::attachHandler(int fd, Handler *p)
 {
+    /// won't allow attach duplicate
     assert(m_map.find(fd) == m_map.end());
 
     m_map[fd] = p;
@@ -79,6 +81,7 @@ void EventLoop::attachHandler(int fd, Handler *p)
 
 void EventLoop::detachHandler(int fd, Handler *p)
 {
+    /// would be in the map
     assert(m_map.find(fd) != m_map.end() && m_map[fd] == p);
     assert(m_map.erase(fd) == 1);
 
@@ -116,12 +119,30 @@ void EventLoop::unRegisterWrite(int fd)
 void EventLoop::addActive(int fd, int type)
 {
     assert(m_active.find(fd) == m_active.end());
+
     m_active[fd] = type;
 }
 
 void EventLoop::addClosed(Handler* handler)
 {
     m_del.push_back(handler);
+}
+
+void EventLoop::runAllActives()
+{
+    map<int, int>::iterator iter = m_active.begin();
+
+    for(; iter != m_active.end(); iter++)
+    {
+        int fd = (*iter).first;
+        int event = (*iter).second;
+
+        assert(m_map.find(fd) != m_map.end());
+
+        m_map[fd] -> proceed(event);
+    }
+
+    m_active.clear();
 }
 
 void EventLoop::finishDelete()
@@ -144,23 +165,6 @@ void EventLoop::finishDelete()
     vector<Handler*> handlers;
 
     swap(handlers, m_del);
-}
-
-void EventLoop::runAllActives()
-{
-    map<int, int>::iterator iter = m_active.begin();
-
-    for(; iter != m_active.end(); iter++)
-    {
-        int fd = (*iter).first;
-        int event = (*iter).second;
-
-        assert(m_map.find(fd) != m_map.end());
-
-        m_map[fd] -> proceed(event);
-    }
-
-    m_active.clear();
 }
 
 EventLoop* EventLoop::getRandomLoop()

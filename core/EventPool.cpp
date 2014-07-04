@@ -42,7 +42,6 @@ EventPool::~EventPool()
     }
 
     delete [] m_threads;
-
     delete [] m_args;
 
     for(int i = 0; i < m_loopNum; i++)
@@ -52,10 +51,9 @@ EventPool::~EventPool()
     }
 
     delete [] m_loops;
-    m_args = NULL;
-    m_loops = NULL;
+    m_args    = NULL;
+    m_loops   = NULL;
     m_threads = NULL;
-
 }
 
 void EventPool::run()
@@ -83,8 +81,6 @@ void EventPool::stop()
 {
     for(int i = 0; i < m_loopNum; i++)
         m_loops[i] -> stop();
-
-    WARN << "End closeAllLoop" ;
 }
 
 EventLoop* EventPool::getRandomLoop()

@@ -25,8 +25,8 @@ public:
         NetAddress addr = NetAddress(localport);
 
         m_sock = TCPSocket(&addr);
-        attach();
-        registerRead();
+        
+        attach(); registerRead();
 
         INFO << "HttpAcceptor Initialization: " << m_sock.getsockname();
 
@@ -51,16 +51,6 @@ private:
         {
             T* t = new T(server_, getRandomLoop(), sock);
         }
-    }
-
-    void onSendEvent() { }
-
-    void onCloseEvent(ClsMtd st)
-    {
-        DEBUG << "close listen socket fd: " << m_sock.fd() << " " << st;
-
-        detach();
-        m_sock.close();
     }
 
 private:

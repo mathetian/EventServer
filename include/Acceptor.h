@@ -46,11 +46,6 @@ public:
         }
     }
 
-public:
-    /// `OnSendEvent` in Handler is pure virtual function
-    /// Therefore, we need override it here 
-    void onSendEvent() { }
-
 private:
     Socket wrap()
     {
