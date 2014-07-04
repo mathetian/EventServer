@@ -22,8 +22,8 @@ HttpRequest::HttpRequest(HttpClient *client, string url, EventLoop *loop, Socket
     MSGHandler(loop, sock), server_(NULL), errcode_(0), first_(false), client_(client), url_(url)
 {
     parser_ = new HttpParser(HttpParser::RESPONSE);
-    m_first = true;
-    registerWrite();
+    
+    m_first = true; registerWrite();
 }
 
 HttpRequest::~HttpRequest()

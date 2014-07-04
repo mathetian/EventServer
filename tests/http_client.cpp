@@ -53,10 +53,16 @@ int main()
     client.start();
 
     /// bbs.sjtu.edu.cn
-    client.request("202.120.58.161", get, error, NULL);
+    /// client.request("202.120.58.161", get, error, NULL);
 
     /// yulongti.info/?p=2761
-    client.request("128.199.204.82/?p=2761", get, error, NULL);
+    /// client.request("128.199.204.82/?p=2761", get, error, NULL);
+
+    for(int i = 0; i < 20000; i++)
+    {
+        client.request("127.0.0.1:8081/sub", get, error, NULL);
+        usleep(5 * 1000);
+    }
 
     client.wait();
 
