@@ -56,7 +56,7 @@ int main()
     client.request("202.120.58.161", get, error, NULL);
 
     /// yulongti.info/?p=2761
-    client.request("128.199.204.82:80/?p=2761", get, error, NULL);
+    client.request("128.199.204.82/?p=2761", get, error, NULL);
 
     client.wait();
 
