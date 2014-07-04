@@ -119,7 +119,8 @@ NetAddress Socket::getpeername()
 
     int ret = ::getpeername(fd(), (sockaddr*)&buf, &len);
 
-    setStatus();
+    /// Fix a fatal bug
+    /// setStatus();
 
     return NetAddress(buf, len);
 }

@@ -106,7 +106,12 @@ private:
             NetAddress svrAddr(ip, port + (i%PORT_NUM));
 
             Socket sock(AF_INET, SOCK_STREAM);
-            sock.connect(&svrAddr);
+            
+            if(sock.connect(&svrAddr) == false)
+            {
+                INFO << sock.status() ;
+                assert(0);
+            }
 
             EchoClient *client = new EchoClient(pool.getRandomLoop(), sock);
 
