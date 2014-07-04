@@ -29,7 +29,7 @@ public:
 public:
     /// Register Special Event of handler
     ///
-    /// @param event, XX_IN/XX_OUT 
+    /// @param event, XX_IN/XX_OUT
     void registerEvent(Handler *handler, short event);
 
     /// Unregister Speical Event of handler
@@ -51,7 +51,7 @@ private:
 
     /// each time write in it
     struct epoll_event *m_events;
-    
+
     /// counter of socket number
     /// decrease enumeration of sockets
     int m_socknum;

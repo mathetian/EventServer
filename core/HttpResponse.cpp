@@ -12,8 +12,10 @@ using namespace utils;
 namespace sealedserver
 {
 
-static const char *status_code_to_str(int status_code) {
-    switch (status_code) {
+static const char *status_code_to_str(int status_code)
+{
+    switch (status_code)
+    {
     case 200:
         return "OK";
     case 201:

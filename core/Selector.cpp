@@ -33,7 +33,7 @@ void Selector::registerEvent(Handler *handler, short event)
 
     /// Firstly, check the status
     /// Then determining whether `add` or `modify`
-    
+
     if(handler -> getStatus() != 0)
         addFlag = false;
 

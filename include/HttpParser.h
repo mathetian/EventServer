@@ -11,7 +11,8 @@ using namespace utils;
 namespace sealedserver
 {
 
-class HttpParser {
+class HttpParser
+{
     typedef map<string, string> Header;
     typedef map<string, string> Params;
 public:
@@ -49,37 +50,44 @@ private:
 
 public:
     /// Get Method
-    string getMethod()  const {
+    string getMethod()  const
+    {
         return method_;
     }
 
     /// Get URL
-    string getUrl() const {
+    string getUrl() const
+    {
         return url_;
     }
 
     /// Get Version
-    string getVersion() const {
+    string getVersion() const
+    {
         return version_;
     }
 
     /// Get Header
-    Header getHeader() {
+    Header getHeader()
+    {
         return header_;
     }
 
     /// Get the url
-    string getQuery() const {
+    string getQuery() const
+    {
         return querystring_;
     }
 
     /// Get the params
-    Params getParams() {
+    Params getParams()
+    {
         return params_;
     }
 
     /// Get the origin string
-    string getOrigin() const {
+    string getOrigin() const
+    {
         return origin_;
     }
 

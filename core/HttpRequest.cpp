@@ -62,16 +62,19 @@ void HttpRequest::received(STATUS status, Buffer &receivedBuff)
 
     bool flag = parser_ -> parse(receivedBuff);
 
-    if(flag == false) {
+    if(flag == false)
+    {
         errcode_ = 1;
     }
 
     if(server_ != NULL)
     {
-        if(errcode_ != 0) {
+        if(errcode_ != 0)
+        {
             initResponse(400);
             badRequest();
-        } else server_ -> process(this);
+        }
+        else server_ -> process(this);
     }
     else
     {

@@ -85,12 +85,14 @@ public:
     **/
 
     /// Return the url
-    string getUrl() const {
+    string getUrl() const
+    {
         return url_;
     }
 
     /// Return the errcode_
-    int    getCode() const {
+    int    getCode() const
+    {
         return errcode_;
     }
 

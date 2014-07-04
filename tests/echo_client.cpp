@@ -106,7 +106,7 @@ private:
             NetAddress svrAddr(ip, port + (i%PORT_NUM));
 
             Socket sock(AF_INET, SOCK_STREAM);
-            
+
             if(sock.connect(&svrAddr) == false)
             {
                 INFO << sock.status() ;

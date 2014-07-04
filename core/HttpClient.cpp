@@ -36,7 +36,8 @@ bool HttpClient::request(const string &url, Callback get, Callback error, void *
     {
         Pair pair = calls_[url];
         if(get != pair.first.first || error != pair.first.second
-                || arg != pair.second) {
+                || arg != pair.second)
+        {
             return false;
         }
     }
@@ -72,11 +73,13 @@ void HttpClient::process(HttpRequest *req)
     Callback error = calls_[url].first.second;
     void      *arg = calls_[url].second;
 
-    if(errcode != 0) {
+    if(errcode != 0)
+    {
         /// error in reply
         error(req, arg);
     }
-    else {
+    else
+    {
         /// everything is ok
         get(req, arg);
     }

@@ -25,8 +25,9 @@ public:
         NetAddress addr = NetAddress(localport);
 
         m_sock = TCPSocket(&addr);
-        
-        attach(); registerRead();
+
+        attach();
+        registerRead();
 
         INFO << "HttpAcceptor Initialization: " << m_sock.getsockname();
 

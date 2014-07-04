@@ -29,14 +29,14 @@ void Handler::attach()
 void Handler::detach()
 {
     assert(m_loop && m_sock.status());
-    
+
     m_loop->detachHandler(m_sock.fd(), this);
 }
 
 void Handler::registerRead()
 {
     assert(m_loop && m_sock.status());
-    
+
     m_loop->registerRead(m_sock.fd());
 }
 
@@ -48,28 +48,30 @@ void Handler::registerWrite()
     }
 
     assert(m_loop && m_sock.status());
-    
+
     m_loop->registerWrite(m_sock.fd());
 }
 
 void Handler::unRegisterRead()
 {
     assert(m_loop && m_sock.status());
-    
+
     m_loop->unRegisterRead(m_sock.fd());
 }
 
 void Handler::unRegisterWrite()
 {
     assert(m_loop && m_sock.status());
-   
+
     m_loop->unRegisterWrite(m_sock.fd());
 }
 
 /// Default behaviors(only be used in Acceptor)
 void Handler::onCloseEvent(ClsMtd st)
 {
-    detach(); m_sock.close(); m_loop -> addClosed(this);
+    detach();
+    m_sock.close();
+    m_loop -> addClosed(this);
 }
 
 Socket Handler::getSocket() const

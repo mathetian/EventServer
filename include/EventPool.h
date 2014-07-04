@@ -35,7 +35,7 @@ public:
     /// wait in here
     void       subjoin();
 
-public:    
+public:
     /// get RandomLoop(), to find a suitable loop
     EventLoop* getRandomLoop();
 

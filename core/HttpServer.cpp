@@ -14,7 +14,7 @@ HttpServer::HttpServer(int port) : port_(port), errflag_(false)
 
 HttpServer::HttpServer(int port, int place) : port_(port), errflag_(false)
 {
-    
+
 }
 
 HttpServer::~HttpServer()
@@ -25,7 +25,7 @@ HttpServer::~HttpServer()
     {
         delete acceptor_;
     }
-    
+
     acceptor_ = NULL;
 }
 
