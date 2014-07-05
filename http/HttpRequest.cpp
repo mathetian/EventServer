@@ -9,7 +9,7 @@
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
-namespace sealedserver
+namespace http
 {
 
 HttpRequest::HttpRequest(HttpServer *server, EventLoop *loop, Socket sock) : \
@@ -22,8 +22,9 @@ HttpRequest::HttpRequest(HttpClient *client, string url, EventLoop *loop, Socket
     MSGHandler(loop, sock), server_(NULL), errcode_(0), first_(false), client_(client), url_(url)
 {
     parser_ = new HttpParser(HttpParser::RESPONSE);
-    
-    m_first = true; registerWrite();
+
+    m_first = true;
+    registerWrite();
 }
 
 HttpRequest::~HttpRequest()
@@ -40,8 +41,8 @@ HttpRequest::~HttpRequest()
 /// Only used by client
 void HttpRequest::connected()
 {
-   response_ = new HttpResponse(this);
-   response_ -> send();
+    response_ = new HttpResponse(this);
+    response_ -> send();
 }
 
 void HttpRequest::received(STATUS status, Buffer &receivedBuff)

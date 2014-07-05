@@ -6,8 +6,9 @@
 #define _HTTP_ACC_H
 
 #include "Acceptor.h"
+using namespace sealedserver;
 
-namespace sealedserver
+namespace http
 {
 
 class HttpServer;

@@ -8,13 +8,14 @@
 #include "Noncopyable.h"
 using namespace utils;
 
+#include "EventPool.h"
+using namespace sealedserver;
+
 #include "HttpAcceptor.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
-#include "EventPool.h"
-
-namespace sealedserver
+namespace http
 {
 
 class HttpServer : public Noncopyable
@@ -48,7 +49,7 @@ public:
 
     /// Add callback for `url`
     void add(const string &url, Callback callback, void *arg);
-    
+
     /// Set the error callback
     void error(Callback callback, void *arg);
 

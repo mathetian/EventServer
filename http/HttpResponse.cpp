@@ -5,11 +5,9 @@
 #include "C.h"
 using namespace utils;
 
-#include "HttpParser.h"
-#include "HttpRequest.h"
 #include "HttpResponse.h"
 
-namespace sealedserver
+namespace http
 {
 
 static const char *status_code_to_str(int status_code)

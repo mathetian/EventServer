@@ -8,7 +8,7 @@
 #include "Buffer.h"
 using namespace utils;
 
-namespace sealedserver
+namespace http
 {
 
 class HttpParser

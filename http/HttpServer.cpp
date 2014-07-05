@@ -4,14 +4,14 @@
 
 #include "HttpServer.h"
 
-namespace sealedserver
+namespace http
 {
 
 HttpServer::HttpServer(int port, int portnum) : port_(port), errflag_(false), portnum_(portnum)
 {
     acceptors_ = vector<HttpAcceptor<HttpRequest>*>(portnum);
 
-    for(int i = 0; i < portnum ;i++)
+    for(int i = 0; i < portnum ; i++)
         acceptors_[i] = new HttpAcceptor<HttpRequest>(this, pool_.getRandomLoop(), port + i);
 }
 
@@ -24,7 +24,7 @@ HttpServer::~HttpServer()
 {
     pool_.stop();
 
-    for(int i = 0; i < portnum_ ;i++)
+    for(int i = 0; i < portnum_ ; i++)
     {
         delete acceptors_[i];
         acceptors_[i] = NULL;

@@ -8,7 +8,7 @@
 #include "MsgHandler.h"
 using namespace sealedserver;
 
-namespace sealedserver
+namespace http
 {
 
 class HttpServer;

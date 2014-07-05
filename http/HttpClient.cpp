@@ -3,10 +3,9 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "HttpClient.h"
-
 #include "HttpParser.h"
 
-namespace sealedserver
+namespace http
 {
 
 HttpClient::HttpClient()
@@ -57,7 +56,7 @@ bool HttpClient::request(const string &url, Callback get, Callback error, void *
     NetAddress svrAddr(host, port);
 
     Socket sock(AF_INET, SOCK_STREAM);
-    
+
     /// Need further optimization
     if(sock.connect(&svrAddr) == false)
     {

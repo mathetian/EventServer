@@ -5,13 +5,13 @@
 #ifndef _HTTP_RESPONSE_H
 #define _HTTP_RESPONSE_H
 
-#include "Buffer.h"
 #include "Noncopyable.h"
 using namespace utils;
 
+#include "HttpParser.h"
 #include "HttpRequest.h"
 
-namespace sealedserver
+namespace http
 {
 
 class HttpResponse : public Noncopyable

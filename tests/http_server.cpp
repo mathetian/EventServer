@@ -7,7 +7,7 @@
 #include "HttpParser.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
-using namespace sealedserver;
+using namespace http;
 
 #define Port 8081
 #define PortNum 5

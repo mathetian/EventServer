@@ -5,13 +5,14 @@
 #include "Noncopyable.h"
 using namespace utils;
 
+#include "EventPool.h"
+using namespace sealedserver;
+
 #include "HttpAcceptor.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
 
-#include "EventPool.h"
-
-namespace sealedserver
+namespace http
 {
 
 class HttpClient : public Noncopyable

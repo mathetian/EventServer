@@ -7,7 +7,7 @@ using namespace utils;
 
 #include "HttpParser.h"
 
-namespace sealedserver
+namespace http
 {
 
 HttpParser::HttpParser(HttpParser::ParseType type) : type_(type)
