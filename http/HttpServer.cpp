@@ -15,7 +15,7 @@ HttpServer::HttpServer(int port, int portnum) : port_(port), errflag_(false), po
         acceptors_[i] = new HttpAcceptor<HttpRequest>(this, pool_.getRandomLoop(), port + i);
 }
 
-HttpServer::HttpServer(int port, int portnum, int place) : port_(port), errflag_(false), portnum_(portnum)
+HttpServer::HttpServer(int port, int portnum, int place) : port_(port), errflag_(false), portnum_(0)
 {
 
 }
