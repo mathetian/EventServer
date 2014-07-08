@@ -1,11 +1,11 @@
-// Copyright (c) 2014 The SealedServer Authors. All rights reserved.
+// Copyright (c) 2014 The EventServer Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "Selector.h"
 #include "EventLoop.h"
 
-namespace sealedserver
+namespace eventserver
 {
 
 Selector::Selector(EventLoop* loop) : m_loop(loop), m_socknum(0)

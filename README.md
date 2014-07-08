@@ -1,7 +1,7 @@
-SealedServer
+EventServer
 ======
 
-SealedServer is A light-weight network programming framework, and supports time and I/O events. I will also provide support for signal event `in near future`. I have used this framework to build the [CComet](https://github.com/mathetian/CComet).
+EventServer is A light-weight network programming framework, and supports time and I/O events. I will also provide support for signal event `in near future`. I have used this framework to build the [CComet](https://github.com/mathetian/CComet).
 
 ## Features
 1. Native support multiple-threading Selector
@@ -19,10 +19,10 @@ In this part, I will give out the comparison between our framework and libevent.
 
 The benchmark is very simple: first a number of socket pairs is created, then event watchers for those pairs are installed and then a (smaller) number of "active clients" send and receive data on a subset of those sockets.
 
-The benchmark program used was test/bench_library.c, taken from the libevent distribution, modified to using the api provided by SealedServer.
+The benchmark program used was test/bench_library.c, taken from the libevent distribution, modified to using the api provided by EventServer.
 
 ```
-SealedServer:   version 1.0
+EventServer:   version 1.0
 Date        :   Sunday April 13 16:14:09 2014
 CPU         :   4 * Intel(R) Core(TM) i5-3317U CPU @ 1.70GHz
 CPUCache    :   3072 KB
@@ -36,7 +36,7 @@ Each run of the benchmark program consists of two iterations outputting the tota
 ![100](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/bench100.png)
 ![1000](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/bench1000.png)
 
-In the above graph, the X of SealedServer-X means the number of threads created by bench_library.
+In the above graph, the X of EventServer-X means the number of threads created by bench_library.
 
 The two graphs above show the overall time spent for different atomsphere. The top row represents 100 active clients (clients doing I/O), the bottom row uses 1000. All graphs have a logarithmic fd-axis to sensibly display the large range of file descriptor numbers of 10000 to 200000 (in reality, its actually socket pairs, thus there are actually twice the number of file descriptors in the process).
 
@@ -52,9 +52,9 @@ How to use it? I have written a simple echo server-client in directory `tests`.
 1. Design by manually. Don't use any advanced library directly. So thread library, atomic, callback, garbage collection and many others has been provided.
 2. ...
 
-## SealedServer UML Graph
+## EventServer UML Graph
 
-![SealedServer UML Graph](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/SealedServer.png)
+![EventServer UML Graph](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/EventServer.png)
 
 
 ## Todo List
