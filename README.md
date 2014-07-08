@@ -1,20 +1,24 @@
 EventServer
 ======
 
-EventServer is A light-weight network programming framework, and supports time and I/O events. I will also provide support for signal event `in near future`. I have used this framework to build the [CComet](https://github.com/mathetian/CComet).
+EventServer is a light-weight asynchronous network programming framework and supports most of I/O events. 
+
+Based on this framework, we provide a simple encapsulation for HTTP protocol. 
+I have used this framework to build the [CComet](https://github.com/mathetian/CComet).
+
+Our work is mainly inspired by [dirlt](http://dirlt.com/‎), [hpserver](http://code.google.com/p/hpserver/), [<span color="red">nmstl</span>](http://nmstl.sourceforge.net/) and [libevent](http://libevent.org). Especially, I adopt some concepts from [yohub](https://github.com/kedebug/yohub). Thanks again for OSC (Open Source Community).
 
 ## Features
 1. Native support multiple-threading Selector
 2. Mutliple Demux Threads and each thread can proceed tasks individual
 3. Reactor pattern for event-driven
-4. Only support synchronous I/O and Time events
+4. Support asynchronous I/O.
 5. Provide a simple Garbage Collection. Mainly taken the idea from nmstl.
-6. Only header files are provided. Don't need pre-build.
-</ul>
-
-Our work is mainly inspired by [dirlt](http://dirlt.com/‎), [hpserver](http://code.google.com/p/hpserver/), [<span color="red">nmstl</span>](http://nmstl.sourceforge.net/) and [libevent](http://libevent.org). Especially, I adopted some concepts from [yohub](https://github.com/kedebug/yohub). Thanks again for open-source group.
 
 ## Benchmark
+
+#### 1. QPS
+
 In this part, I will give out the comparison between our framework and libevent.
 
 The benchmark is very simple: first a number of socket pairs is created, then event watchers for those pairs are installed and then a (smaller) number of "active clients" send and receive data on a subset of those sockets.
@@ -22,8 +26,8 @@ The benchmark is very simple: first a number of socket pairs is created, then ev
 The benchmark program used was test/bench_library.c, taken from the libevent distribution, modified to using the api provided by EventServer.
 
 ```
-EventServer:   version 1.0
-Date        :   Sunday April 13 16:14:09 2014
+EventServer:    version 1.0
+Date        :   Sunday July 13 16:14:09 2014
 CPU         :   4 * Intel(R) Core(TM) i5-3317U CPU @ 1.70GHz
 CPUCache    :   3072 KB
 G++         :   4.8.1
@@ -40,40 +44,111 @@ In the above graph, the X of EventServer-X means the number of threads created b
 
 The two graphs above show the overall time spent for different atomsphere. The top row represents 100 active clients (clients doing I/O), the bottom row uses 1000. All graphs have a logarithmic fd-axis to sensibly display the large range of file descriptor numbers of 10000 to 200000 (in reality, its actually socket pairs, thus there are actually twice the number of file descriptors in the process).
 
-### Discussion
+### __Discussion__
+The total time of our framework will be better than libevent when we use at least two threads. In my computer, we can achieve a maximum 40% performance boost.
 
-The total time of our framework will be better than libevent when we use at least two threads. In my computer, we can achieve a 40% performance boost at most.
+### 2. Number of Connections can be support
+For a server, we usually consider about the qps. However, sometimes, we would care about the maximum connections can be supported. That application mainly is used in push server, which will be discussed in [CComet](https://github.com/mathetian/CComet). As we have said, we provide a encapsulation for Http Protocal. Therefore, in that part, we test the maximum number of connections can be supported.
+
+For Server,
+``` 
+                VRT             RES
+ 10, 000 :    
+ 50, 000 :    
+100, 000 :    
+200, 000 :    
+```
+
+For Client,
+``` 
+                VRT             RES
+ 10, 000 :    
+ 50, 000 :    
+100, 000 :    
+200, 000 :    
+```
 
 ## Usage
-How to use it? I have written a simple echo server-client in directory `tests`. 
 
+### 1. __EventServer__
+```C++
+class EchoServer : public MSGHandler
+{
+public:
+    EchoServer(EventLoop *loop, Socket sock) : MSGHandler(loop, sock) { }
+    virtual ~EchoServer() { }
+private:
+    /// Invoked when a message is received.
+    virtual void received(STATUS status, Buffer &receivedBuff)
+    { }
+    // Invoked when a msg has been sent
+    virtual void sent(STATUS status, int len, int targetLen)
+    { }
+    // Invoked when the socket has been closed
+    virtual void closed(ClsMtd st)
+    { }
+};
+
+class EchoClient : public MSGHandler
+{
+public:
+    EchoClient(EventLoop *loop, Socket sock) : MSGHandler(loop, sock)
+    { }
+    virtual ~EchoClient() { }
+protected:
+    /// Invoked when a connection we try either succeeds or fails.
+    virtual void connected()
+    { }
+    virtual void received(STATUS status, Buffer &receivedBuff)
+    { }
+    /// Invoked when a msg has been sent
+    virtual void sent(STATUS status, int len, int targetLen)
+    { }
+    /// Invoke when the socket has been closed
+    virtual void closed(ClsMtd st)
+    { }
+};
+```
+
+### 2. __HttpModule__
+
+Although we provde a simple package for event driven server, it is still hard to use it. Therefore, we provide httpmoudle for it. We show the simplest form below.
+
+```C++
+    void sign_handler(HttpRequest *req, HttpResponse *rep, void *arg) { }
+    
+    HttpServer server(Port, PortNum);
+
+    server.add("/sign", sign_handler, NULL);
+    server.add("/pub",  pub_handler, NULL);
+    server.add("/sub",  sub_handler, NULL);
+    server.error(error_handler, NULL);
+
+    server.start();
+```
+
+```C++
+    void get(HttpRequest *req, void *arg) { }
+    void error(HttpRequest *req, void *arg) { }
+    
+    HttpClient client;
+
+    /// bbs.sjtu.edu.cn
+    client.request("202.120.58.161", get, error, NULL);
+
+    /// yulongti.info/?p=2761
+    client.request("128.199.204.82/?p=2761", get, error, NULL);
+```
 ## Design Principle
-
-1. Design by manually. Don't use any advanced library directly. So thread library, atomic, callback, garbage collection and many others has been provided.
-2. ...
+每个程序员都有造轮子的梦想，这就是这一个框架的由来。
 
 ## EventServer UML Graph
 
-![EventServer UML Graph](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/EventServer.png)
+![EventServer UML Graph](https://raw.githubusercontent.com/mathewes/blog-dot-file/master/SealedServer.png)
 
 
 ## Todo List
 
 1. Add support for unlimited file descriptor
 2. Add timer & signal event
-3. Add support of asynchronous event and thread-pool(Edge Trigger & Thread affinity)
-4. Unit Test and Feature Test
-
-## Other Experiments we conducted
-
-1. Http Server will cost 2KB/Connection
-
-2. Http Client will cost 1KB/Connection
-
-3. VIRT won't change
-
-48 19(15k)
-63 25(20k)
-81 32(25k)
-96 38(30k)
-112 45(35k)
+3. Add support of thread-pool(Edge Trigger & Thread affinity)
