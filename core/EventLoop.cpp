@@ -214,7 +214,7 @@ void EventLoop::attach(int signo, void (*sighandler)(int))
 void EventLoop::attach()
 {
     SignalOuter &outer = SignalOuter::Instance();
-    m_signal = new SignalHandler(this, outer.sockets().second);
+    m_signal = new SignalHandler(this, outer.sockets().first);
 }
 
 };

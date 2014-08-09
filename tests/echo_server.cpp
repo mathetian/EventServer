@@ -91,7 +91,6 @@ int main()
 {
     Log::setLevel(Log::debug);
 
-    ::signal(SIGINT, signalStop);
     setlimit(100000);
     errno = 0;
 
@@ -99,6 +98,8 @@ int main()
 
     for(int i = 0; i < PORT_NUM; i++)
         acceptors[i] = new TCPAcceptor<EchoServer>(pool.getRandomLoop(), BASE_PORT + i);
+    
+    pool.attach(SIGINT, signalStop);
 
     pool.run();
 
