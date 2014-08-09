@@ -141,7 +141,7 @@ NetAddress Socket::getsockname()
 pair<Socket, Socket> Socket::pipe()
 {
     int fds[2];
-    ::pipe(fds);
+    socketpair(AF_UNIX, SOCK_STREAM, 0, fds);
     return pair<Socket, Socket>(Socket(fds[0]), Socket(fds[1]));
 }
 
