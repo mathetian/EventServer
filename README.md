@@ -1,7 +1,7 @@
 EventServer
 ======
 
-EventServer is a light-weight asynchronous network programming framework and supports most of I/O events. 
+EventServer is a light-weight asynchronous network programming framework and supports I/O events. Also, we provide support for time event and signal event. 
 
 Based on this framework, we provide a simple encapsulation for HTTP protocol. 
 I have used this framework to build the [CComet](https://github.com/mathetian/CComet).
@@ -9,11 +9,12 @@ I have used this framework to build the [CComet](https://github.com/mathetian/CC
 Our work is mainly inspired by [dirlt](http://dirlt.com/‎), [hpserver](http://code.google.com/p/hpserver/), [<span color="red">nmstl</span>](http://nmstl.sourceforge.net/) and [libevent](http://libevent.org). Especially, I adopt some concepts from [yohub](https://github.com/kedebug/yohub). Thanks again for OSC (Open Source Community).
 
 ## Features
-1. Native support multiple-threading Selector
-2. Mutliple Demux Threads and each thread can proceed tasks individual
-3. Reactor pattern for event-driven
-4. Support asynchronous I/O.
-5. Provide a simple Garbage Collection. Mainly taken the idea from nmstl.
+1. Native Support for Multiple-threading Selector.
+2. Mutliple Demux Threads and Each Thread Can Proceed Tasks Individual.
+3. Reactor Pattern for Event-driven.
+4. Support Pseduo-Asynchronous I/O.
+5. Support IO/Timer/Signal Events.
+6. Provide a Simple Garbage Collection. 
 
 ## Benchmark
 
@@ -149,6 +150,7 @@ Although we provde a simple package for event driven server, it is still hard to
 
 ## Todo List
 
-1. Add support for unlimited file descriptor
-2. Add timer & signal event
-3. Add support of thread-pool(Edge Trigger & Thread affinity)
+1. Use Socketpair Instead of Changing Directly
+2. Add support for unlimited file descriptor
+3. Optimization for Thread affinity
+4. Truly Asynchronous I/O
