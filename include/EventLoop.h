@@ -78,6 +78,9 @@ public:
     /// Return one random loop
     EventLoop* getRandomLoop();
 
+    /// Attach Timer to this loop
+    void attach(const Callback<void> &call, const Timer &timer);
+
 private:
     /// Run After dispatch(for all active events)
     void runAllActives();
@@ -99,6 +102,7 @@ private:
     map<int, int>      m_active;
     vector<Handler*>   m_del;
     map<int, Handler*> m_map;
+    TimerEvents        m_heap;
 
     friend class Acceptor;
 };

@@ -5,6 +5,8 @@
 #ifndef _EVENT_HANDLER_H
 #define _EVENT_HANDLER_H
 
+#include "Timer.h"
+#include "TimerEvents.h"
 #include "Noncopyable.h"
 using namespace utils;
 
@@ -98,6 +100,9 @@ public:
 
     /// Proccess the atvie event
     void proceed(int event);
+
+protected:
+    void attach(const Callback<void> &call, const Timer &timer);
 
 protected:
     /// EventLoop it belong to

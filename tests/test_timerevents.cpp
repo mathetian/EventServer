@@ -4,7 +4,7 @@
 
 #include "Timer.h"
 #include "Tester.h"
-#include "TimerHeap.h"
+#include "TimerEvents.h"
 using namespace utils;
 
 class A
@@ -29,7 +29,7 @@ public:
 
 TEST(A, Plain)
 {
-    TimerHeap heap;
+    TimerEvents heap;
     Timer cur_1 = Timer::now();
     Timer cur_2(10000);
     B b;

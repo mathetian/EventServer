@@ -89,7 +89,7 @@ test_thread: tests/test_thread.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 
-test_timerheap: tests/test_timerheap.cpp
+test_timerevents: tests/test_timerevents.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
 

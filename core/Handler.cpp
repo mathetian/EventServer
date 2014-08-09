@@ -137,4 +137,9 @@ void Handler::proceed(int event)
     }
 }
 
+void Handler::attach(const Callback<void> &call, const Timer &timer)
+{
+    m_loop -> attach(call, timer);
+}
+
 };

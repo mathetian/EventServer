@@ -112,11 +112,9 @@ void Selector::unRegisterEvent(Handler *handler, short event)
     }
 }
 
-int Selector::dispatch(int second)
+int Selector::dispatch(int millisecond)
 {
-    int timeout = second*1000; //5s
-
-    int num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, timeout);
+    int num = epoll_wait(m_epollfd, m_events, MAX_NEVENTS, millisecond);
 
     if(num != 0) DEBUG << "Dispatch, numbef of events: " << num ;
 

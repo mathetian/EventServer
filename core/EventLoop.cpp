@@ -60,7 +60,36 @@ void EventLoop::runForever()
 
 void EventLoop::runOnce()
 {
-    m_selector->dispatch();
+    if(m_heap.empty() == false)
+    {
+        TimerEvent event = m_heap.top();
+        Timer cur = Timer::now();
+        if(cur > event.timer())
+        {
+            m_selector->dispatch(0);
+        }
+        else
+        {
+            cur = event.timer() - cur;
+            m_selector->dispatch(cur.to_usecs());
+        }
+    }
+    else
+    {
+        m_selector->dispatch(5000);
+    }
+
+    if(m_heap.empty() == false)
+    {
+        Timer timer = Timer::now();
+        while(m_heap.empty() == false)
+        {
+            TimerEvent event = m_heap.top();
+            if(event.timer() > timer) break;
+            m_heap.pop();
+            event.call();
+        }
+    }
 
     runAllActives();
     finishDelete();
@@ -170,6 +199,11 @@ void EventLoop::finishDelete()
 EventLoop* EventLoop::getRandomLoop()
 {
     m_pool -> getRandomLoop();
+}
+
+void EventLoop::attach(const Callback<void> &call, const Timer &timer)
+{
+    m_heap.add(call, timer);
 }
 
 };

@@ -13,10 +13,10 @@ using namespace std;
 namespace utils
 {
 
-class CallBackItem
+class TimerEvent
 {
 public:
-    CallBackItem(const Callback<void> &callback, const Timer &timer)
+    TimerEvent(const Callback<void> &callback, const Timer &timer)
         : callback_(callback), timer_(timer)
     {
     }
@@ -27,6 +27,11 @@ public:
         callback_();
     }
 
+    Timer timer() const
+    {
+        return timer_;
+    }
+
 private:
     Callback<void> callback_;
     Timer          timer_;
@@ -35,7 +40,7 @@ private:
 
 struct cmp
 {
-    bool operator()(const CallBackItem &item_1, const CallBackItem &item_2)
+    bool operator()(const TimerEvent &item_1, const TimerEvent &item_2)
     {
         if(item_1.timer_ < item_2.timer_)
             return false;
@@ -43,20 +48,20 @@ struct cmp
     }
 };
 
-class TimerHeap
+class TimerEvents
 {
 public:
-    void add(const CallBackItem &item)
+    void add(const TimerEvent &item)
     {
         item_queue_.push(item);
     }
 
     void add(const Callback<void> &callback, const Timer &timer)
     {
-        add(CallBackItem(callback, timer));
+        add(TimerEvent(callback, timer));
     }
 
-    CallBackItem top() const
+    TimerEvent top() const
     {
         return item_queue_.top();
     }
@@ -72,7 +77,7 @@ public:
     }
 
 private:
-    priority_queue<CallBackItem, vector<CallBackItem>, cmp> item_queue_;
+    priority_queue<TimerEvent, vector<TimerEvent>, cmp> item_queue_;
 };
 
 };
