@@ -31,6 +31,9 @@ EventPool::EventPool(int loopNum) : m_loopNum(loopNum)
 
     for(int i=0; i < loopNum ; i++)
         m_loops[i] = new EventLoop(this);
+
+    /// Attach Signal Handler to the master thread
+    m_loops[0] -> attach();
 }
 
 EventPool::~EventPool()
@@ -116,6 +119,11 @@ void* EventPool::ThreadFunc(void *arg)
     ((targ.ep)->*(targ.func))(targ.id);
 
     pthread_exit(NULL);
+}
+
+void EventPool::attach(int signo, void (*sighandler)(int))
+{
+    m_loops[0] -> attach(signo, sighandler);
 }
 
 };

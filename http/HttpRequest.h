@@ -5,7 +5,7 @@
 #ifndef _HTTP_CONN_H
 #define _HTTP_CONN_H
 
-#include "MsgHandler.h"
+#include "MSGHandler.h"
 using namespace eventserver;
 
 namespace http

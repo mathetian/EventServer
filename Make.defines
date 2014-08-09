@@ -8,7 +8,7 @@ CLEAN = \
 		include/TimeEventSet \
 		include/Status \
 		include/TCPAcceptor \
-		include/Selector  MsgHandler\
+		include/Selector  MSGHandler\
 		tests/echo_client \
 		tests/echo_server \
 		tests/test_log \
@@ -29,4 +29,4 @@ CLEAN = \
 		utils/Atomic \
 		utils/Buffer \
 		utils/Thread \
-		include/MsgHandler
+		include/MSGHandler

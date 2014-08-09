@@ -12,6 +12,7 @@ using namespace utils;
 #include "Handler.h"
 #include "Acceptor.h"
 #include "Selector.h"
+#include "SignalHandler.h"
 
 namespace eventserver
 {
@@ -81,6 +82,12 @@ public:
     /// Attach Timer to this loop
     void attach(const Callback<void> &call, const Timer &timer);
 
+    /// Attach Signal Handler
+    void attach(int signo, void (*sighandler)(int));
+
+    /// Attach signal handler
+    void attach();
+
 private:
     /// Run After dispatch(for all active events)
     void runAllActives();
@@ -103,6 +110,7 @@ private:
     vector<Handler*>   m_del;
     map<int, Handler*> m_map;
     TimerEvents        m_heap;
+    SignalHandler     *m_signal;
 
     friend class Acceptor;
 };

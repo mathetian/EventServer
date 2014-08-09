@@ -54,6 +54,12 @@ public:
     {
         this -> dat = static_cast<char*>(const_cast<void*>(dat));
     }
+
+    char operator[](int index)
+    {
+        assert(index < len);
+        return dat[index];
+    }
 };
 
 /**

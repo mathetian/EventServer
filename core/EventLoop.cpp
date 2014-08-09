@@ -206,4 +206,15 @@ void EventLoop::attach(const Callback<void> &call, const Timer &timer)
     m_heap.add(call, timer);
 }
 
+void EventLoop::attach(int signo, void (*sighandler)(int))
+{
+    m_signal -> attach(signo, sighandler);
+}
+
+void EventLoop::attach()
+{
+    SignalOuter &outer = SignalOuter::Instance();
+    m_signal = new SignalHandler(this, outer.sockets().second);
+}
+
 };

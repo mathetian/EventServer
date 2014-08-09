@@ -9,7 +9,7 @@ using namespace utils;
 #include "Socket.h"
 #include "EventLoop.h"
 #include "EventPool.h"
-#include "MsgHandler.h"
+#include "MSGHandler.h"
 using namespace eventserver;
 
 /// count, the total has been received

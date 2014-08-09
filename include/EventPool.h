@@ -45,6 +45,10 @@ public:
     /// get the Number of Loops
     int        getLoopNum() const;
 
+public:
+    /// attach signal handler
+    void       attach(int signo, void(*sighanler)(int));
+
 private:
     /// Threadxxxx is used to assist the `run`
     void*        ThreadBody(int id);
