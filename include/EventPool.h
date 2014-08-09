@@ -37,7 +37,7 @@ public:
 
 public:
     /// get RandomLoop(), to find a suitable loop
-    EventLoop* getRandomLoop();
+    EventLoop* getRandomLoop(int &thrid);
 
     /// get Loop by Index(or ID)
     EventLoop* getLoopByID(int id);
@@ -45,6 +45,7 @@ public:
     /// get the Number of Loops
     int        getLoopNum() const;
 
+    EventLoop* loop() { return m_loops[0]; }
 public:
     /// attach signal handler
     void       attach(int signo, void(*sighanler)(int));

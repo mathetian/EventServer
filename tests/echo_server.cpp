@@ -30,7 +30,7 @@ EventPool pool(4);
 class EchoServer : public MSGHandler
 {
 public:
-    EchoServer(EventLoop *loop, Socket sock) : MSGHandler(loop, sock)
+    EchoServer(EventLoop *loop, Socket sock) : MSGHandler(loop, sock, 1)
     { }
 
     virtual ~EchoServer()
@@ -97,7 +97,7 @@ int main()
     vector<TCPAcceptor<EchoServer>*> acceptors(PORT_NUM, NULL);
 
     for(int i = 0; i < PORT_NUM; i++)
-        acceptors[i] = new TCPAcceptor<EchoServer>(pool.getRandomLoop(), BASE_PORT + i);
+        acceptors[i] = new TCPAcceptor<EchoServer>(pool.loop(), BASE_PORT + i);
     
     pool.attach(SIGINT, signalStop);
 

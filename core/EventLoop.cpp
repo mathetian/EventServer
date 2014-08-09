@@ -4,6 +4,7 @@
 
 #include "EventLoop.h"
 #include "EventPool.h"
+#include "WakeHandler.h"
 
 namespace eventserver
 {
@@ -29,6 +30,10 @@ EventLoop::~EventLoop()
 
     delete m_selector;
     m_selector = NULL;
+
+    if(m_signal) delete m_signal;
+    // for(int i = 0;i < m_handlers.size();i++)
+    //     delete m_handlers[i].first;
 }
 
 void EventLoop::runForever()
@@ -196,9 +201,9 @@ void EventLoop::finishDelete()
     swap(handlers, m_del);
 }
 
-EventLoop* EventLoop::getRandomLoop()
+EventLoop* EventLoop::getRandomLoop(int &thrid)
 {
-    m_pool -> getRandomLoop();
+    m_pool -> getRandomLoop(thrid);
 }
 
 void EventLoop::attach(const Callback<void> &call, const Timer &timer)
@@ -215,6 +220,12 @@ void EventLoop::attach()
 {
     SignalOuter &outer = SignalOuter::Instance();
     m_signal = new SignalHandler(this, outer.sockets().first);
+}
+
+void EventLoop::attach(Socket socket, int thrid)
+{
+    Handler *handler = new WakeHandler(this, socket);
+    m_handlers[thrid] = handler;
 }
 
 };

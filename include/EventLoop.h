@@ -77,7 +77,7 @@ public:
     void finishDelete();
 
     /// Return one random loop
-    EventLoop* getRandomLoop();
+    EventLoop* getRandomLoop(int &thrid);
 
     /// Attach Timer to this loop
     void attach(const Callback<void> &call, const Timer &timer);
@@ -88,6 +88,14 @@ public:
     /// Attach signal handler
     void attach();
 
+    /// Attach pipes between threads
+    void attach(Socket sock, int thrid);
+
+    map<int, Handler*> handlers()
+    {
+        return m_handlers;
+    }
+    
 private:
     /// Run After dispatch(for all active events)
     void runAllActives();
@@ -111,7 +119,7 @@ private:
     map<int, Handler*> m_map;
     TimerEvents        m_heap;
     SignalHandler     *m_signal;
-
+    map<int, Handler*> m_handlers;
     friend class Acceptor;
 };
 

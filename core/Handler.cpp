@@ -33,6 +33,12 @@ void Handler::detach()
     m_loop->detachHandler(m_sock.fd(), this);
 }
 
+void Handler::invoke()
+{
+    attach();
+    registerRead();
+}
+
 void Handler::registerRead()
 {
     assert(m_loop && m_sock.status());
@@ -84,9 +90,9 @@ EventLoop *Handler::getLoop() const
     return m_loop;
 }
 
-EventLoop *Handler::getRandomLoop() const
+EventLoop *Handler::getRandomLoop(int &thrid) const
 {
-    return m_loop -> getRandomLoop();
+    return m_loop -> getRandomLoop(thrid);
 }
 
 int Handler::getStatus() const

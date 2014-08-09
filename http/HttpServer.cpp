@@ -11,8 +11,9 @@ HttpServer::HttpServer(int port, int portnum) : port_(port), errflag_(false), po
 {
     acceptors_ = vector<HttpAcceptor<HttpRequest>*>(portnum);
 
+    int id;
     for(int i = 0; i < portnum ; i++)
-        acceptors_[i] = new HttpAcceptor<HttpRequest>(this, pool_.getRandomLoop(), port + i);
+        acceptors_[i] = new HttpAcceptor<HttpRequest>(this, pool_.getRandomLoop(id), port + i);
 }
 
 HttpServer::HttpServer(int port, int portnum, int place) : port_(port), errflag_(false), portnum_(0)

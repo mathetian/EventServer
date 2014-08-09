@@ -43,7 +43,19 @@ public:
 
         if (sock.status() == true)
         {
-            T* t = new T(getRandomLoop(), sock);
+            int thrid;
+            EventLoop *loop = getRandomLoop(thrid);
+            T* t = new T(loop, sock);
+            if(loop == getLoop())
+                t -> invoke();
+            else
+            {
+                map<int, Handler*> m_handlers = getLoop() -> handlers();
+                assert(m_handlers.find(thrid) != m_handlers.end());
+                Handler *handler = m_handlers[thrid];
+                int           fd = handler -> getSocket().fd();
+                send(fd, "c", 1, 0);
+            }
         }
     }
 

@@ -65,7 +65,8 @@ bool HttpClient::request(const string &url, Callback get, Callback error, void *
     }
 
     /// Don't need to de-locate it
-    new HttpRequest(this, url, pool_.getRandomLoop(), sock);
+    int id;
+    new HttpRequest(this, url, pool_.getRandomLoop(id), sock);
 }
 
 

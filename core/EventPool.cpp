@@ -34,6 +34,15 @@ EventPool::EventPool(int loopNum) : m_loopNum(loopNum)
 
     /// Attach Signal Handler to the master thread
     m_loops[0] -> attach();
+    if(loopNum >= 2)
+    {
+        for(int i = 1;i < loopNum;i++)
+        {
+            pair<Socket, Socket> sockets = Socket::pipe();
+            m_loops[0] -> attach(sockets.first, i);
+            m_loops[i] -> attach(sockets.second, 0);
+        }
+    }
 }
 
 EventPool::~EventPool()
@@ -86,9 +95,10 @@ void EventPool::stop()
         m_loops[i] -> stop();
 }
 
-EventLoop* EventPool::getRandomLoop()
+EventLoop* EventPool::getRandomLoop(int &thrid)
 {
-    return m_loops[rand()%m_loopNum];
+    thrid = rand()%m_loopNum;
+    return m_loops[thrid];
 }
 
 int        EventPool::getLoopNum() const

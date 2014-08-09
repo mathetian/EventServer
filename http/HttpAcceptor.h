@@ -48,10 +48,10 @@ private:
 
         DEBUG << "New Connection, through socket(local): " << sock.fd();
         DEBUG << "Corrsponding address:" << sock.getpeername();
-
+        int id;
         if (sock.status() == true)
         {
-            T* t = new T(server_, getRandomLoop(), sock);
+            T* t = new T(server_, getRandomLoop(id), sock);
         }
     }
 

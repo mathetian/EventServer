@@ -21,6 +21,17 @@ MSGHandler::MSGHandler(EventLoop* loop, Socket sock)
     assert(sock.status());
 }
 
+MSGHandler::MSGHandler(EventLoop* loop, Socket sock, int place)
+    : Handler(loop), m_close(false), m_first(false)
+{
+    /// Must be written here
+    /// Don't allow after `:`
+    m_sock = sock;
+
+    assert(sock.status());
+}
+
+
 MSGHandler::~MSGHandler()
 {
     /// Nothing need to be done

@@ -112,8 +112,8 @@ private:
                 INFO << sock.status() ;
                 assert(0);
             }
-
-            EchoClient *client = new EchoClient(pool.getRandomLoop(), sock);
+            int id;
+            EchoClient *client = new EchoClient(pool.getRandomLoop(id), sock);
 
             if(i%10000==0)
             {

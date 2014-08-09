@@ -30,6 +30,13 @@ public:
     /// @param sock, the socket
     MSGHandler(EventLoop* loop, Socket sock);
 
+    /// Constructor
+    ///
+    /// @param loop, EventLoop it belongs
+    /// @param sock, the socket
+    /// @param place, override of constructor
+    MSGHandler(EventLoop* loop, Socket sock, int place);
+
     /// Destructor
     virtual ~MSGHandler();
 

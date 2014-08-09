@@ -42,6 +42,10 @@ protected:
     void detach();
 
 public:
+    /// Invoke
+    void invoke();
+    
+public:
     /// Register Read/Write Events
     void registerRead();
     void registerWrite();
@@ -72,7 +76,7 @@ public:
     EventLoop* getLoop()   const;
 
     /// Get random loop
-    EventLoop* getRandomLoop() const;
+    EventLoop* getRandomLoop(int &thrid) const;
 
 public:
     /// Function about status

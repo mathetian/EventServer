@@ -43,7 +43,6 @@ inline void signalhandler(int signo)
 	static SignalOuter &outer = SignalOuter::Instance();
 	char msg = signo;
 	int num = write(outer.sockets().second.fd(), (char*)&msg, 1);
-	cout << "????? " << num << strerror(errno) << endl;
 }
 
 class SignalHandler : public MSGHandler
@@ -54,7 +53,6 @@ public:
 private:
 	virtual void received(STATUS status, Buffer &buff)
 	{
-		cout << "received" << endl;
 		assert(status == MSGHandler::SUCC);
 
 		for(int i = 0;i < buff.size();i++)
