@@ -64,7 +64,8 @@ int main()
 
     for(int i = 0; i < CLINUM; i++)
     {
-        stringstream ss; int port = Port + (i % PortNum);
+        stringstream ss;
+        int port = Port + (i % PortNum);
         ss << "127.0.0.1" << ":" << port << "/sub";
 
         client.request(ss.str(), get, error, NULL);

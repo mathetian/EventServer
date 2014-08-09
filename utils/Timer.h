@@ -121,7 +121,23 @@ public:
     {
         return Timer(val);
     }
+
+public:
+    friend ostream& operator << (ostream &os, const Timer &timer);
+    friend bool operator > (const Timer &timer_1, const Timer &timer_2);
 };
+
+inline ostream& operator << (ostream &os, const Timer &timer)
+{
+    os << timer.m_val;
+
+    return os;
+}
+
+inline bool operator > (const Timer &timer_1, const Timer &timer_2)
+{
+    return timer_1.m_val > timer_2.m_val ? true : false;
+}
 
 };
 

@@ -88,7 +88,11 @@ test_tester: tests/test_tester.cpp
 test_thread: tests/test_thread.cpp
 	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
 	mv $@ bin
-	
+
+test_timerheap: tests/test_timerheap.cpp
+	$(CXX) ${CXXFLAGS} ${HEADER} ${PTHRFLAGS} $^ -o $@ ${LDLIBS}
+	mv $@ bin
+
 prepare:
 	-mkdir bin
 
