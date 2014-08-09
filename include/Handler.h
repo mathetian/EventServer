@@ -44,7 +44,7 @@ protected:
 public:
     /// Invoke
     void invoke();
-    
+
 public:
     /// Register Read/Write Events
     void registerRead();
@@ -122,6 +122,11 @@ protected:
 
     /// Delete flag
     bool        m_delflag;
+
+public:
+    virtual void     push(Handler*)
+    {
+    }
 };
 
 };

@@ -6,5 +6,5 @@
 using namespace utils;
 
 ostream* Log::m_out;
-Log      Log::m_log;
+Log      Log::m_log = Log::warn;
 int      Log::m_level;

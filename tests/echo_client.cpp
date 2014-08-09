@@ -149,9 +149,10 @@ int main()
 {
     Log::setLevel(Log::debug);
 
-    ::signal(SIGINT, signalStop);
     setlimit(100000);
     errno = 0;
+
+    pool.attach(SIGINT, signalStop);
 
     pool.subrun();
 

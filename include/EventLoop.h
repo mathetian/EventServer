@@ -89,13 +89,13 @@ public:
     void attach();
 
     /// Attach pipes between threads
-    void attach(Socket sock, int thrid);
+    void attach(Socket sock, int thrid, SQueue<Handler*> *h_queue);
 
     map<int, Handler*> handlers()
     {
         return m_handlers;
     }
-    
+
 private:
     /// Run After dispatch(for all active events)
     void runAllActives();

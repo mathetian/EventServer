@@ -11,7 +11,7 @@ PTHRFLAGS = -lpthread -pthread
 SOURCES = utils/*.cpp core/*.cpp http/*.cpp
 LDLIBS  = -L. -leventserver
 
-tests = test_buffer test_c test_callback test_log test_slice test_squeue test_tester test_thread
+tests = test_buffer test_c test_callback test_log test_slice test_squeue test_tester test_thread test_timerevents
 
 PROGS = server client bench_library ${tests}
 

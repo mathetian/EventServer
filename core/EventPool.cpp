@@ -36,11 +36,12 @@ EventPool::EventPool(int loopNum) : m_loopNum(loopNum)
     m_loops[0] -> attach();
     if(loopNum >= 2)
     {
-        for(int i = 1;i < loopNum;i++)
+        for(int i = 1; i < loopNum; i++)
         {
+            SQueue<Handler*> *handler_queue = new SQueue<Handler*>;
             pair<Socket, Socket> sockets = Socket::pipe();
-            m_loops[0] -> attach(sockets.first, i);
-            m_loops[i] -> attach(sockets.second, 0);
+            m_loops[0] -> attach(sockets.second, i, handler_queue);
+            m_loops[i] -> attach(sockets.first, 0, handler_queue);
         }
     }
 }

@@ -222,9 +222,9 @@ void EventLoop::attach()
     m_signal = new SignalHandler(this, outer.sockets().first);
 }
 
-void EventLoop::attach(Socket socket, int thrid)
+void EventLoop::attach(Socket socket, int thrid, SQueue<Handler*> *h_queue)
 {
-    Handler *handler = new WakeHandler(this, socket);
+    Handler *handler = new WakeHandler(this, socket, h_queue);
     m_handlers[thrid] = handler;
 }
 

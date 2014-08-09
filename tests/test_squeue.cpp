@@ -35,12 +35,14 @@ TEST(A, Plain)
     Callback<const char*> call2(&b1, &B::b);
     squeue.push(&call1);
     squeue.push(&call2);
+    ASSERT_EQ(squeue.empty(), false);
 
     Callback<const char*> *call3 = squeue.get();
     Callback<const char*> *call4 = squeue.get();
 
     ASSERT_EQ((*call3)(), "A::a");
     ASSERT_EQ((*call4)(), "B::b");
+    ASSERT_EQ(squeue.empty(), true);
 }
 
 int main()

@@ -45,7 +45,10 @@ public:
     /// get the Number of Loops
     int        getLoopNum() const;
 
-    EventLoop* loop() { return m_loops[0]; }
+    EventLoop* loop()
+    {
+        return m_loops[0];
+    }
 public:
     /// attach signal handler
     void       attach(int signo, void(*sighanler)(int));

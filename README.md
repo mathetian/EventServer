@@ -15,6 +15,7 @@ Our work is mainly inspired by [dirlt](http://dirlt.com/‎), [hpserver](http://
 4. Support Pseduo-Asynchronous I/O.
 5. Support IO/Timer/Signal Events.
 6. Provide a Simple Garbage Collection. 
+7. Use SocketPair as the Method of Transforming Information Between Threads
 
 ## Benchmark
 
@@ -150,7 +151,6 @@ Although we provde a simple package for event driven server, it is still hard to
 
 ## Todo List
 
-1. Use Socketpair Instead of Changing Directly
-2. Add support for unlimited file descriptor
-3. Optimization for Thread affinity
-4. Truly Asynchronous I/O
+1. Add support for unlimited file descriptor
+2. Optimization for Thread affinity
+3. Truly Asynchronous I/O

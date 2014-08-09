@@ -6,6 +6,7 @@
 #define _ACCEPTOR_H
 
 #include "Log.h"
+#include "SQueue.h"
 using namespace utils;
 
 #include "Handler.h"
@@ -53,8 +54,10 @@ public:
                 map<int, Handler*> m_handlers = getLoop() -> handlers();
                 assert(m_handlers.find(thrid) != m_handlers.end());
                 Handler *handler = m_handlers[thrid];
+                handler -> push(t);
                 int           fd = handler -> getSocket().fd();
-                send(fd, "c", 1, 0);
+                int cnt = send(fd, "c", 1, 0);
+                if(errno != 0) WARN << strerror(errno) ;
             }
         }
     }
